@@ -9,7 +9,9 @@ import me.philcali.device.pool.model.Host;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.internal.waiters.ResponseOrException;
+import software.amazon.awssdk.core.retry.backoff.FixedDelayBackoffStrategy;
 import software.amazon.awssdk.core.waiters.Waiter;
 import software.amazon.awssdk.core.waiters.WaiterOverrideConfiguration;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
@@ -21,6 +23,7 @@ import software.amazon.awssdk.services.ssm.model.SendCommandResponse;
 import software.amazon.awssdk.services.ssm.model.SsmException;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
@@ -43,6 +46,8 @@ abstract class ConnectionSSMModel implements Connection {
     private WaiterOverrideConfiguration waiterOverride(CommandInput input) {
         return WaiterOverrideConfiguration.builder()
                 .waitTimeout(input.timeout())
+                .backoffStrategy(FixedDelayBackoffStrategy.create(Duration.ofSeconds(1)))
+                .maxAttempts((int) input.timeout().toSeconds())
                 .build();
     }
 
@@ -59,9 +64,8 @@ abstract class ConnectionSSMModel implements Connection {
     public CommandOutput execute(CommandInput input) throws ConnectionException {
         try {
             final StringBuilder commands = new StringBuilder(input.line());
-            Optional.ofNullable(input.args()).ifPresent(args -> {
-                commands.append(" ").append(String.join(" ", args));
-            });
+            Optional.ofNullable(input.args()).ifPresent(args ->
+                    commands.append(" ").append(String.join(" ", args)));
             SendCommandResponse sentCommand = ssm().sendCommand(SendCommandRequest.builder()
                     .comment("Command for host " + host().deviceId())
                     .documentName(documentName())
@@ -86,7 +90,7 @@ abstract class ConnectionSSMModel implements Connection {
             return either.response()
                     .map(convert(input))
                     .orElseThrow(() -> new ConnectionException("Failed to execute: " + commands));
-        } catch (SsmException e) {
+        } catch (SsmException | SdkClientException e) {
             throw new ConnectionException(e);
         }
     }
