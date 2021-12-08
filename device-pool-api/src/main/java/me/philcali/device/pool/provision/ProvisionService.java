@@ -7,7 +7,5 @@ import me.philcali.device.pool.model.ProvisionOutput;
 public interface ProvisionService {
     ProvisionOutput provision(ProvisionInput input) throws ProvisioningException;
 
-    ProvisionOutput describe(String provisionId) throws ProvisioningException;
-
-    void release(String provisionId) throws ProvisioningException;
+    ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException;
 }

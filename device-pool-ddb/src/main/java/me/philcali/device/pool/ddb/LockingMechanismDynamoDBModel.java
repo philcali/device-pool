@@ -1,5 +1,6 @@
 package me.philcali.device.pool.ddb;
 
+import me.philcali.device.pool.exceptions.LockingConflictException;
 import me.philcali.device.pool.exceptions.LockingException;
 import me.philcali.device.pool.lock.LockingMechanism;
 import me.philcali.device.pool.model.ApiModel;
@@ -29,6 +30,7 @@ import java.util.function.Supplier;
 abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
     private static final Logger LOGGER = LogManager.getLogger(LockingMechanismDynamoDB.class);
     private static final String ID = "id";
+    private static final String HOLDER = "holder";
     private static final String VALUE = "value";
     private static final String EXPIRES_IN = "expiresIn";
     private static final String UPDATED_AT = "updatedAt";
@@ -55,44 +57,52 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         });
     }
 
+    private LockOutput putLock(final LockInput input) {
+        final long now = System.currentTimeMillis() / 1000;
+        final long expiresIn = now + input.ttl();
+        final String expression = "attribute_not_exists(:id) or"
+                + " (attribute_exists(:id) AND :expiresIn > :now)"
+                + " (attribute_exists(:id) AND :holder != :holderId)";
+        final PutItemResponse putItemResponse = dynamoDbClient().putItem(PutItemRequest.builder()
+                .tableName(tableName())
+                .returnValues(ReturnValue.ALL_NEW)
+                .conditionExpression(expression)
+                .expressionAttributeNames(new HashMap<>() {{
+                    put(":id", ID);
+                    put(":expiresId", EXPIRES_IN);
+                    put(":holder", HOLDER);
+                }})
+                .expressionAttributeValues(new HashMap<>() {{
+                    put(":now", AttributeValue.builder().n(Long.toString(now)).build());
+                    put(":holderId", AttributeValue.builder().s(input.holder()).build());
+                }})
+                .item(new HashMap<>() {{
+                    put(ID, AttributeValue.builder().s(input.id()).build());
+                    put(HOLDER, AttributeValue.builder().s(input.holder()).build());
+                    if (input.value() != null) {
+                        put(VALUE, AttributeValue.builder().s(input.value()).build());
+                    }
+                    put(UPDATED_AT, AttributeValue.builder().n(Long.toString(now)).build());
+                    put(EXPIRES_IN, AttributeValue.builder().n(Long.toString(expiresIn)).build());
+                }})
+                .build());
+        LockOutput output = LockOutput.builder()
+                .id(input.id())
+                .value(Optional.ofNullable(putItemResponse.attributes().get(VALUE))
+                        .map(AttributeValue::s)
+                        .orElse(null))
+                .expiresIn(expiresIn)
+                .updatedAt(now)
+                .build();
+        LOGGER.debug("Obtained a new lock: {}", output);
+        return output;
+    }
+
     private Supplier<LockOutput> internalLock(final LockInput input) {
         return () -> {
             for (;;) {
                 try {
-                    final long now = System.currentTimeMillis() / 1000;
-                    final long expiresIn = now + input.ttl();
-                    final String expression = "attribute_not_exists(:id) or" +
-                            " (attribute_exists(:id) AND :expiresIn > :now) ";
-                    final PutItemResponse putItemResponse = dynamoDbClient().putItem(PutItemRequest.builder()
-                            .tableName(tableName())
-                            .returnValues(ReturnValue.ALL_NEW)
-                            .conditionExpression(expression)
-                            .expressionAttributeNames(new HashMap<>() {{
-                                put(":id", ID);
-                                put(":expiresId", EXPIRES_IN);
-                            }})
-                            .expressionAttributeValues(new HashMap<>() {{
-                                put(":now", AttributeValue.builder().n(Long.toString(now)).build());
-                            }})
-                            .item(new HashMap<>() {{
-                                put(ID, AttributeValue.builder().s(input.id()).build());
-                                if (input.value() != null) {
-                                    put(VALUE, AttributeValue.builder().s(input.value()).build());
-                                }
-                                put(UPDATED_AT, AttributeValue.builder().n(Long.toString(now)).build());
-                                put(EXPIRES_IN, AttributeValue.builder().n(Long.toString(expiresIn)).build());
-                            }})
-                            .build());
-                    LockOutput output = LockOutput.builder()
-                            .id(input.id())
-                            .value(Optional.ofNullable(putItemResponse.attributes().get(VALUE))
-                                    .map(AttributeValue::s)
-                                    .orElse(null))
-                            .expiresIn(expiresIn)
-                            .updatedAt(now)
-                            .build();
-                    LOGGER.debug("Obtained a new lock: {}", output);
-                    return output;
+                    return putLock(input);
                 } catch (ConditionalCheckFailedException conditionalCheckFailedException) {
                     try {
                         Thread.sleep(pulseTime());
@@ -110,6 +120,17 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
     @Override
     public CompletableFuture<LockOutput> lock(final LockInput input) {
         return CompletableFuture.supplyAsync(internalLock(input), executorService());
+    }
+
+    @Override
+    public LockOutput extend(final LockInput input) {
+        try {
+            return putLock(input);
+        } catch (ConditionalCheckFailedException e) {
+            throw new LockingConflictException(e);
+        } catch (DynamoDbException e) {
+            throw new LockingException(e);
+        }
     }
 
     @Override

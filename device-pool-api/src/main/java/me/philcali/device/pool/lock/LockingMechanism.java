@@ -10,5 +10,7 @@ import java.util.concurrent.CompletableFuture;
 public interface LockingMechanism {
     CompletableFuture<LockOutput> lock(LockInput input);
 
+    LockOutput extend(LockInput input) throws LockingException;
+
     void lease(String lockId) throws LockingException;
 }

@@ -36,13 +36,8 @@ abstract class BaseDevicePoolModel implements DevicePool {
     }
 
     @Override
-    public ProvisionOutput describe(String provisionId) throws ProvisioningException {
-        return provisionService().describe(provisionId);
-    }
-
-    @Override
-    public void release(String provisionId) throws ProvisioningException {
-        provisionService().release(provisionId);
+    public ProvisionOutput describe(ProvisionOutput provisionOutput) throws ProvisioningException {
+        return provisionService().describe(provisionOutput);
     }
 
     @Override

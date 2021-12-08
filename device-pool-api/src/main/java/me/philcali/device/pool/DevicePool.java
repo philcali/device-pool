@@ -13,9 +13,7 @@ import java.util.concurrent.TimeoutException;
 public interface DevicePool extends AutoCloseable {
     ProvisionOutput provision(ProvisionInput input) throws ProvisioningException;
 
-    ProvisionOutput describe(String provisionId) throws ProvisioningException;
-
-    void release(String provisionId) throws ProvisioningException;
+    ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException;
 
     List<Device> obtain(ProvisionOutput output) throws ProvisioningException;
 
@@ -23,7 +21,7 @@ public interface DevicePool extends AutoCloseable {
         final ProvisionOutput output = provision(input);
         final CompletableFuture<ProvisionOutput> finalized = CompletableFuture.supplyAsync(() -> {
             for (;;) {
-                final ProvisionOutput updated = describe(output.id());
+                final ProvisionOutput updated = describe(output);
                 if (updated.status().isTerminal()) {
                     return updated;
                 }
@@ -32,12 +30,10 @@ public interface DevicePool extends AutoCloseable {
         try {
             final ProvisionOutput updated = finalized.get(amount, unit);
             if (!updated.succeeded()) {
-                release(output.id());
                 throw new ProvisioningException("Provision " + output.id() + " failed");
             }
             return obtain(updated);
         } catch (TimeoutException | InterruptedException e) {
-            release(output.id());
             throw new ProvisioningException("Provision " + output.id() + " never terminated in time");
         } catch (ExecutionException e) {
             throw new ProvisioningException(e.getCause());

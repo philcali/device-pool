@@ -72,15 +72,16 @@ class BaseDevicePoolTest {
         Connection connection = mock(Connection.class);
         ContentTransferAgent transfer = mock(ContentTransferAgent.class);
 
-        when(provisionService.provision(eq(input))).thenReturn(ProvisionOutput.builder()
+        ProvisionOutput expectedOutput = ProvisionOutput.builder()
                 .id(input.id())
                 .addReservations(Reservation.builder()
                         .deviceId("device-1-abc-efg")
                         .status(Status.PROVISIONING)
                         .build())
-                .build());
+                .build();
+        when(provisionService.provision(eq(input))).thenReturn(expectedOutput);
 
-        when(provisionService.describe(eq(input.id()))).thenReturn(ProvisionOutput.builder()
+        when(provisionService.describe(eq(expectedOutput))).thenReturn(ProvisionOutput.builder()
                 .id(input.id())
                 .addReservations(Reservation.builder()
                         .deviceId("device-1-abc-efg")
@@ -100,9 +101,6 @@ class BaseDevicePoolTest {
                 .contentTransfer(transfer)
                 .build();
         assertEquals(expectedDevice, devices.get(0));
-
-        pool.release(input.id());
-        verify(provisionService).release(eq(input.id()));
     }
 
     @Test
@@ -112,15 +110,16 @@ class BaseDevicePoolTest {
                 .amount(1)
                 .build();
 
-        when(provisionService.provision(eq(input))).thenReturn(ProvisionOutput.builder()
+        ProvisionOutput expectedOutput = ProvisionOutput.builder()
                 .id(input.id())
                 .addReservations(Reservation.builder()
                         .deviceId("device-1-abc-efg")
                         .status(Status.PROVISIONING)
                         .build())
-                .build());
+                .build();
+        when(provisionService.provision(eq(input))).thenReturn(expectedOutput);
 
-        when(provisionService.describe(eq(input.id()))).thenReturn(ProvisionOutput.builder()
+        when(provisionService.describe(eq(expectedOutput))).thenReturn(ProvisionOutput.builder()
                 .id(input.id())
                 .addReservations(Reservation.builder()
                         .deviceId("device-1-abc-efg")
@@ -129,8 +128,6 @@ class BaseDevicePoolTest {
                 .build());
 
         assertThrows(ProvisioningException.class, () -> pool.provisionWait(input, 10, TimeUnit.SECONDS));
-
-        verify(provisionService).release(eq(input.id()));
     }
 
     @Test
@@ -149,10 +146,8 @@ class BaseDevicePoolTest {
                 .build();
 
         when(provisionService.provision(eq(input))).thenReturn(stuckOutput);
-        when(provisionService.describe(eq(input.id()))).thenReturn(stuckOutput);
+        when(provisionService.describe(eq(stuckOutput))).thenReturn(stuckOutput);
 
         assertThrows(ProvisioningException.class, () -> pool.provisionWait(input, 10, TimeUnit.MILLISECONDS));
-
-        verify(provisionService).release(eq(input.id()));
     }
 }
