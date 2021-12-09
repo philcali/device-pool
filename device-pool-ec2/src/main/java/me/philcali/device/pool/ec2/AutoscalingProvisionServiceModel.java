@@ -41,6 +41,9 @@ import java.util.stream.Collectors;
 @Value.Immutable
 abstract class AutoscalingProvisionServiceModel implements ProvisionService {
     private static final Logger LOGGER = LogManager.getLogger(AutoscalingProvisionService.class);
+    private static final int RUNNING = 16;
+    private static final int PENDING = 0;
+    private static final int LOW_BITS = 265;
 
     @Value.Default
     AutoScalingClient autoscaling() {
@@ -115,14 +118,14 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
     private Reservation translateInstance(String instanceId, int code) {
         Status status;
         switch (code) {
-            case 0:
+            case PENDING:
                 status = Status.PROVISIONING;
                 break;
-            case 16:
+            case RUNNING:
                 status = Status.SUCCEEDED;
                 break;
             default:
-                status = code <= 256 ? Status.FAILED : Status.REQUESTED;
+                status = code <= LOW_BITS ? Status.FAILED : Status.REQUESTED;
         }
         return Reservation.builder()
                 .deviceId(instanceId)
@@ -174,6 +177,10 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
         AutoScalingGroup group = describeGroupOrThrow();
         List<Instance> validInstances = group.instances().stream()
                 .filter(this::isNotDetached)
+                .peek(instance -> LOGGER.debug("Group {} detected {}: {}",
+                        autoscalingGroupName(),
+                        instance.instanceId(),
+                        instance.lifecycleState()))
                 .collect(Collectors.toList());
         if (validInstances.size() < input.amount()) {
             int remainder = input.amount() - validInstances.size();
@@ -206,6 +213,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
             } catch (SdkClientException e) {
                 throw new ProvisioningException(e);
             } finally {
+                LOGGER.info("Reset capacity for {} to {}", autoscalingGroupName(), group.desiredCapacity());
                 autoscaling().setDesiredCapacity(SetDesiredCapacityRequest.builder()
                         .autoScalingGroupName(autoscalingGroupName())
                         .desiredCapacity(group.desiredCapacity())

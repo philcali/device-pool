@@ -6,4 +6,8 @@ public class ReservationException extends RuntimeException {
     public ReservationException(Throwable ex) {
         super(ex);
     }
+
+    public ReservationException(String message) {
+        super(message);
+    }
 }
