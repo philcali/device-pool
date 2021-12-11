@@ -46,6 +46,7 @@ class Ec2ReservationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void GIVEN_reservation_service_WHEN_exchange_is_made_THEN_host_is_provided() {
         DescribeInstancesRequest describeInstancesRequest = DescribeInstancesRequest.builder()
                 .instanceIds(reservation.deviceId())

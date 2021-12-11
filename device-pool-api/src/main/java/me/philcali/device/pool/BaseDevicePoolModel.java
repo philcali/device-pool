@@ -12,6 +12,7 @@ import me.philcali.device.pool.model.ApiModel;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
+import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.provision.ProvisionService;
 import me.philcali.device.pool.reservation.ReservationService;
 import org.immutables.value.Value;
@@ -44,6 +45,7 @@ abstract class BaseDevicePoolModel implements DevicePool {
     public List<Device> obtain(ProvisionOutput output) throws ProvisioningException {
         try {
             return output.reservations().stream()
+                    .filter(reservation -> reservation.status().equals(Status.SUCCEEDED))
                     .map(reservation -> {
                         final Host host = reservationService().exchange(reservation);
                         final Connection connection = connections().connect(host);

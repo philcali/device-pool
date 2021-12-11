@@ -19,7 +19,10 @@ abstract class ContentTransferAgentFactoryS3Model implements ContentTransferAgen
 
     abstract String bucketName();
 
-    abstract AgentCommand command();
+    @Value.Default
+    AgentCommand command() {
+        return AWSCLIAgentCommand.create();
+    }
 
     @Override
     public ContentTransferAgent connect(String id, Connection connection, Host host) throws ContentTransferException {

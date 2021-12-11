@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.internal.waiters.ResponseOrException;
+import software.amazon.awssdk.core.retry.backoff.FixedDelayBackoffStrategy;
 import software.amazon.awssdk.core.waiters.Waiter;
 import software.amazon.awssdk.core.waiters.WaiterAcceptor;
 import software.amazon.awssdk.core.waiters.WaiterOverrideConfiguration;
@@ -61,7 +62,8 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
     WaiterOverrideConfiguration overrideConfiguration() {
         return WaiterOverrideConfiguration.builder()
                 .waitTimeout(Duration.ofSeconds(30))
-                .maxAttempts(10)
+                .backoffStrategy(FixedDelayBackoffStrategy.create(Duration.ofSeconds(2)))
+                .maxAttempts(15)
                 .build();
     }
 

@@ -23,7 +23,6 @@ import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.InstanceState;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -188,6 +187,7 @@ class AutoscalingProvisionServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void GIVEN_provision_service_is_created_THEN_describe_ec2_THEN_output_is_updated() {
         ProvisionOutput provisionOutput = ProvisionOutput.builder()
                 .id("abc-efg")
