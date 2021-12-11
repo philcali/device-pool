@@ -19,6 +19,9 @@ import software.amazon.awssdk.services.autoscaling.model.Instance;
 import software.amazon.awssdk.services.autoscaling.model.LifecycleState;
 import software.amazon.awssdk.services.autoscaling.model.SetDesiredCapacityRequest;
 import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
+import software.amazon.awssdk.services.ec2.model.InstanceState;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
@@ -182,5 +185,66 @@ class AutoscalingProvisionServiceTest {
                 .autoScalingGroupName(groupName)
                 .instanceIds(instanceIds)
                 .build()));
+    }
+
+    @Test
+    void GIVEN_provision_service_is_created_THEN_describe_ec2_THEN_output_is_updated() {
+        ProvisionOutput provisionOutput = ProvisionOutput.builder()
+                .id("abc-efg")
+                .addReservations(
+                        Reservation.builder()
+                                .deviceId("i-abcabcabc")
+                                .status(Status.PROVISIONING)
+                                .build(),
+                        Reservation.builder()
+                                .deviceId("i-defdefdef")
+                                .status(Status.PROVISIONING)
+                                .build(),
+                        Reservation.builder()
+                                .deviceId("i-hijhijhij")
+                                .status(Status.PROVISIONING)
+                                .build())
+                .build();
+
+        DescribeInstancesRequest describeInstancesRequest = DescribeInstancesRequest.builder()
+                .instanceIds(provisionOutput.reservations().stream()
+                        .map(Reservation::deviceId)
+                        .collect(Collectors.toList()))
+                .build();
+
+        when(ec2.describeInstances(eq(describeInstancesRequest))).thenReturn(DescribeInstancesResponse.builder()
+                .reservations(rev -> rev.instances(
+                        inst -> inst
+                                .instanceId(provisionOutput.reservations().get(0).deviceId())
+                                .state(InstanceState.builder().code(16).name("RUNNING").build()),
+                        inst -> inst
+                                .instanceId(provisionOutput.reservations().get(1).deviceId())
+                                .state(InstanceState.builder().code(0).name("PENDING").build()),
+                        inst -> inst
+                                .instanceId(provisionOutput.reservations().get(2).deviceId())
+                                .state(InstanceState.builder().code(80).name("TERMINATED").build())
+                ))
+                .build());
+
+        ProvisionOutput updated = service.describe(provisionOutput);
+
+        ProvisionOutput expectedOutput = ProvisionOutput.builder()
+                .id("abc-efg")
+                .addReservations(
+                        Reservation.builder()
+                                .deviceId("i-abcabcabc")
+                                .status(Status.SUCCEEDED)
+                                .build(),
+                        Reservation.builder()
+                                .deviceId("i-defdefdef")
+                                .status(Status.PROVISIONING)
+                                .build(),
+                        Reservation.builder()
+                                .deviceId("i-hijhijhij")
+                                .status(Status.FAILED)
+                                .build())
+                .build();
+
+        assertEquals(expectedOutput, updated);
     }
 }
