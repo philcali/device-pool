@@ -67,7 +67,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
 
     private AutoScalingGroup describeGroupOrThrow() {
         try {
-            return autoscaling().describeAutoScalingGroupsPaginator(DescribeAutoScalingGroupsRequest.builder()
+            return autoscaling().describeAutoScalingGroups(DescribeAutoScalingGroupsRequest.builder()
                             .autoScalingGroupNames(autoscalingGroupName())
                             .build())
                     .autoScalingGroups()
@@ -188,7 +188,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
             try {
                 autoscaling().setDesiredCapacity(SetDesiredCapacityRequest.builder()
                         .autoScalingGroupName(autoscalingGroupName())
-                        .desiredCapacity(remainder)
+                        .desiredCapacity(required)
                         .build());
                 LOGGER.info("Upgrading capacity to fulfill the {}, previous desired: {}, new desired{}",
                         input.id(), group.desiredCapacity(), required);
