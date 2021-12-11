@@ -15,6 +15,7 @@
         <module>device-pool-ec2</module>
         <module>device-pool-ddb</module>
         <module>device-pool-s3</module>
+        <module>device-pool-service</module>
     </modules>
 
     <properties>
