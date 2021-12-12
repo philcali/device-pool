@@ -31,7 +31,7 @@ interface LockInputModel {
                 if (networkInterface.isLoopback()) {
                     continue;
                 }
-                if (networkInterface.isUp() && networkInterface.isPointToPoint()) {
+                if (networkInterface.isUp()) {
                     Optional<String> firstAddress = networkInterface.getInterfaceAddresses().stream()
                             .filter(localAddress.negate())
                             .map(InterfaceAddress::getAddress)

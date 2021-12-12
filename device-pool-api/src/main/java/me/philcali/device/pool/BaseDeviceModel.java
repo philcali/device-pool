@@ -3,6 +3,7 @@ package me.philcali.device.pool;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.content.ContentTransferAgent;
 import me.philcali.device.pool.exceptions.ConnectionException;
+import me.philcali.device.pool.exceptions.ContentTransferException;
 import me.philcali.device.pool.exceptions.DeviceInteractionException;
 import me.philcali.device.pool.model.ApiModel;
 import me.philcali.device.pool.model.CommandInput;
@@ -37,12 +38,20 @@ abstract class BaseDeviceModel implements Device {
 
     @Override
     public void copyTo(final CopyInput input) throws DeviceInteractionException {
-        contentTransfer().send(input);
+        try {
+            contentTransfer().send(input);
+        } catch (ContentTransferException e) {
+            throw new DeviceInteractionException(e);
+        }
     }
 
     @Override
     public void copyFrom(final CopyInput input) throws DeviceInteractionException {
-        contentTransfer().receive(input);
+        try {
+            contentTransfer().receive(input);
+        } catch (ContentTransferException e) {
+            throw new DeviceInteractionException(e);
+        }
     }
 
     @Override

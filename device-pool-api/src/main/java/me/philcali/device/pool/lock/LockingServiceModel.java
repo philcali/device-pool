@@ -27,7 +27,10 @@ abstract class LockingServiceModel implements AutoCloseable {
     protected final Map<String, Lock> activeLocks = new ConcurrentHashMap<>();
     protected ScheduledFuture<Void> extensionSchedule;
 
-    abstract boolean manageActiveLocks();
+    @Value.Default
+    boolean manageActiveLocks() {
+        return true;
+    }
 
     abstract LockingMechanism mechanism();
 
@@ -124,13 +127,13 @@ abstract class LockingServiceModel implements AutoCloseable {
             for (Lock lock : service.activeLocks.values()) {
                 try {
                     if (lock.isExpired()) {
-                        service.activeLocks.remove(lock.lockInput());
+                        service.activeLocks.remove(lock.lockInput().id());
                         continue;
                     }
                     try {
                         lock.output = service.mechanism().extend(lock.input);
                     } catch (LockingConflictException e) {
-                        service.activeLocks.remove(lock.lockInput());
+                        service.activeLocks.remove(lock.lockInput().id());
                     }
                 } catch (Exception e) {
                     LOGGER.warn("Failed to expire or extend lock {}: ", lock.input, e);
@@ -147,7 +150,7 @@ abstract class LockingServiceModel implements AutoCloseable {
     }
 
     public void release(Lock lock) {
-        if (activeLocks.remove(lock.lockInput()) != null) {
+        if (activeLocks.remove(lock.lockInput().id()) != null) {
             mechanism().lease(lock.lockInput().id());
         }
     }

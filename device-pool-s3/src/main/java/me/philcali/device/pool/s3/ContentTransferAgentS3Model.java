@@ -70,8 +70,7 @@ abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
                         .source("s3://" + bucketName() + "/" + newKey)
                         .build()));
                 LOGGER.info("Agent copy output: {}", output.toUTF8String());
-            } catch (S3Exception
-                    | ConnectionException e) {
+            } catch (S3Exception | ConnectionException e) {
                 throw new ContentTransferException(e);
             }
         };
@@ -111,9 +110,7 @@ abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
                 IoUtils.copy(object, outputStream);
             }
             LOGGER.info("Downloaded from s3://{}/{} to {}", bucketName(), newKey, targetFile);
-        } catch (S3Exception
-                | IOException
-                | ConnectionException e) {
+        } catch (S3Exception | IOException | ConnectionException e) {
             throw new ContentTransferException(e);
         }
     }
