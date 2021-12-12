@@ -6,4 +6,9 @@ import me.philcali.device.pool.model.CommandOutput;
 
 public interface Connection extends AutoCloseable {
     CommandOutput execute(CommandInput input) throws ConnectionException;
+
+    @Override
+    default void close() throws Exception {
+        // no-op
+    }
 }

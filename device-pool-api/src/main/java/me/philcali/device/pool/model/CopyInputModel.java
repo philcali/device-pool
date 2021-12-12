@@ -2,6 +2,7 @@ package me.philcali.device.pool.model;
 
 import org.immutables.value.Value;
 
+import java.util.Collections;
 import java.util.Set;
 
 @ApiModel
@@ -11,5 +12,8 @@ interface CopyInputModel {
 
     String destination();
 
-    Set<CopyOption> options();
+    @Value.Default
+    default Set<CopyOption> options() {
+        return Collections.emptySet();
+    }
 }

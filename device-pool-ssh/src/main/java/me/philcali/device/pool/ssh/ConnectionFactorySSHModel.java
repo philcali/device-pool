@@ -14,6 +14,7 @@ import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.AttributeRepository;
 import org.apache.sshd.scp.client.DefaultScpClient;
+import org.apache.sshd.scp.client.ScpClient;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -23,10 +24,11 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @ApiModel
 @Value.Immutable
-abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTransferAgentFactory, AutoCloseable {
+abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTransferAgentFactory {
     @Value.Default
     public SshClient client() {
         return SshClient.setUpDefaultClient();
@@ -43,6 +45,11 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
     @Value.Default
     public String userName() {
         return System.getProperty("user.name");
+    }
+
+    @Value.Default
+    Function<ClientSession, ScpClient> scpFactory() {
+        return DefaultScpClient::new;
     }
 
     @Nullable
@@ -86,13 +93,18 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
     public ContentTransferAgent connect(String id, Connection connection, Host host) throws ContentTransferException {
         try {
             ClientSession session;
+            boolean reusingConnection = false;
             // Attempt to re-use any connection if possible before creating a new one
             if (connection instanceof ConnectionSSH) {
                 session = ((ConnectionSSH) connection).clientSession();
+                reusingConnection = true;
             } else {
                 session = doConnect(host);
             }
-            return ConnectionSCP.of(new DefaultScpClient(session));
+            return scpFactory()
+                    .andThen(ConnectionSCP.builder().reusingConnection(reusingConnection)::client)
+                    .andThen(ConnectionSCP.Builder::build)
+                    .apply(session);
         } catch (IOException ie) {
             throw new ContentTransferException(ie);
         }

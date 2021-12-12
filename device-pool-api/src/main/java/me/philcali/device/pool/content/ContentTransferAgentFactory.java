@@ -4,6 +4,11 @@ import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.exceptions.ContentTransferException;
 import me.philcali.device.pool.model.Host;
 
-public interface ContentTransferAgentFactory {
+public interface ContentTransferAgentFactory extends AutoCloseable {
     ContentTransferAgent connect(String provisionId, Connection connection, Host host) throws ContentTransferException;
+
+    @Override
+    default void close() throws Exception {
+        // No-op
+    }
 }

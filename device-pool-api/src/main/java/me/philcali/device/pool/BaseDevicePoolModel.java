@@ -63,4 +63,9 @@ abstract class BaseDevicePoolModel implements DevicePool {
             throw new ProvisioningException(e);
         }
     }
+
+    @Override
+    public void close() {
+        SafeClosable.safelyClose(reservationService(), provisionService(), transfers(), connections());
+    }
 }

@@ -4,8 +4,13 @@ import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
 
-public interface ProvisionService {
+public interface ProvisionService extends AutoCloseable {
     ProvisionOutput provision(ProvisionInput input) throws ProvisioningException;
 
     ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException;
+
+    @Override
+    default void close() throws Exception {
+        // no-op
+    }
 }

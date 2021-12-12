@@ -150,4 +150,14 @@ class BaseDevicePoolTest {
 
         assertThrows(ProvisioningException.class, () -> pool.provisionWait(input, 10, TimeUnit.MILLISECONDS));
     }
+
+    @Test
+    void GIVEN_pool_is_created_WHEN_pool_closes_THEN_all_closeables_are_called() throws Exception {
+        pool.close();
+
+        verify(reservationService).close();
+        verify(provisionService).close();
+        verify(transfers).close();
+        verify(connections).close();
+    }
 }

@@ -5,7 +5,7 @@ import me.philcali.device.pool.model.CommandInput;
 import me.philcali.device.pool.model.CommandOutput;
 import me.philcali.device.pool.model.CopyInput;
 
-public interface Device {
+public interface Device extends AutoCloseable {
     String id();
 
     CommandOutput execute(CommandInput input) throws DeviceInteractionException;
@@ -13,4 +13,9 @@ public interface Device {
     void copyTo(CopyInput input) throws DeviceInteractionException;
 
     void copyFrom(CopyInput input) throws DeviceInteractionException;
+
+    @Override
+    default void close() {
+        // no-op
+    }
 }

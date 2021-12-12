@@ -44,4 +44,9 @@ abstract class BaseDeviceModel implements Device {
     public void copyFrom(final CopyInput input) throws DeviceInteractionException {
         contentTransfer().receive(input);
     }
+
+    @Override
+    public void close() {
+        SafeClosable.safelyClose(contentTransfer(), connection());
+    }
 }

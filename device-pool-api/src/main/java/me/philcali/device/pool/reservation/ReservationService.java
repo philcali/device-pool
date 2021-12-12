@@ -4,6 +4,11 @@ import me.philcali.device.pool.exceptions.ReservationException;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.Reservation;
 
-public interface ReservationService {
+public interface ReservationService extends AutoCloseable {
     Host exchange(Reservation reservation) throws ReservationException;
+
+    @Override
+    default void close() throws Exception {
+        // no-op
+    }
 }
