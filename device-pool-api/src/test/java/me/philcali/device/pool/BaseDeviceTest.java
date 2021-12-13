@@ -42,7 +42,6 @@ class BaseDeviceTest {
                 .deviceId("test-id")
                 .platform(PlatformOS.of("Linux", "aarch64"))
                 .hostName("myhost.amazon.com")
-                .port(22)
                 .build();
 
         device = BaseDevice.builder()

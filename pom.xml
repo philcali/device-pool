@@ -83,13 +83,14 @@
                                     <element>BUNDLE</element>
                                     <excludes>
                                         <exclude>*Test</exclude>
+                                        <exclude>*Exception</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <!-- Increase as necessary -->
-                                            <minimum>0.5</minimum>
+                                            <minimum>0.8</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

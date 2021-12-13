@@ -11,13 +11,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -104,5 +109,39 @@ class ContentTransferAgentS3Test {
                 .stdout("Hello World".getBytes(StandardCharsets.UTF_8))
                 .build());
         agent.send(input);
+    }
+
+    @Test
+    void GIVEN_transfer_is_created_WHEN_transfer_receives_THEN_s3_is_invoked() throws IOException {
+        CopyInput input = CopyInput.builder()
+                .destination(tempDir.resolve("d").resolve("test.txt").toString())
+                .source("test.txt")
+                .build();
+        AtomicReference<String> uuid = new AtomicReference<>();
+        when(command.copy(any(CopyInput.class))).then(answer -> {
+            CopyInput commandInput = answer.getArgument(0);
+            String[] parts = commandInput.destination().split("/");
+            // s3:[0] ""[1] bucketName[2] prefix[3] uuid[4]
+            uuid.set(parts[4]);
+            assertEquals(input.source(), commandInput.source());
+            assertEquals("s3://" + bucketName + "/" + prefix + "/" + uuid.get() + "/test.txt", commandInput.destination());
+            return CommandInput.of("echo Hello World");
+        });
+        when(connection.execute(eq(CommandInput.of("echo Hello World")))).thenReturn(CommandOutput.builder()
+                .stdout("Hello World".getBytes(StandardCharsets.UTF_8))
+                .exitCode(0)
+                .build());
+        InputStream inputStream = Files.newInputStream(tempDir.resolve("test.txt"));
+        when(s3.getObject(any(GetObjectRequest.class))).then(answer -> {
+            GetObjectRequest request = answer.getArgument(0);
+            assertEquals(prefix + "/" + uuid.get() + "/test.txt", request.key());
+            assertEquals(bucketName, request.bucket());
+            return new ResponseInputStream<>(
+                    GetObjectResponse.builder().build(),
+                    AbortableInputStream.create(inputStream));
+        });
+        agent.receive(input);
+        assertTrue(Files.exists(tempDir.resolve("d").resolve("test.txt")));
+        assertEquals("Hello World!", Files.readString(tempDir.resolve("d").resolve("test.txt")));
     }
 }

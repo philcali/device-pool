@@ -86,7 +86,7 @@ abstract class LockingServiceModel implements AutoCloseable {
 
     public class Lock implements AutoCloseable {
         private final LockInput input;
-        private LockOutput output;
+        private volatile LockOutput output;
 
         public Lock(LockInput input, LockOutput output) {
             this.input = input;

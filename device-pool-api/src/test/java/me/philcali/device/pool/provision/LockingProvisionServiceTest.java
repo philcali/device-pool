@@ -7,6 +7,7 @@ import me.philcali.device.pool.model.LockInput;
 import me.philcali.device.pool.model.LockOutput;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,20 +36,26 @@ class LockingProvisionServiceTest {
     private LockingMechanism lockingMechanism;
     @Mock
     private ScheduledExecutorService scheduledExecutorService;
-
+    private LockingService lockingService;
     private ProvisionService lockingProvisionService;
 
     @BeforeEach
     void setup() {
+        lockingService = LockingService.builder()
+                .manageActiveLocks(false)
+                .mechanism(lockingMechanism)
+                .executorService(scheduledExecutorService)
+                .build();
         lockingProvisionService = LockingProvisionService.builder()
                 .lockingFunction(input -> LockInput.of(input.id() + "-test"))
-                .lockingService(LockingService.builder()
-                        .manageActiveLocks(false)
-                        .mechanism(lockingMechanism)
-                        .executorService(scheduledExecutorService)
-                        .build())
+                .lockingService(lockingService)
                 .provisionService(provisionService)
                 .build();
+    }
+
+    @AfterEach
+    void teardown() {
+        lockingService.close();
     }
 
     @Test
