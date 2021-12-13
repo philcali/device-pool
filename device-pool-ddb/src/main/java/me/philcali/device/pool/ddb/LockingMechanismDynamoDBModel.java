@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.ReturnValue;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -58,19 +59,19 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
     }
 
     private LockOutput putLock(final LockInput input) {
-        final long now = System.currentTimeMillis() / 1000;
+        final long now = Instant.now().getEpochSecond();
         final long expiresIn = now + input.ttl();
-        final String expression = "attribute_not_exists(:id) or"
-                + " (attribute_exists(:id) AND :expiresIn > :now)"
-                + " (attribute_exists(:id) AND :holder != :holderId)";
+        final String expression = "attribute_not_exists(#id) OR ("
+                + " (attribute_exists(#id) AND #expiresIn > :now) AND"
+                + " (attribute_exists(#id) AND #holder = :holderId))";
         final PutItemResponse putItemResponse = dynamoDbClient().putItem(PutItemRequest.builder()
                 .tableName(tableName())
-                .returnValues(ReturnValue.ALL_NEW)
+                .returnValues(ReturnValue.ALL_OLD)
                 .conditionExpression(expression)
                 .expressionAttributeNames(new HashMap<>() {{
-                    put(":id", ID);
-                    put(":expiresId", EXPIRES_IN);
-                    put(":holder", HOLDER);
+                    put("#id", ID);
+                    put("#expiresIn", EXPIRES_IN);
+                    put("#holder", HOLDER);
                 }})
                 .expressionAttributeValues(new HashMap<>() {{
                     put(":now", AttributeValue.builder().n(Long.toString(now)).build());
@@ -88,13 +89,11 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
                 .build());
         LockOutput output = LockOutput.builder()
                 .id(input.id())
-                .value(Optional.ofNullable(putItemResponse.attributes().get(VALUE))
-                        .map(AttributeValue::s)
-                        .orElse(null))
+                .value(input.value())
                 .expiresIn(expiresIn)
                 .updatedAt(now)
                 .build();
-        LOGGER.debug("Obtained a new lock: {}", output);
+        LOGGER.debug("Obtained a new lock: {}, put response {}", output, putItemResponse.attributes());
         return output;
     }
 

@@ -53,6 +53,6 @@ interface LockInputModel {
 
     @Value.Default
     default long ttl() {
-        return TimeUnit.SECONDS.toMillis(10);
+        return TimeUnit.SECONDS.toSeconds(10);
     }
 }
