@@ -59,7 +59,7 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
     abstract SocketAddress localAddress();
 
     private SshClient forcedStartClient() {
-        if (!client().isStarted() && !client().isClosed()) {
+        if (!client().isStarted()) {
             synchronized (client()) {
                 if (!client().isStarted()) {
                     Optional.ofNullable(publicKeys()).ifPresent(keys -> keys.forEach(client()::addPublicKeyIdentity));
