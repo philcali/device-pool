@@ -12,7 +12,13 @@
 
     <artifactId>device-pool-service</artifactId>
 
+    <properties>
+        <jersey.version>2.34</jersey.version>
+    </properties>
+
     <modules>
         <module>device-pool-service-infra</module>
+        <module>device-pool-service-backend</module>
+        <module>device-pool-service-local</module>
     </modules>
 </project>
