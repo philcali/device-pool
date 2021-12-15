@@ -17,6 +17,8 @@
     </properties>
 
     <modules>
+        <module>device-pool-service-api</module>
+        <module>device-pool-service-data</module>
         <module>device-pool-service-infra</module>
         <module>device-pool-service-backend</module>
         <module>device-pool-service-local</module>
