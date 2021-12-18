@@ -1,4 +1,4 @@
-package me.philcali.device.pool.service.dao;
+package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.model.CompositeKey;

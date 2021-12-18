@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -71,7 +72,7 @@ abstract class ConnectionSSMModel implements Connection {
                     .documentName(documentName())
                     .instanceIds(host().deviceId())
                     .timeoutSeconds((int) input.timeout().toSeconds())
-                    .parameters(new HashMap<>() {{
+                    .parameters(new HashMap<String, Set<String>>() {{
                         put("commands", Collections.singleton(commands.toString()));
                     }})
                     .build());

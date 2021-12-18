@@ -16,29 +16,25 @@ abstract class CompositeKeyModel {
 
     abstract String account();
 
-    abstract String keyType();
-
     @Nullable
     abstract List<String> resources();
 
     @Override
     public String toString() {
         final StringJoiner joiner = new StringJoiner(DELIMITER)
-                .add(account())
-                .add(keyType());
+                .add(account());
         Optional.ofNullable(resources()).ifPresent(res -> res.forEach(joiner::add));
         return joiner.toString();
     }
 
     public static CompositeKey fromString(final String key) {
         String[] parts = key.split(DELIMITER);
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Encoded key must contain an account and keyType, received: " + key);
+        if (parts.length < 1) {
+            throw new IllegalArgumentException("Encoded key must contain an account, received: " + key);
         }
         CompositeKey.Builder builder = CompositeKey.builder()
-                .account(parts[0])
-                .keyType(parts[1]);
-        Arrays.stream(parts).skip(2).forEach(builder::addResources);
+                .account(parts[0]);
+        Arrays.stream(parts).skip(1).forEach(builder::addResources);
         return builder.build();
     }
 }

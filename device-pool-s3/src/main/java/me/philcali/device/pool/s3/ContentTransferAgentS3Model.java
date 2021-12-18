@@ -58,7 +58,7 @@ abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
             final PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName())
                     .key(newKey)
-                    .metadata(new HashMap<>() {{
+                    .metadata(new HashMap<String, String>() {{
                         put("source", input.source());
                         put("destination", input.destination());
                     }})

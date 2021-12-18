@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.ssm.model.SsmException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
@@ -64,8 +65,8 @@ class ConnectionSSMTest {
                 .documentName("AWS-RunShellScript")
                 .comment("Command for host " + host.deviceId())
                 .instanceIds(host.deviceId())
-                .parameters(new HashMap<>() {{
-                    put("commands", Collections.singletonList(command));
+                .parameters(new HashMap<String, Set<String>>() {{
+                    put("commands", Collections.singleton(command));
                 }})
                 .build();
         SendCommandResponse sentCommand = SendCommandResponse.builder()
@@ -84,8 +85,8 @@ class ConnectionSSMTest {
                 .documentName("AWS-RunShellScript")
                 .comment("Command for host " + host.deviceId())
                 .instanceIds(host.deviceId())
-                .parameters(new HashMap<>() {{
-                    put("commands", Collections.singletonList(command));
+                .parameters(new HashMap<String, Set<String>>() {{
+                    put("commands", Collections.singleton(command));
                 }})
                 .build();
 

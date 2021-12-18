@@ -10,7 +10,8 @@ import javax.inject.Singleton;
 
 @Component(modules = {
         JacksonModule.class,
-        ServiceContainerModule.class
+        ServiceContainerModule.class,
+        DynamoDBModule.class
 })
 @Singleton
 public interface DevicePoolsComponent {

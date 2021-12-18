@@ -68,16 +68,16 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
                 .tableName(tableName())
                 .returnValues(ReturnValue.ALL_OLD)
                 .conditionExpression(expression)
-                .expressionAttributeNames(new HashMap<>() {{
+                .expressionAttributeNames(new HashMap<String, String>() {{
                     put("#id", ID);
                     put("#expiresIn", EXPIRES_IN);
                     put("#holder", HOLDER);
                 }})
-                .expressionAttributeValues(new HashMap<>() {{
+                .expressionAttributeValues(new HashMap<String, AttributeValue>() {{
                     put(":now", AttributeValue.builder().n(Long.toString(now)).build());
                     put(":holderId", AttributeValue.builder().s(input.holder()).build());
                 }})
-                .item(new HashMap<>() {{
+                .item(new HashMap<String, AttributeValue>() {{
                     put(ID, AttributeValue.builder().s(input.id()).build());
                     put(HOLDER, AttributeValue.builder().s(input.holder()).build());
                     if (input.value() != null) {
@@ -137,7 +137,7 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         try {
             dynamoDbClient().deleteItem(DeleteItemRequest.builder()
                     .tableName(tableName())
-                    .key(new HashMap<>() {{
+                    .key(new HashMap<String, AttributeValue>() {{
                         put(ID, AttributeValue.builder().s(lockId).build());
                     }})
                     .build());

@@ -1,7 +1,7 @@
-package me.philcali.device.pool.service.dao;
+package me.philcali.device.pool.service.data.token;
 
 import me.philcali.device.pool.service.api.model.CompositeKey;
-import me.philcali.device.pool.service.dao.exception.TokenMarshallerException;
+import me.philcali.device.pool.service.data.exception.TokenMarshallerException;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.Map;
