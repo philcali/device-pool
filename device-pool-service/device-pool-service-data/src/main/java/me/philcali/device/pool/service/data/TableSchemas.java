@@ -10,6 +10,7 @@ import software.amazon.awssdk.enhanced.dynamodb.internal.converter.attribute.Enu
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticImmutableTableSchema;
 
+import java.time.Instant;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -23,11 +24,11 @@ public class TableSchemas {
             Function<R, String> getId,
             BiConsumer<B, String> setId) {
         return TableSchema.builder(resultClass, builderClass)
-                .addAttribute(String.class, a -> a.name("account")
+                .addAttribute(String.class, a -> a.name("PK")
                         .getter(getAccount.andThen(CompositeKey::toString))
                         .setter((b, account) -> setComposite.apply(b, CompositeKey.fromString(account)))
                         .tags(StaticAttributeTags.primaryPartitionKey()))
-                .addAttribute(String.class, a -> a.name("id")
+                .addAttribute(String.class, a -> a.name("SK")
                         .getter(getId)
                         .setter(setId)
                         .tags(StaticAttributeTags.primarySortKey()));
@@ -37,9 +38,19 @@ public class TableSchemas {
         return commonTable(DevicePoolObject.class, DevicePoolObject.Builder.class,
                 DevicePoolObject::account, DevicePoolObject.Builder::account,
                 DevicePoolObject::id, DevicePoolObject.Builder::id)
+                .newItemBuilder(DevicePoolObject::builder, DevicePoolObject.Builder::build)
                 .addAttribute(String.class, a -> a.name("name")
                         .getter(DevicePoolObject::name)
                         .setter(DevicePoolObject.Builder::name))
+                .addAttribute(String.class, a -> a.name("description")
+                        .getter(DevicePoolObject::description)
+                        .setter(DevicePoolObject.Builder::description))
+                .addAttribute(Long.class, a -> a.name("createdAt")
+                        .getter(pool -> pool.createdAt().getEpochSecond())
+                        .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("updatedAt")
+                        .getter(pool -> pool.updatedAt().getEpochSecond())
+                        .setter((builder, value) -> builder.updatedAt(Instant.ofEpochSecond(value))))
                 .build();
     }
 

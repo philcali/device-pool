@@ -12,12 +12,23 @@
     <artifactId>device-pool-ddb</artifactId>
 
     <properties>
-        <maven.dependency.version>3.1.2</maven.dependency.version>
-        <ddb.local.version>1.16.0</ddb.local.version>
+        <maven.jar.plugin>2.4</maven.jar.plugin>
     </properties>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
