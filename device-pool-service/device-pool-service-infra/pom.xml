@@ -13,8 +13,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cdk.version>2.1.0</cdk.version>
-        <constructs.version>[10.0.0,11.0.0)</constructs.version>
+        <cdk.resource.version>1.136.0</cdk.resource.version>
+        <constructs.version>[3.0.0,4.0.0)</constructs.version>
         <maven.compiler.version>3.8.1</maven.compiler.version>
     </properties>
 
@@ -28,6 +28,12 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.plugin.version}</version>
             </plugin>
 
             <plugin>
@@ -45,14 +51,40 @@
         <!-- AWS Cloud Development Kit -->
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
-            <artifactId>aws-cdk-lib</artifactId>
-            <version>${cdk.version}</version>
+            <artifactId>core</artifactId>
+            <version>${cdk.resource.version}</version>
+        </dependency>
+
+        <!-- Lambda for backend compute -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>lambda</artifactId>
+            <version>${cdk.resource.version}</version>
+        </dependency>
+        <!-- DynamoDB for persistent storage -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>dynamodb</artifactId>
+            <version>${cdk.resource.version}</version>
+        </dependency>
+        <!-- API Gateway for device interaction -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>apigatewayv2</artifactId>
+            <version>${cdk.resource.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.constructs</groupId>
             <artifactId>constructs</artifactId>
             <version>${constructs.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>assertions</artifactId>
+            <version>${cdk.resource.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

@@ -1,26 +1,24 @@
-// package com.myorg;
+package me.philcali.device.pool.service;
 
-// import software.amazon.awscdk.App;
-// import software.amazon.awscdk.assertions.Template;
-// import java.io.IOException;
+import org.junit.jupiter.api.Test;
+import software.amazon.awscdk.assertions.Template;
+import software.amazon.awscdk.core.App;
+import software.amazon.awscdk.core.StackProps;
 
-// import java.util.HashMap;
+import java.util.HashMap;
 
-// import org.junit.jupiter.api.Test;
+class DevicePoolInfrastructureTest {
 
-// example test. To run these tests, uncomment this file, along with the
-// example resource in java/src/main/java/com/myorg/DevicePoolServiceInfraStack.java
-// public class DevicePoolServiceInfraTest {
+    @Test
+    void GIVEN_infra_stack_is_created_WHEN_app_is_synthesized_THEN_resources_are_created() {
+        App app = new App();
+        DevicePoolInfrastructureStack stack = new DevicePoolInfrastructureStack(app, "test", StackProps.builder()
+                .build());
 
-//     @Test
-//     public void testStack() throws IOException {
-//         App app = new App();
-//         DevicePoolServiceInfraStack stack = new DevicePoolServiceInfraStack(app, "test");
+        Template template = Template.fromStack(stack);
 
-//         Template template = Template.fromStack(stack);
-
-//         template.hasResourceProperties("AWS::SQS::Queue", new HashMap<String, Number>() {{
-//           put("VisibilityTimeout", 300);
-//         }});
-//     }
-// }
+        template.hasResourceProperties("AWS::DynamoDB::Table", new HashMap<String, String>() {{
+            put("TableName", "DeviceLab");
+        }});
+    }
+}

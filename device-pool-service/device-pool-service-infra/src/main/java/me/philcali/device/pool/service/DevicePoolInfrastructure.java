@@ -1,7 +1,7 @@
 package me.philcali.device.pool.service;
 
-import software.amazon.awscdk.App;
-import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.core.App;
+import software.amazon.awscdk.core.StackProps;
 
 public class DevicePoolInfrastructure {
     public static void main(final String[] args) {
