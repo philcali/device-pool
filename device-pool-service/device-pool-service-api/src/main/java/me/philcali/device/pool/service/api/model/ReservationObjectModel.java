@@ -7,7 +7,7 @@ import org.immutables.value.Value;
 @ApiModel
 @Value.Immutable
 abstract class ReservationObjectModel implements Modifiable {
-    abstract CompositeKey account();
+    abstract CompositeKey key();
 
     abstract String id();
 

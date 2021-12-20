@@ -54,7 +54,7 @@ public class TableSchemas {
 
     public static TableSchema<ProvisionObject> provisionTableSchema() {
         return commonTable(ProvisionObject.class, ProvisionObject.Builder.class,
-                ProvisionObject::account, ProvisionObject.Builder::account,
+                ProvisionObject::key, ProvisionObject.Builder::key,
                 ProvisionObject::id, ProvisionObject.Builder::id)
                 .addAttribute(Status.class, a -> a.name("status")
                         .getter(ProvisionObject::status)
@@ -65,7 +65,7 @@ public class TableSchemas {
 
     public static TableSchema<ReservationObject> reservationTableSchema() {
         return commonTable(ReservationObject.class, ReservationObject.Builder.class,
-                ReservationObject::account, ReservationObject.Builder::account,
+                ReservationObject::key, ReservationObject.Builder::key,
                 ReservationObject::id, ReservationObject.Builder::id)
                 .addAttribute(String.class, a -> a.name("deviceId")
                         .getter(ReservationObject::deviceId)

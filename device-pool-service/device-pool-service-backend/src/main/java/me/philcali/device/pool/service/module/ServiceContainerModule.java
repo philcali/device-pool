@@ -27,7 +27,10 @@ class ServiceContainerModule {
     @Singleton
     static ResourceConfig application(ApplicationBinder binder) {
         return new ResourceConfig()
-                .packages("me.philcali.device.pool.service.resource")
+                .packages(
+                        "me.philcali.device.pool.service.resource",
+                        "me.philcali.device.pool.service.exception",
+                        "me.philcali.device.pool.service.context")
                 .property("jersey.config.server.wadl.disableWadl", true)
                 .register(JacksonFeature.class)
                 .register(binder);
