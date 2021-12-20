@@ -54,7 +54,6 @@
             <artifactId>core</artifactId>
             <version>${cdk.resource.version}</version>
         </dependency>
-
         <!-- Lambda for backend compute -->
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
@@ -71,6 +70,11 @@
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
             <artifactId>apigatewayv2</artifactId>
+            <version>${cdk.resource.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>apigateway</artifactId>
             <version>${cdk.resource.version}</version>
         </dependency>
 

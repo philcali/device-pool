@@ -122,7 +122,7 @@ public class DevicePoolRepoDynamo implements DevicePoolRepo {
                     .build());
             return newObject;
         } catch (ConditionalCheckFailedException e) {
-            LOGGER.warn("Failed to create pool for {} with name {}, because it already exists",
+            LOGGER.debug("Failed to create pool for {} with name {}, because it already exists",
                     compositeKey, create.name(), e);
             throw new ConflictException("DevicePool with name " + newObject.name() + " already exists.");
         } catch (DynamoDbException e) {
@@ -152,8 +152,8 @@ public class DevicePoolRepoDynamo implements DevicePoolRepo {
                             .build())
                     .build());
         } catch (ConditionalCheckFailedException | ResourceNotFoundException e) {
-            LOGGER.warn("Failed check on update for {} - {}", compositeKey, update.name());
-            throw new NotFoundException("DevicePool with name " + update.name() + " was not found");
+            LOGGER.debug("Failed check on update for {} - {}", compositeKey, update.name());
+            throw new NotFoundException("DevicePool with name " + update.name() + " was not found.");
         } catch (DynamoDbException e) {
             LOGGER.error("Failed to update pool named {} for {} ", update.name(), compositeKey, e);
             throw new ServiceException(e);
