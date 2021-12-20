@@ -1,31 +1,25 @@
 package me.philcali.device.pool.service.api;
 
-
-import me.philcali.device.pool.service.api.exception.ConflictException;
-import me.philcali.device.pool.service.api.exception.NotFoundException;
-import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
-import me.philcali.device.pool.service.api.model.QueryParams;
-import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.UpdateDevicePoolObject;
 
-public interface DevicePoolRepo {
+import java.util.function.Consumer;
+
+public interface DevicePoolRepo
+        extends ObjectRepository<DevicePoolObject, CreateDevicePoolObject, UpdateDevicePoolObject> {
     int MAX_ITEMS = 100;
 
-    DevicePoolObject get(CompositeKey compositeKey, String poolId)
-            throws NotFoundException, ServiceException;
+    default DevicePoolObject create(CompositeKey account, Consumer<CreateDevicePoolObject.Builder> thunk) {
+        CreateDevicePoolObject.Builder builder = CreateDevicePoolObject.builder();
+        thunk.accept(builder);
+        return create(account, builder.build());
+    }
 
-    DevicePoolObject create(CompositeKey compositeKey, CreateDevicePoolObject create)
-            throws ConflictException, ServiceException;
-
-    DevicePoolObject update(CompositeKey compositeKey, UpdateDevicePoolObject update)
-            throws NotFoundException, ServiceException;
-
-    QueryResults<DevicePoolObject> list(CompositeKey compositeKey, QueryParams params)
-            throws ServiceException;
-
-    void delete(CompositeKey compositeKey, String poolId)
-            throws ServiceException;
+    default DevicePoolObject update(CompositeKey account, Consumer<UpdateDevicePoolObject.Builder> thunk) {
+        UpdateDevicePoolObject.Builder builder = UpdateDevicePoolObject.builder();
+        thunk.accept(builder);
+        return update(account, builder.build());
+    }
 }

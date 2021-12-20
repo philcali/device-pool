@@ -1,17 +1,20 @@
 package me.philcali.device.pool.service.resource;
 
-import me.philcali.device.pool.service.annotation.RequiresAuth;
 import me.philcali.device.pool.service.api.DevicePoolRepo;
 import me.philcali.device.pool.service.api.model.CompositeKey;
+import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
+import me.philcali.device.pool.service.api.model.UpdateDevicePoolObject;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -23,6 +26,7 @@ import javax.ws.rs.core.SecurityContext;
 
 @Singleton
 @Path("/pools")
+@Produces(MediaType.APPLICATION_JSON)
 public class Pools {
     private static final String ID = "poolId";
     private final DevicePoolRepo poolRepo;
@@ -33,16 +37,12 @@ public class Pools {
     }
 
     @GET
-    @RequiresAuth
     @Path("/{" + ID + "}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response get(@Context SecurityContext context, @PathParam(ID) String poolId) {
         return Response.ok(poolRepo.get(CompositeKey.of(context.getUserPrincipal().getName()), poolId)).build();
     }
 
     @GET
-    @RequiresAuth
-    @Produces(MediaType.APPLICATION_JSON)
     public Response list(
             @Context SecurityContext context,
             @QueryParam("limit") int limit,
@@ -59,13 +59,23 @@ public class Pools {
     }
 
     @POST
-    @RequiresAuth
-    public Response create(@Context SecurityContext context) {
-        return Response.ok().build();
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response create(@Context SecurityContext context, CreateDevicePoolObject input) {
+        return Response.ok(poolRepo.create(CompositeKey.of(context.getUserPrincipal().getName()), input)).build();
+    }
+
+    @PUT
+    @Path("/{" + ID + "}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response update(
+            @Context SecurityContext context,
+            @PathParam(ID) String poolId,
+            UpdateDevicePoolObject input) {
+        CompositeKey account = CompositeKey.of(context.getUserPrincipal().getName());
+        return Response.accepted(poolRepo.update(account, b -> b.from(input).name(poolId))).build();
     }
 
     @DELETE
-    @RequiresAuth
     @Path("/{" + ID + "}")
     public Response delete(@Context SecurityContext context, @PathParam(ID) String poolId) {
         poolRepo.delete(CompositeKey.of(context.getUserPrincipal().getName()), poolId);

@@ -22,18 +22,16 @@ import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
+import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
 
 import javax.inject.Inject;
 import java.time.Instant;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAdjusters;
-import java.util.Collections;
 import java.util.Optional;
-import java.util.UUID;
 
 public class DevicePoolRepoDynamo implements DevicePoolRepo {
     private static final String RESOURCE = "DevicePool";
@@ -65,17 +63,18 @@ public class DevicePoolRepoDynamo implements DevicePoolRepo {
 
     @Override
     public QueryResults<DevicePoolObject> list(CompositeKey key, QueryParams params) {
+        QueryResults.Builder<DevicePoolObject> builder = QueryResults.builder();
         try {
+            CompositeKey pagingAccount = toPartitionKey(key);
             PageIterable<DevicePoolObject> pages = table.query(QueryEnhancedRequest.builder()
-                    .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(toPartitionValue(key))))
-                    .exclusiveStartKey(marshaller.unmarshall(key, params.nextToken()))
+                    .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(pagingAccount.toString())))
+                    .exclusiveStartKey(marshaller.unmarshall(pagingAccount, params.nextToken()))
                     .limit(params.limit())
                     .build());
             for (Page<DevicePoolObject> page : pages) {
-                return QueryResults.<DevicePoolObject>builder()
-                        .results(page.items())
-                        .nextToken(marshaller.marshall(key, page.lastEvaluatedKey()))
-                        .build();
+                builder.addAllResults(page.items())
+                        .nextToken(marshaller.marshall(pagingAccount, page.lastEvaluatedKey()));
+                break;
             }
         } catch (TokenMarshallerException e) {
             LOGGER.error("Failed to marshal token for {}", key, e);
@@ -84,9 +83,7 @@ public class DevicePoolRepoDynamo implements DevicePoolRepo {
             LOGGER.error("Failed to list device pools for {}", key, dbe);
             throw new ServiceException(dbe);
         }
-        return QueryResults.<DevicePoolObject>builder()
-                .results(Collections.emptyList())
-                .build();
+        return builder.build();
     }
 
     @Override
@@ -105,30 +102,31 @@ public class DevicePoolRepoDynamo implements DevicePoolRepo {
     @Override
     public DevicePoolObject create(CompositeKey compositeKey, CreateDevicePoolObject create)
             throws ConflictException, ServiceException {
-        UUID newId = UUID.randomUUID();
-        Instant createdAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        Instant createdAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         DevicePoolObject newObject = DevicePoolObject.builder()
-                .id(newId.toString())
                 .createdAt(createdAt)
                 .updatedAt(createdAt)
                 .name(create.name())
                 .description(create.description())
-                .account(toPartitionKey(compositeKey))
+                .key(toPartitionKey(compositeKey))
                 .build();
         try {
             table.putItem(PutItemEnhancedRequest.builder(DevicePoolObject.class)
                     .item(newObject)
                     .conditionExpression(Expression.builder()
-                            .expression("attribute_not_exists(#id)")
+                            .expression("attribute_not_exists(#id) and #name <> :name")
                             .putExpressionName("#id", "PK")
+                            .putExpressionName("#name", "SK")
+                            .putExpressionValue(":name", AttributeValue.builder().s(create.name()).build())
                             .build())
                     .build());
             return newObject;
         } catch (ConditionalCheckFailedException e) {
-            LOGGER.warn("Failed to create pool for {} with id {}, because it already exists", compositeKey, newId, e);
-            throw new ConflictException("DevicePool with id " + newObject.id() + " already exists.");
+            LOGGER.warn("Failed to create pool for {} with name {}, because it already exists",
+                    compositeKey, create.name(), e);
+            throw new ConflictException("DevicePool with name " + newObject.name() + " already exists.");
         } catch (DynamoDbException e) {
-            LOGGER.error("Failed to create pool for {} with id {}", compositeKey, newId, e);
+            LOGGER.error("Failed to create pool for {} with name {}", compositeKey, create.name(), e);
             throw new ServiceException(e);
         }
     }
@@ -136,7 +134,30 @@ public class DevicePoolRepoDynamo implements DevicePoolRepo {
     @Override
     public DevicePoolObject update(CompositeKey compositeKey, UpdateDevicePoolObject update)
             throws NotFoundException, ServiceException {
-        return null;
+        try {
+            Instant updateTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+            return table.updateItem(UpdateItemEnhancedRequest.builder(DevicePoolObject.class)
+                    .ignoreNulls(true)
+                    .conditionExpression(Expression.builder()
+                            .expression("attribute_exists(#id) and #name = :name")
+                            .putExpressionName("#id", "PK")
+                            .putExpressionName("#name", "SK")
+                            .putExpressionValue(":name", AttributeValue.builder().s(update.name()).build())
+                            .build())
+                    .item(DevicePoolObject.builder()
+                            .name(update.name())
+                            .description(update.description())
+                            .key(toPartitionKey(compositeKey))
+                            .updatedAt(updateTime)
+                            .build())
+                    .build());
+        } catch (ConditionalCheckFailedException | ResourceNotFoundException e) {
+            LOGGER.warn("Failed check on update for {} - {}", compositeKey, update.name());
+            throw new NotFoundException("DevicePool with name " + update.name() + " was not found");
+        } catch (DynamoDbException e) {
+            LOGGER.error("Failed to update pool named {} for {} ", update.name(), compositeKey, e);
+            throw new ServiceException(e);
+        }
     }
 
     private CompositeKey toPartitionKey(CompositeKey key) {

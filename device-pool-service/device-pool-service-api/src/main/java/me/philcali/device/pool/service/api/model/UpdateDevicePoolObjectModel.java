@@ -9,9 +9,6 @@ import javax.annotation.Nullable;
 @Value.Immutable
 interface UpdateDevicePoolObjectModel {
     @Nullable
-    String id();
-
-    @Nullable
     String name();
 
     @Nullable

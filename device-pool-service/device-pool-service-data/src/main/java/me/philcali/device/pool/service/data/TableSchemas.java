@@ -11,6 +11,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticImmutableTableSchema;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -36,17 +37,14 @@ public class TableSchemas {
 
     public static TableSchema<DevicePoolObject> poolTableSchema() {
         return commonTable(DevicePoolObject.class, DevicePoolObject.Builder.class,
-                DevicePoolObject::account, DevicePoolObject.Builder::account,
-                DevicePoolObject::id, DevicePoolObject.Builder::id)
+                DevicePoolObject::key, DevicePoolObject.Builder::key,
+                DevicePoolObject::name, DevicePoolObject.Builder::name)
                 .newItemBuilder(DevicePoolObject::builder, DevicePoolObject.Builder::build)
-                .addAttribute(String.class, a -> a.name("name")
-                        .getter(DevicePoolObject::name)
-                        .setter(DevicePoolObject.Builder::name))
                 .addAttribute(String.class, a -> a.name("description")
                         .getter(DevicePoolObject::description)
                         .setter(DevicePoolObject.Builder::description))
                 .addAttribute(Long.class, a -> a.name("createdAt")
-                        .getter(pool -> pool.createdAt().getEpochSecond())
+                        .getter(pool -> Optional.ofNullable(pool.createdAt()).map(Instant::getEpochSecond).orElse(null))
                         .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
                 .addAttribute(Long.class, a -> a.name("updatedAt")
                         .getter(pool -> pool.updatedAt().getEpochSecond())

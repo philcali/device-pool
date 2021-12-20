@@ -8,9 +8,7 @@ import javax.annotation.Nullable;
 @ApiModel
 @Value.Immutable
 abstract class DevicePoolObjectModel implements Modifiable {
-    abstract CompositeKey account();
-
-    abstract String id();
+    abstract CompositeKey key();
 
     abstract String name();
 

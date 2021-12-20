@@ -1,14 +1,11 @@
 package me.philcali.device.pool.service.api.model;
 
-import org.immutables.value.Value;
-
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 interface Modifiable {
-    @Value.Default
-    default Instant createdAt() {
-        return Instant.now();
-    }
+    @Nullable
+    Instant createdAt();
 
     Instant updatedAt();
 }

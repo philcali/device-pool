@@ -103,7 +103,7 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         } catch (InvalidKeySpecException e) {
             LOGGER.error("Failed to generate secret for {}", owner, e);
             throw new TokenMarshallerException(e);
-        } catch (BadPaddingException e) {
+        } catch (BadPaddingException | IllegalArgumentException e) {
             LOGGER.debug("Failed to decrypt, likely due to an invalid key used {}", owner, e);
             throw new InvalidInputException(e);
         } catch (NoSuchAlgorithmException
@@ -119,12 +119,12 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         }
     }
 
-    private SecretKey generateSecret(CompositeKey owner) throws InvalidKeySpecException {
+    protected SecretKey generateSecret(CompositeKey owner) throws InvalidKeySpecException {
         KeySpec keySpec = new PBEKeySpec(owner.toString().toCharArray(), owner.toString().getBytes(), ITERATIONS, BITS);
         return new SecretKeySpec(secrets.generateSecret(keySpec).getEncoded(), KEY_SPEC);
     }
 
-    private String encrypt(byte[] input, SecretKey secret)
+    protected String encrypt(byte[] input, SecretKey secret)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secret, new IvParameterSpec(new byte[16]));
@@ -132,7 +132,7 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    private byte[] decrypt(String cipherText, SecretKey secret)
+    protected byte[] decrypt(String cipherText, SecretKey secret)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(new byte[16]));
