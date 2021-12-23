@@ -6,6 +6,7 @@ import dagger.Provides;
 import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
+import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.data.TableSchemas;
 import me.philcali.device.pool.service.data.token.EncryptedTokenMarshaller;
 import me.philcali.device.pool.service.data.token.TokenMarshaller;
@@ -66,5 +67,13 @@ class DynamoDBModule {
             @Named(TABLE_NAME) final String tableName,
             final DynamoDbEnhancedClient client) {
         return client.table(tableName, TableSchemas.deviceSchema());
+    }
+
+    @Provides
+    @Singleton
+    static DynamoDbTable<ProvisionObject> providesProvisionTable(
+            @Named(TABLE_NAME) final String tableName,
+            final DynamoDbEnhancedClient client) {
+        return client.table(tableName, TableSchemas.provisionTableSchema());
     }
 }

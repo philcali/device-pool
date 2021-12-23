@@ -57,10 +57,23 @@ public class TableSchemas {
         return commonTable(ProvisionObject.class, ProvisionObject.Builder.class,
                 ProvisionObject::key, ProvisionObject.Builder::key,
                 ProvisionObject::id, ProvisionObject.Builder::id)
+                .newItemBuilder(ProvisionObject::builder, ProvisionObject.Builder::build)
                 .addAttribute(Status.class, a -> a.name("status")
                         .getter(ProvisionObject::status)
                         .setter(ProvisionObject.Builder::status)
                         .attributeConverter(EnumAttributeConverter.create(Status.class)))
+                .addAttribute(String.class, a -> a.name("message")
+                        .getter(ProvisionObject::message)
+                        .setter(ProvisionObject.Builder::message))
+                .addAttribute(Long.class, a -> a.name("createdAt")
+                        .getter(p -> Optional.ofNullable(p.createdAt()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("updatedAt")
+                        .getter(p -> p.updatedAt().getEpochSecond())
+                        .setter((builder, value) -> builder.updatedAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("expiresIn")
+                        .getter(p -> Optional.ofNullable(p.expiresIn()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.expiresIn(Instant.ofEpochSecond(value))))
                 .build();
     }
 
@@ -90,13 +103,13 @@ public class TableSchemas {
                         .getter(DeviceObject::privateAddress)
                         .setter(DeviceObject.Builder::privateAddress))
                 .addAttribute(Long.class, a -> a.name("createdAt")
-                        .getter(pool -> Optional.ofNullable(pool.createdAt()).map(Instant::getEpochSecond).orElse(null))
+                        .getter(d -> Optional.ofNullable(d.createdAt()).map(Instant::getEpochSecond).orElse(null))
                         .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
                 .addAttribute(Long.class, a -> a.name("updatedAt")
                         .getter(pool -> pool.updatedAt().getEpochSecond())
                         .setter((builder, value) -> builder.updatedAt(Instant.ofEpochSecond(value))))
                 .addAttribute(Long.class, a -> a.name("expiresIn")
-                        .getter(pool -> Optional.ofNullable(pool.expiresIn()).map(Instant::getEpochSecond).orElse(null))
+                        .getter(d -> Optional.ofNullable(d.expiresIn()).map(Instant::getEpochSecond).orElse(null))
                         .setter((builder, value) -> builder.expiresIn(Instant.ofEpochSecond(value))))
                 .build();
     }

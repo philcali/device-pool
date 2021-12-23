@@ -27,6 +27,8 @@ import java.util.Optional;
 
 abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractObjectRepo.class);
+    protected static final String PK = "PK";
+    protected static final String SK = "SK";
     private final String resourceName;
     private final DynamoDbTable<T> table;
     private final TokenMarshaller marshaller;

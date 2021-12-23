@@ -6,6 +6,9 @@ import me.philcali.device.pool.model.ApiModel;
 import me.philcali.device.pool.model.Status;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+import java.time.Instant;
+
 @ApiModel
 @Value.Immutable
 @JsonSerialize(as = ProvisionObject.class)
@@ -16,4 +19,10 @@ abstract class ProvisionObjectModel implements Modifiable {
     abstract String id();
 
     abstract Status status();
+
+    @Nullable
+    abstract Instant expiresIn();
+
+    @Nullable
+    abstract String message();
 }

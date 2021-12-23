@@ -6,8 +6,6 @@ import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.UpdateDeviceObject;
 import me.philcali.device.pool.service.data.token.TokenMarshaller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
@@ -46,8 +44,8 @@ public class DeviceRepoDynamo
                 .item(newDevice)
                 .conditionExpression(Expression.builder()
                         .expression("attribute_not_exists(#key) and #id <> :id")
-                        .putExpressionName("#key", "PK")
-                        .putExpressionName("#id", "SK")
+                        .putExpressionName("#key", PK)
+                        .putExpressionName("#id", SK)
                         .putExpressionValue(":id", AttributeValue.builder().s(create.id()).build())
                         .build())
                 .build();
@@ -59,8 +57,8 @@ public class DeviceRepoDynamo
         return UpdateItemEnhancedRequest.builder(DeviceObject.class)
                 .conditionExpression(Expression.builder()
                         .expression("attribute_exists(#key) and #id = :id")
-                        .putExpressionName("#key", "PK")
-                        .putExpressionName("#id", "SK")
+                        .putExpressionName("#key", PK)
+                        .putExpressionName("#id", SK)
                         .putExpressionValue(":id", AttributeValue.builder().s(update.id()).build())
                         .build())
                 .ignoreNulls(true)
