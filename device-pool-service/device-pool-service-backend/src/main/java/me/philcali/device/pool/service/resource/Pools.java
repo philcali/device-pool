@@ -28,7 +28,7 @@ import javax.ws.rs.core.SecurityContext;
 @Path("/pools")
 @Produces(MediaType.APPLICATION_JSON)
 public class Pools {
-    private static final String ID = "poolId";
+    static final String ID = "poolId";
     private final DevicePoolRepo poolRepo;
 
     @Inject
@@ -40,6 +40,11 @@ public class Pools {
     @Path("/{" + ID + "}")
     public Response get(@Context SecurityContext context, @PathParam(ID) String poolId) {
         return Response.ok(poolRepo.get(CompositeKey.of(context.getUserPrincipal().getName()), poolId)).build();
+    }
+
+    @Path("/{" + ID + "}/devices")
+    public Class<Devices> devices() {
+        return Devices.class;
     }
 
     @GET

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Module;
 import dagger.Provides;
 import me.philcali.device.pool.service.api.exception.ServiceException;
+import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.data.TableSchemas;
 import me.philcali.device.pool.service.data.token.EncryptedTokenMarshaller;
@@ -57,5 +58,13 @@ class DynamoDBModule {
             @Named(TABLE_NAME) final String tableName,
             final DynamoDbEnhancedClient client) {
         return client.table(tableName, TableSchemas.poolTableSchema());
+    }
+
+    @Provides
+    @Singleton
+    static DynamoDbTable<DeviceObject> providesDeviceTable(
+            @Named(TABLE_NAME) final String tableName,
+            final DynamoDbEnhancedClient client) {
+        return client.table(tableName, TableSchemas.deviceSchema());
     }
 }

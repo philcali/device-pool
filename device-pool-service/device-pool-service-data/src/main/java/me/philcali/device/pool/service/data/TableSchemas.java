@@ -2,6 +2,7 @@ package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.model.CompositeKey;
+import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
@@ -74,6 +75,29 @@ public class TableSchemas {
                         .getter(ReservationObject::status)
                         .setter(ReservationObject.Builder::status)
                         .attributeConverter(EnumAttributeConverter.create(Status.class)))
+                .build();
+    }
+
+    public static TableSchema<DeviceObject> deviceSchema() {
+        return commonTable(DeviceObject.class, DeviceObject.Builder.class,
+                DeviceObject::key, DeviceObject.Builder::key,
+                DeviceObject::id, DeviceObject.Builder::id)
+                .newItemBuilder(DeviceObject::builder, DeviceObject.Builder::build)
+                .addAttribute(String.class, a -> a.name("publicAddress")
+                        .getter(DeviceObject::publicAddress)
+                        .setter(DeviceObject.Builder::publicAddress))
+                .addAttribute(String.class, a -> a.name("privateAddress")
+                        .getter(DeviceObject::privateAddress)
+                        .setter(DeviceObject.Builder::privateAddress))
+                .addAttribute(Long.class, a -> a.name("createdAt")
+                        .getter(pool -> Optional.ofNullable(pool.createdAt()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("updatedAt")
+                        .getter(pool -> pool.updatedAt().getEpochSecond())
+                        .setter((builder, value) -> builder.updatedAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("expiresIn")
+                        .getter(pool -> Optional.ofNullable(pool.expiresIn()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.expiresIn(Instant.ofEpochSecond(value))))
                 .build();
     }
 }
