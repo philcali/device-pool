@@ -12,10 +12,7 @@ import java.util.Objects;
 @ApiModel
 @Value.Immutable
 @JsonSerialize(as = DeviceObject.class)
-interface DeviceObjectModel extends Modifiable {
-    @JsonIgnore
-    CompositeKey key();
-
+interface DeviceObjectModel extends Modifiable, UniqueEntity {
     @Value.Default
     default String poolId() {
         // "ResourceName:id:Subresource"

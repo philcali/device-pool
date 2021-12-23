@@ -12,10 +12,7 @@ import java.time.Instant;
 @ApiModel
 @Value.Immutable
 @JsonSerialize(as = ProvisionObject.class)
-abstract class ProvisionObjectModel implements Modifiable {
-    @JsonIgnore
-    abstract CompositeKey key();
-
+abstract class ProvisionObjectModel implements Modifiable, UniqueEntity {
     abstract String id();
 
     abstract Status status();

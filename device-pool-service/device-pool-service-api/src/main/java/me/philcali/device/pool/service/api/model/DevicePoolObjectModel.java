@@ -10,10 +10,7 @@ import javax.annotation.Nullable;
 @ApiModel
 @Value.Immutable
 @JsonSerialize(as = DevicePoolObject.class)
-abstract class DevicePoolObjectModel implements Modifiable {
-    @JsonIgnore
-    abstract CompositeKey key();
-
+abstract class DevicePoolObjectModel implements Modifiable, UniqueEntity {
     abstract String name();
 
     @Nullable

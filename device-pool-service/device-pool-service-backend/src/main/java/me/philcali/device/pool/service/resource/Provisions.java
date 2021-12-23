@@ -1,11 +1,10 @@
 package me.philcali.device.pool.service.resource;
 
-
 import me.philcali.device.pool.service.api.DevicePoolRepo;
-import me.philcali.device.pool.service.api.DeviceRepo;
-import me.philcali.device.pool.service.api.model.CreateDeviceObject;
-import me.philcali.device.pool.service.api.model.DeviceObject;
-import me.philcali.device.pool.service.api.model.UpdateDeviceObject;
+import me.philcali.device.pool.service.api.ProvisionRepo;
+import me.philcali.device.pool.service.api.model.CreateProvisionObject;
+import me.philcali.device.pool.service.api.model.ProvisionObject;
+import me.philcali.device.pool.service.api.model.UpdateProvisionObject;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,21 +24,12 @@ import javax.ws.rs.core.SecurityContext;
 
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
-public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject, UpdateDeviceObject> {
-    private static final String ID = "deviceId";
+public class Provisions extends RepositoryResource<ProvisionObject, CreateProvisionObject, UpdateProvisionObject> {
+    static final String ID = "provisionId";
 
     @Inject
-    public Devices(final DeviceRepo devices, final DevicePoolRepo pools) {
-        super(devices, pools);
-    }
-
-    @GET
-    @Path("/{" + ID + "}")
-    public Response get(
-            @Context SecurityContext context,
-            @PathParam(Pools.ID) String poolId,
-            @PathParam(ID) String deviceId) {
-        return getItem(context, deviceId, poolId);
+    public Provisions(ProvisionRepo provisions, DevicePoolRepo pools) {
+        super(provisions, pools);
     }
 
     @GET
@@ -51,13 +41,13 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
         return listItems(context, limit, nextToken, poolId);
     }
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(
+    @GET
+    @Path("/{" + ID + "}")
+    public Response get(
             @Context SecurityContext context,
             @PathParam(Pools.ID) String poolId,
-            CreateDeviceObject create) {
-        return createItem(context, create, poolId);
+            @PathParam(ID) String provisionId) {
+        return getItem(context, provisionId, poolId);
     }
 
     @DELETE
@@ -65,21 +55,27 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
     public Response delete(
             @Context SecurityContext context,
             @PathParam(Pools.ID) String poolId,
-            @PathParam(ID) String deviceId) {
-        return deleteItem(context, deviceId, poolId);
+            @PathParam(ID) String provisionId) {
+        return deleteItem(context, provisionId, poolId);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response create(
+            @Context SecurityContext context,
+            @PathParam(Pools.ID) String poolId,
+            CreateProvisionObject create) {
+        return createItem(context, create, poolId);
     }
 
     @PUT
     @Path("/{" + ID + "}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response update(
             @Context SecurityContext context,
             @PathParam(Pools.ID) String poolId,
-            @PathParam(ID) String deviceId,
-            UpdateDeviceObject update) {
-        UpdateDeviceObject object = UpdateDeviceObject.builder()
-                .from(update)
-                .id(deviceId)
-                .build();
-        return updateItem(context, object, poolId);
+            @PathParam(ID) String provisionId,
+            UpdateProvisionObject update) {
+        return updateItem(context, UpdateProvisionObject.builder().from(update).id(provisionId).build(), poolId);
     }
 }

@@ -1,11 +1,8 @@
 package me.philcali.device.pool.service.resource;
 
 import me.philcali.device.pool.service.api.DevicePoolRepo;
-import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
-import me.philcali.device.pool.service.api.model.QueryParams;
-import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.UpdateDevicePoolObject;
 
 import javax.inject.Inject;
@@ -27,19 +24,18 @@ import javax.ws.rs.core.SecurityContext;
 @Singleton
 @Path("/pools")
 @Produces(MediaType.APPLICATION_JSON)
-public class Pools {
+public class Pools extends RepositoryResource<DevicePoolObject, CreateDevicePoolObject, UpdateDevicePoolObject> {
     static final String ID = "poolId";
-    private final DevicePoolRepo poolRepo;
 
     @Inject
     public Pools(DevicePoolRepo poolRepo) {
-        this.poolRepo = poolRepo;
+        super(poolRepo);
     }
 
     @GET
     @Path("/{" + ID + "}")
     public Response get(@Context SecurityContext context, @PathParam(ID) String poolId) {
-        return Response.ok(poolRepo.get(CompositeKey.of(context.getUserPrincipal().getName()), poolId)).build();
+        return getItem(context, poolId);
     }
 
     @Path("/{" + ID + "}/devices")
@@ -47,26 +43,23 @@ public class Pools {
         return Devices.class;
     }
 
+    @Path("/{" + ID + "}/provisions")
+    public Class<Provisions> provisions() {
+        return Provisions.class;
+    }
+
     @GET
     public Response list(
             @Context SecurityContext context,
             @QueryParam("limit") int limit,
             @QueryParam("nextToken") String nextToken) {
-        if (limit <= 0 || limit > DevicePoolRepo.MAX_ITEMS) {
-            limit = DevicePoolRepo.MAX_ITEMS;
-        }
-        QueryResults<DevicePoolObject> objects = poolRepo.list(CompositeKey.of(context.getUserPrincipal().getName()),
-                QueryParams.builder()
-                        .limit(limit)
-                        .nextToken(nextToken)
-                        .build());
-        return Response.ok(objects).build();
+        return listItems(context, limit, nextToken);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(@Context SecurityContext context, CreateDevicePoolObject input) {
-        return Response.ok(poolRepo.create(CompositeKey.of(context.getUserPrincipal().getName()), input)).build();
+        return createItem(context, input);
     }
 
     @PUT
@@ -76,14 +69,12 @@ public class Pools {
             @Context SecurityContext context,
             @PathParam(ID) String poolId,
             UpdateDevicePoolObject input) {
-        CompositeKey account = CompositeKey.of(context.getUserPrincipal().getName());
-        return Response.accepted(poolRepo.update(account, b -> b.from(input).name(poolId))).build();
+        return updateItem(context, UpdateDevicePoolObject.builder().from(input).name(poolId).build());
     }
 
     @DELETE
     @Path("/{" + ID + "}")
     public Response delete(@Context SecurityContext context, @PathParam(ID) String poolId) {
-        poolRepo.delete(CompositeKey.of(context.getUserPrincipal().getName()), poolId);
-        return Response.noContent().build();
+        return deleteItem(context, poolId);
     }
 }
