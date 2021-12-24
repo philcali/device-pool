@@ -6,20 +6,17 @@ import me.philcali.device.pool.model.Status;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 
 @ApiModel
 @Value.Immutable
-@JsonDeserialize(as = UpdateProvisionObject.class)
-interface UpdateProvisionObjectModel {
+@JsonDeserialize(as = UpdateReservationObject.class)
+interface UpdateReservationObjectModel {
     @Nullable
     String id();
 
+    @Nullable
     Status status();
 
     @Nullable
     String message();
-
-    @Nullable
-    Instant expiresIn();
 }

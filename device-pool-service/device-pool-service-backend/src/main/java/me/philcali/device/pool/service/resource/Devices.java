@@ -26,7 +26,7 @@ import javax.ws.rs.core.SecurityContext;
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
 public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject, UpdateDeviceObject> {
-    private static final String ID = "deviceId";
+    static final String ID = "deviceId";
 
     @Inject
     public Devices(final DeviceRepo devices, final DevicePoolRepo pools) {

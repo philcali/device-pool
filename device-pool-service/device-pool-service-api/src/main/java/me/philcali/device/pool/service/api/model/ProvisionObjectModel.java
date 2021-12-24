@@ -17,6 +17,8 @@ abstract class ProvisionObjectModel implements Modifiable, UniqueEntity {
 
     abstract Status status();
 
+    abstract int amount();
+
     @Nullable
     abstract Instant expiresIn();
 

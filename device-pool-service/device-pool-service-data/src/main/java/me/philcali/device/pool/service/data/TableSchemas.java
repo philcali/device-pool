@@ -62,6 +62,9 @@ public class TableSchemas {
                         .getter(ProvisionObject::status)
                         .setter(ProvisionObject.Builder::status)
                         .attributeConverter(EnumAttributeConverter.create(Status.class)))
+                .addAttribute(Integer.class, a -> a.name("amount")
+                        .getter(ProvisionObject::amount)
+                        .setter(ProvisionObject.Builder::amount))
                 .addAttribute(String.class, a -> a.name("message")
                         .getter(ProvisionObject::message)
                         .setter(ProvisionObject.Builder::message))
@@ -81,6 +84,7 @@ public class TableSchemas {
         return commonTable(ReservationObject.class, ReservationObject.Builder.class,
                 ReservationObject::key, ReservationObject.Builder::key,
                 ReservationObject::id, ReservationObject.Builder::id)
+                .newItemBuilder(ReservationObject::builder, ReservationObject.Builder::build)
                 .addAttribute(String.class, a -> a.name("deviceId")
                         .getter(ReservationObject::deviceId)
                         .setter(ReservationObject.Builder::deviceId))
@@ -88,6 +92,15 @@ public class TableSchemas {
                         .getter(ReservationObject::status)
                         .setter(ReservationObject.Builder::status)
                         .attributeConverter(EnumAttributeConverter.create(Status.class)))
+                .addAttribute(String.class, a -> a.name("message")
+                        .getter(ReservationObject::message)
+                        .setter(ReservationObject.Builder::message))
+                .addAttribute(Long.class, a -> a.name("createdAt")
+                        .getter(p -> Optional.ofNullable(p.createdAt()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("updatedAt")
+                        .getter(p -> p.updatedAt().getEpochSecond())
+                        .setter((builder, value) -> builder.updatedAt(Instant.ofEpochSecond(value))))
                 .build();
     }
 

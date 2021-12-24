@@ -32,6 +32,11 @@ public class Provisions extends RepositoryResource<ProvisionObject, CreateProvis
         super(provisions, pools);
     }
 
+    @Path("/{" + ID + "}/reservations")
+    public Class<Reservations> reservations() {
+        return Reservations.class;
+    }
+
     @GET
     public Response list(
             @Context SecurityContext context,

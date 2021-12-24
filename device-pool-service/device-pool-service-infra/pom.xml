@@ -77,6 +77,12 @@
             <artifactId>apigateway</artifactId>
             <version>${cdk.resource.version}</version>
         </dependency>
+        <!-- Step Functions for provisioning -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>stepfunctions</artifactId>
+            <version>${cdk.resource.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>software.constructs</groupId>
