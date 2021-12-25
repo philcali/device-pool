@@ -6,6 +6,7 @@ import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.UniqueEntity;
+import software.amazon.awssdk.arns.Arn;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -24,7 +25,11 @@ abstract class RepositoryResource<T, C, U> {
     }
 
     protected CompositeKey toKey(SecurityContext context, String...parentIds) {
-        CompositeKey account = CompositeKey.of(context.getUserPrincipal().getName());
+        String username = context.getUserPrincipal().getName();
+        if (username.startsWith("arn:")) {
+            username = Arn.fromString(username).accountId().orElse(username);
+        }
+        CompositeKey account = CompositeKey.of(username);
         for (int index = 0; index < parentIds.length; index++) {
             account = CompositeKey.builder()
                     .from(parents.get(index).get(account, parentIds[index]).key())
