@@ -14,4 +14,12 @@ interface CreateDevicePoolObjectModel {
 
     @Nullable
     String description();
+
+    @Value.Default
+    default DevicePoolType type() {
+        return DevicePoolType.MANAGED;
+    }
+
+    @Nullable
+    DevicePoolEndpoint endpoint();
 }

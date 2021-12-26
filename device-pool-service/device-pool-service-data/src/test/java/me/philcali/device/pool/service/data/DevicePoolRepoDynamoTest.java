@@ -9,7 +9,10 @@ import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpoint;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
+import me.philcali.device.pool.service.api.model.DevicePoolType;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.UpdateDevicePoolObject;
@@ -84,10 +87,18 @@ class DevicePoolRepoDynamoTest {
 
         DevicePoolObject devicePool = poolRepo.create(key, CreateDevicePoolObject.builder()
                 .name("TestDevicePool")
+                .type(DevicePoolType.UNMANAGED)
+                .endpoint(DevicePoolEndpoint.builder()
+                        .type(DevicePoolEndpointType.HTTP)
+                        .uri("http://example.com")
+                        .build())
                 .build());
 
         // Can't recreate an existing pool
         assertThrows(ConflictException.class, () -> poolRepo.create(key, c -> c.name(devicePool.name())));
+        // Can't have an unmanaged pool and no endpoint
+        assertThrows(InvalidInputException.class, () -> poolRepo.create(key, c -> c.name("DevicePoolUnmanaged")
+                .type(DevicePoolType.UNMANAGED)));
 
         assertEquals(key.account(), devicePool.key().account());
         assertEquals("TestDevicePool", devicePool.name());
@@ -103,7 +114,10 @@ class DevicePoolRepoDynamoTest {
         assertEquals("This is the description", updatedPool.description());
 
         // Can't update a non-existent pool
-        assertThrows(NotFoundException.class, () -> poolRepo.update(key, u -> u.name("DoesNotExists")));
+        assertThrows(InvalidInputException.class, () -> poolRepo.update(key, u -> u.name("DoesNotExists")));
+        // Can't change the pool type post creation
+        assertThrows(InvalidInputException.class, () -> poolRepo.update(key, u -> u.name(devicePool.name())
+                .type(DevicePoolType.MANAGED)));
 
         assertEquals(updatedPool, poolRepo.get(key, devicePool.name()));
 

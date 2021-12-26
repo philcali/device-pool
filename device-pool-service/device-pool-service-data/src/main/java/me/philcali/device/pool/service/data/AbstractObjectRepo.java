@@ -2,6 +2,7 @@ package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.service.api.ObjectRepository;
 import me.philcali.device.pool.service.api.exception.ConflictException;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
 import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
@@ -131,8 +132,8 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
             return table.updateItem(request);
         } catch (ConditionalCheckFailedException | ResourceNotFoundException e) {
             LOGGER.debug("The {} {} is not found for {}", resourceName, update, account, e);
-            throw new NotFoundException("The " + resourceName + " " + request.conditionExpression()
-                    .expressionValues().get(":id").s() + " is not found.");
+            throw new InvalidInputException("The " + resourceName + " " + request.conditionExpression()
+                    .expressionValues().get(":id").s() + " is invalid.");
         } catch (DynamoDbException e) {
             LOGGER.error("Failed to update {} for {}: {}", resourceName, account, update, e);
             throw new ServiceException(e);

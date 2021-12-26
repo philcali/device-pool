@@ -15,12 +15,16 @@ import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.GlobalSecondaryIndexProps;
 import software.amazon.awscdk.services.dynamodb.ProjectionType;
+import software.amazon.awscdk.services.dynamodb.StreamViewType;
 import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSource;
+import software.amazon.awscdk.services.lambda.eventsources.StreamEventSource;
+import software.amazon.awscdk.services.stepfunctions.StateMachine;
 import software.constructs.Construct;
 
 import java.util.Arrays;
@@ -33,14 +37,13 @@ public class DevicePoolInfrastructureStack extends Stack {
     public DevicePoolInfrastructureStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 
-
-
         Table table = Table.Builder.create(this, "DevicePoolTable")
                 .billingMode(BillingMode.PROVISIONED)
                 .readCapacity(1)
                 .writeCapacity(1)
                 .tableName("DeviceLab")
                 .timeToLiveAttribute("expiresIn")
+                .stream(StreamViewType.NEW_AND_OLD_IMAGES)
                 .partitionKey(Attribute.builder()
                         .name("PK")
                         .type(AttributeType.STRING)
@@ -120,5 +123,12 @@ public class DevicePoolInfrastructureStack extends Stack {
                         .allowOrigins(Collections.singletonList("*"))
                         .build())
                 .build();
+
+        StateMachine provisioningWorkflow = StateMachine.Builder.create(this, "ProvisioningWorkflow")
+                .timeout(Duration.hours(1))
+                .build();
+
+        provisioningWorkflow.addToRolePolicy(PolicyStatement.Builder.create()
+                .build());
     }
 }

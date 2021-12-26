@@ -15,4 +15,10 @@ interface UpdateDevicePoolObjectModel {
 
     @Nullable
     String description();
+
+    @Nullable
+    DevicePoolType type();
+
+    @Nullable
+    DevicePoolEndpoint endpoint();
 }

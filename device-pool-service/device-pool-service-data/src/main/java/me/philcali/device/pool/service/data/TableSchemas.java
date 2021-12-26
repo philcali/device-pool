@@ -3,9 +3,13 @@ package me.philcali.device.pool.service.data;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.DeviceObject;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpoint;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
+import me.philcali.device.pool.service.api.model.DevicePoolType;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
+import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.internal.converter.attribute.EnumAttributeConverter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.StaticAttributeTags;
@@ -36,11 +40,31 @@ public class TableSchemas {
                         .tags(StaticAttributeTags.primarySortKey()));
     }
 
+    private static TableSchema<DevicePoolEndpoint> endpoint() {
+        return StaticImmutableTableSchema.builder(DevicePoolEndpoint.class, DevicePoolEndpoint.Builder.class)
+                .newItemBuilder(DevicePoolEndpoint::builder, DevicePoolEndpoint.Builder::build)
+                .addAttribute(String.class, a -> a.name("uri")
+                        .getter(DevicePoolEndpoint::uri)
+                        .setter(DevicePoolEndpoint.Builder::uri))
+                .addAttribute(DevicePoolEndpointType.class, a -> a.name("type")
+                        .getter(DevicePoolEndpoint::type)
+                        .setter(DevicePoolEndpoint.Builder::type)
+                        .attributeConverter(EnumAttributeConverter.create(DevicePoolEndpointType.class)))
+                .build();
+    }
+
     public static TableSchema<DevicePoolObject> poolTableSchema() {
         return commonTable(DevicePoolObject.class, DevicePoolObject.Builder.class,
                 DevicePoolObject::key, DevicePoolObject.Builder::key,
                 DevicePoolObject::name, DevicePoolObject.Builder::name)
                 .newItemBuilder(DevicePoolObject::builder, DevicePoolObject.Builder::build)
+                .addAttribute(DevicePoolType.class, a -> a.name("type")
+                        .getter(DevicePoolObject::type)
+                        .setter(DevicePoolObject.Builder::type)
+                        .attributeConverter(EnumAttributeConverter.create(DevicePoolType.class)))
+                .addAttribute(EnhancedType.documentOf(DevicePoolEndpoint.class, endpoint()), a -> a.name("endpoint")
+                        .getter(DevicePoolObject::endpoint)
+                        .setter(DevicePoolObject.Builder::endpoint))
                 .addAttribute(String.class, a -> a.name("description")
                         .getter(DevicePoolObject::description)
                         .setter(DevicePoolObject.Builder::description))

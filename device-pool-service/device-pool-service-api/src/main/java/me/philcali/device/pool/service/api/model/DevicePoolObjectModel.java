@@ -15,4 +15,10 @@ abstract class DevicePoolObjectModel implements Modifiable, UniqueEntity {
 
     @Nullable
     abstract String description();
+
+    @Nullable
+    abstract DevicePoolType type();
+
+    @Nullable
+    abstract DevicePoolEndpoint endpoint();
 }
