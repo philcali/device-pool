@@ -25,7 +25,7 @@ import java.util.Optional;
 public class DevicePoolRepoDynamo
         extends AbstractObjectRepo<DevicePoolObject, CreateDevicePoolObject, UpdateDevicePoolObject>
         implements DevicePoolRepo {
-    private static final String RESOURCE = "pool";
+    public static final String RESOURCE = "pool";
 
     @Inject
     public DevicePoolRepoDynamo(

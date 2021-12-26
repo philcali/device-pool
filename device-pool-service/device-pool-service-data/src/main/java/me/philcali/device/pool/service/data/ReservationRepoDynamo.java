@@ -22,7 +22,7 @@ import java.time.temporal.ChronoUnit;
 public class ReservationRepoDynamo
         extends AbstractObjectRepo<ReservationObject, CreateReservationObject, UpdateReservationObject>
         implements ReservationRepo {
-    private static final String RESOURCE = "reservation";
+    public static final String RESOURCE = "reservation";
 
     @Inject
     public ReservationRepoDynamo(

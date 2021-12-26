@@ -22,7 +22,7 @@ import java.time.temporal.ChronoUnit;
 public class ProvisionRepoDynamo
         extends AbstractObjectRepo<ProvisionObject, CreateProvisionObject, UpdateProvisionObject>
         implements ProvisionRepo {
-    private static final String RESOURCE = "provision";
+    public static final String RESOURCE = "provision";
 
     @Inject
     public ProvisionRepoDynamo(final DynamoDbTable<ProvisionObject> table, final TokenMarshaller marshaller) {

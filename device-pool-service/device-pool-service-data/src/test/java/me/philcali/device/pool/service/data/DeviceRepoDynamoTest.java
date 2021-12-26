@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.philcali.device.pool.ddb.DynamoDBExtension;
 import me.philcali.device.pool.service.api.DeviceRepo;
 import me.philcali.device.pool.service.api.exception.ConflictException;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
 import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
@@ -62,7 +63,7 @@ class DeviceRepoDynamoTest {
                 .addResources("poolId")
                 .build();
 
-        assertThrows(NotFoundException.class, () -> devices.update(poolKey, UpdateDeviceObject.builder()
+        assertThrows(InvalidInputException.class, () -> devices.update(poolKey, UpdateDeviceObject.builder()
                 .id("ny-device")
                 .build()));
 

@@ -22,9 +22,12 @@ import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Runtime;
+import software.amazon.awscdk.services.lambda.StartingPosition;
 import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSource;
-import software.amazon.awscdk.services.lambda.eventsources.StreamEventSource;
+import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSourceProps;
+import software.amazon.awscdk.services.stepfunctions.IChainable;
 import software.amazon.awscdk.services.stepfunctions.StateMachine;
+import software.amazon.awscdk.services.stepfunctions.tasks.LambdaInvoke;
 import software.constructs.Construct;
 
 import java.util.Arrays;
@@ -33,6 +36,7 @@ import java.util.HashMap;
 import java.util.stream.IntStream;
 
 public class DevicePoolInfrastructureStack extends Stack {
+    private static final String VERSION = "1.0-SNAPSHOT";
 
     public DevicePoolInfrastructureStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
@@ -71,6 +75,18 @@ public class DevicePoolInfrastructureStack extends Stack {
                     .build());
         });
 
+        final PolicyStatement databaseInteractionPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                        "dynamodb:GetItem",
+                        "dynamodb:UpdateItem",
+                        "dynamodb:PutItem",
+                        "dynamodb:DeleteItem",
+                        "dynamodb:Query"
+                ))
+                .resources(Collections.singletonList(table.getTableArn()))
+                .build();
+
         final String serviceModule = "device-pool-service-backend";
         Function controlPlaneFunction = Function.Builder.create(this, "DeviceLabFunction")
                 .handler("me.philcali.device.pool.service.DevicePools::handleRequest")
@@ -81,20 +97,10 @@ public class DevicePoolInfrastructureStack extends Stack {
                 .memorySize(512)
                 .runtime(Runtime.JAVA_11)
                 .timeout(Duration.seconds(30))
-                .code(Code.fromAsset(String.format("../%s/target/%s-1.0-SNAPSHOT.jar", serviceModule, serviceModule)))
+                .code(Code.fromAsset(String.format("../%s/target/%s-%s.jar", serviceModule, serviceModule, VERSION)))
                 .build();
 
-        controlPlaneFunction.addToRolePolicy(PolicyStatement.Builder.create()
-                .effect(Effect.ALLOW)
-                .actions(Arrays.asList(
-                        "dynamodb:GetItem",
-                        "dynamodb:UpdateItem",
-                        "dynamodb:PutItem",
-                        "dynamodb:DeleteItem",
-                        "dynamodb:Query"
-                ))
-                .resources(Collections.singletonList(table.getTableArn()))
-                .build());
+        controlPlaneFunction.addToRolePolicy(databaseInteractionPolicy);
 
         LambdaRestApi api = LambdaRestApi.Builder.create(this, "DeviceLabService")
                 .handler(controlPlaneFunction)
@@ -124,11 +130,53 @@ public class DevicePoolInfrastructureStack extends Stack {
                         .build())
                 .build();
 
+
+
+        final String eventsModule = "device-pool-service-events";
+        final Code event = Code.fromAsset(String.format("../%s/target/%s-%s.jar", eventsModule, eventsModule, VERSION));
+        Function createReservationFunction = Function.Builder.create(this, "CreateReservationFunction")
+                .handler("me.philcali.device.pool.service.DevicePoolEvents::createReservationStep")
+                .environment(new HashMap<String, String>() {{
+                    put("TABLE_NAME", table.getTableName());
+                }})
+                .memorySize(512)
+                .runtime(Runtime.JAVA_11)
+                .timeout(Duration.minutes(5))
+                .code(event)
+                .build();
+        createReservationFunction.addToRolePolicy(databaseInteractionPolicy);
+
+        LambdaInvoke createReservationStep = LambdaInvoke.Builder.create(this, "CreateReservationStep")
+                .lambdaFunction(createReservationFunction)
+                .retryOnServiceExceptions(true)
+                .build();
+
         StateMachine provisioningWorkflow = StateMachine.Builder.create(this, "ProvisioningWorkflow")
+                .definition(createReservationStep)
                 .timeout(Duration.hours(1))
                 .build();
 
-        provisioningWorkflow.addToRolePolicy(PolicyStatement.Builder.create()
+        Function eventsFunction = Function.Builder.create(this, "DeviceLabEvents")
+                .handler("me.philcali.device.pool.service.DevicePoolEvents::handleProvisionCreation")
+                .environment(new HashMap<String, String>() {{
+                    put("WORKFLOW_ID", provisioningWorkflow.getStateMachineArn());
+                }})
+                .memorySize(512)
+                .timeout(Duration.minutes(5))
+                .runtime(Runtime.JAVA_11)
+                .code(event)
+                .build();
+
+        eventsFunction.addToRolePolicy(PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Collections.singletonList("states:StartExecution"))
+                .resources(Collections.singletonList(provisioningWorkflow.getStateMachineArn()))
                 .build());
+
+        eventsFunction.addEventSource(new DynamoEventSource(table, DynamoEventSourceProps.builder()
+                .enabled(true)
+                .batchSize(100)
+                .startingPosition(StartingPosition.TRIM_HORIZON)
+                .build()));
     }
 }

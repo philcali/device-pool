@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 public class DeviceRepoDynamo
         extends AbstractObjectRepo<DeviceObject, CreateDeviceObject, UpdateDeviceObject>
         implements DeviceRepo {
-    private static final String RESOURCE = "device";
+    public static final String RESOURCE = "device";
 
     @Inject
     public DeviceRepoDynamo(

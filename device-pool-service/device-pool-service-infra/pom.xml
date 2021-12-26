@@ -100,6 +100,18 @@
             <version>${constructs.version}</version>
         </dependency>
 
+        <!-- included to trigger verification after building -->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-service-backend</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-service-events</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
             <artifactId>assertions</artifactId>
