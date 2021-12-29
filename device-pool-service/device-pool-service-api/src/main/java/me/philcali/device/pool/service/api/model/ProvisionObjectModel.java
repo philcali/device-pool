@@ -13,7 +13,20 @@ import java.time.Instant;
 @Value.Immutable
 @JsonSerialize(as = ProvisionObject.class)
 abstract class ProvisionObjectModel implements Modifiable, UniqueEntity {
-    abstract String id();
+    @JsonIgnore
+    @Value.Default
+    CompositeKey poolKey() {
+        return CompositeKey.builder()
+                .account(key().account())
+                .resources(key().resources().subList(0, 1))
+                .build();
+    }
+
+    @Value.Default
+    String poolId() {
+        // "ResourceName:id:Subresource"
+        return key().resources().get(key().resources().size() - 2);
+    }
 
     abstract Status status();
 

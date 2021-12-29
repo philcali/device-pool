@@ -13,6 +13,12 @@ import javax.annotation.Nullable;
 abstract class DevicePoolObjectModel implements Modifiable, UniqueEntity {
     abstract String name();
 
+    @JsonIgnore
+    @Override
+    public String id() {
+        return name();
+    }
+
     @Nullable
     abstract String description();
 

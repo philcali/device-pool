@@ -1,5 +1,6 @@
 package me.philcali.device.pool.service;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.OperationType;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.Record;
@@ -9,12 +10,16 @@ import me.philcali.device.pool.service.data.TableSchemas;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
 import me.philcali.device.pool.service.module.DaggerDevicePoolEventComponent;
 import me.philcali.device.pool.service.module.DevicePoolEventComponent;
+import me.philcali.device.pool.service.workflow.WorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -82,5 +87,20 @@ public class DevicePoolEvents {
                         LOGGER.error("Failed to start workflow for {}", provision, e);
                     }
                 });
+    }
+
+    private <T, O> void handleStep(InputStream in, OutputStream out, Class<T> payloadClass, WorkflowStep<T, O> step) {
+        try {
+            final T result = component.mapper().readValue(in, payloadClass);
+            final O executionResult = step.execute(result);
+            component.mapper().writeValue(out, executionResult);
+        } catch (IOException | WorkflowExecutionException e) {
+            LOGGER.error("Failed to handle JSON payload for {}", payloadClass, e);
+        }
+    }
+
+    public void createReservationStep(InputStream input, OutputStream output, Context context) {
+        context.getLogger().log("Create Reservation Step is invoked");
+        handleStep(input, output, ProvisionObject.class, component.createReservationStep());
     }
 }

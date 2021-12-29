@@ -19,8 +19,13 @@ interface DeviceObjectModel extends Modifiable, UniqueEntity {
         return key().resources().get(key().resources().size() - 2);
     }
 
-    default boolean expires() {
-        return Objects.nonNull(expiresIn());
+    @Value.Default
+    @JsonIgnore
+    default CompositeKey poolKey() {
+        return CompositeKey.builder()
+                .account(key().account())
+                .resources(key().resources().subList(0, 1))
+                .build();
     }
 
     String id();

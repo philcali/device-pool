@@ -25,14 +25,23 @@ import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.lambda.StartingPosition;
 import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSource;
 import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSourceProps;
+import software.amazon.awscdk.services.stepfunctions.CatchProps;
+import software.amazon.awscdk.services.stepfunctions.Choice;
+import software.amazon.awscdk.services.stepfunctions.Condition;
 import software.amazon.awscdk.services.stepfunctions.IChainable;
 import software.amazon.awscdk.services.stepfunctions.StateMachine;
+import software.amazon.awscdk.services.stepfunctions.Wait;
+import software.amazon.awscdk.services.stepfunctions.WaitProps;
+import software.amazon.awscdk.services.stepfunctions.WaitTime;
 import software.amazon.awscdk.services.stepfunctions.tasks.LambdaInvoke;
 import software.constructs.Construct;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DevicePoolInfrastructureStack extends Stack {
@@ -99,7 +108,6 @@ public class DevicePoolInfrastructureStack extends Stack {
                 .timeout(Duration.seconds(30))
                 .code(Code.fromAsset(String.format("../%s/target/%s-%s.jar", serviceModule, serviceModule, VERSION)))
                 .build();
-
         controlPlaneFunction.addToRolePolicy(databaseInteractionPolicy);
 
         LambdaRestApi api = LambdaRestApi.Builder.create(this, "DeviceLabService")
@@ -130,29 +138,59 @@ public class DevicePoolInfrastructureStack extends Stack {
                         .build())
                 .build();
 
-
-
         final String eventsModule = "device-pool-service-events";
         final Code event = Code.fromAsset(String.format("../%s/target/%s-%s.jar", eventsModule, eventsModule, VERSION));
-        Function createReservationFunction = Function.Builder.create(this, "CreateReservationFunction")
-                .handler("me.philcali.device.pool.service.DevicePoolEvents::createReservationStep")
-                .environment(new HashMap<String, String>() {{
-                    put("TABLE_NAME", table.getTableName());
-                }})
-                .memorySize(512)
-                .runtime(Runtime.JAVA_11)
-                .timeout(Duration.minutes(5))
-                .code(event)
-                .build();
-        createReservationFunction.addToRolePolicy(databaseInteractionPolicy);
+        final List<String> lambdaSteps = Arrays.asList(
+                "startProvision",
+                "createReservation",
+                "obtainDevices",
+                "failProvision",
+                "finishProvision"
+        );
+        final Map<String, LambdaInvoke> invokeSteps = lambdaSteps.stream()
+                .collect(Collectors.toMap(
+                        java.util.function.Function.identity(),
+                        stepName -> {
+                            Function stepFunction = Function.Builder.create(this, stepName + "Function")
+                                    .handler("me.philcali.device.pool.service.DevicePoolEvents::" + stepName + "Step")
+                                    .environment(new HashMap<String, String>() {{
+                                        put("TABLE_NAME", table.getTableName());
+                                    }})
+                                    .memorySize(512)
+                                    .runtime(Runtime.JAVA_11)
+                                    .timeout(Duration.minutes(5))
+                                    .code(event)
+                                    .build();
+                            stepFunction.addToRolePolicy(databaseInteractionPolicy);
 
-        LambdaInvoke createReservationStep = LambdaInvoke.Builder.create(this, "CreateReservationStep")
-                .lambdaFunction(createReservationFunction)
-                .retryOnServiceExceptions(true)
-                .build();
+                            return LambdaInvoke.Builder.create(this, stepName + "Step")
+                                    .lambdaFunction(stepFunction)
+                                    .retryOnServiceExceptions(true)
+                                    .build();
+                        }));
+
+        // Attach catch to all invoke steps
+        invokeSteps.entrySet().stream()
+                .filter(e -> !e.getKey().equals("failProvision"))
+                .forEach(entry -> entry.getValue().addCatch(invokeSteps.get("failProvision")));
+
+        Wait waitTime = new Wait(this, "waitLoop", WaitProps.builder()
+                .time(WaitTime.duration(Duration.seconds(5)))
+                .build());
+
+        // Scale loop for unmanaged pools
+        IChainable scaleLoop = invokeSteps.get("obtainDevices")
+                .next(new Choice(this, "Is Done?")
+                        .when(Condition.booleanEquals("$.done", true), invokeSteps.get("finishProvision"))
+                        .otherwise(waitTime.next(invokeSteps.get("obtainDevices"))));
+
+        // Entire definition
+        IChainable definition = new Choice(this, "Is Managed?")
+                .when(Condition.stringEquals("$.type", "UNMANAGED"), scaleLoop)
+                .otherwise(invokeSteps.get("createReservation"));
 
         StateMachine provisioningWorkflow = StateMachine.Builder.create(this, "ProvisioningWorkflow")
-                .definition(createReservationStep)
+                .definition(definition)
                 .timeout(Duration.hours(1))
                 .build();
 

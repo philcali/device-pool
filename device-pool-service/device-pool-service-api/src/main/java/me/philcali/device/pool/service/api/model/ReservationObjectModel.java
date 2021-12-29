@@ -12,7 +12,27 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @JsonSerialize(as = ReservationObject.class)
 abstract class ReservationObjectModel implements Modifiable, UniqueEntity {
-    abstract String id();
+    @JsonIgnore
+    public CompositeKey deviceKey() {
+        return CompositeKey.builder()
+                .account(key().account())
+                .addResources(deviceId())
+                .build();
+    }
+
+    @JsonIgnore
+    @Value.Default
+    CompositeKey poolKey() {
+        return CompositeKey.builder()
+                .account(key().account())
+                .resources(key().resources().subList(0, 1))
+                .build();
+    }
+
+    @Value.Default
+    String poolId() {
+        return key().resources().get(key().resources().size() - 4);
+    }
 
     @Nullable
     abstract String deviceId();
