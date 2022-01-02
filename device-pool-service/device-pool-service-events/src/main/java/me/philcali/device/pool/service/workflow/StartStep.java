@@ -1,9 +1,9 @@
 package me.philcali.device.pool.service.workflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.exception.RetryableException;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
+import me.philcali.device.pool.service.model.WorkflowState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sfn.SfnClient;
@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 
 @Singleton
-public class StartStep implements WorkflowStep<ProvisionObject, String> {
+public class StartStep implements WorkflowStep<WorkflowState, String> {
     private static final Logger LOGGER = LoggerFactory.getLogger(StartStep.class);
     private final String workflowId;
     private final SfnClient states;
@@ -35,7 +35,7 @@ public class StartStep implements WorkflowStep<ProvisionObject, String> {
     }
 
     @Override
-    public String execute(ProvisionObject input) throws WorkflowExecutionException, RetryableException {
+    public String execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         try {
             final StartExecutionResponse response = states.startExecution(StartExecutionRequest.builder()
                     .stateMachineArn(workflowId)

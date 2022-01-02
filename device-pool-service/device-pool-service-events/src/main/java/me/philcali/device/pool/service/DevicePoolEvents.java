@@ -8,6 +8,7 @@ import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.data.ProvisionRepoDynamo;
 import me.philcali.device.pool.service.data.TableSchemas;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
+import me.philcali.device.pool.service.model.WorkflowState;
 import me.philcali.device.pool.service.module.DaggerDevicePoolEventComponent;
 import me.philcali.device.pool.service.module.DevicePoolEventComponent;
 import me.philcali.device.pool.service.workflow.WorkflowStep;
@@ -70,6 +71,11 @@ public class DevicePoolEvents {
                         value -> convertAttribute(value.getValue())));
     }
 
+    /**
+     * Kicks off the provision workflow for both managed and unmanaged device pools.
+     *
+     * @param event DynamoDB entry representing a creation event
+     */
     public void handleProvisionCreation(final DynamodbEvent event) {
         TableSchema<ProvisionObject> provisionSchema = TableSchemas.provisionTableSchema();
         event.getRecords().stream()
@@ -78,13 +84,14 @@ public class DevicePoolEvents {
                 .peek(record -> LOGGER.debug("Found provision insert: {}", record))
                 .map(this::convertAttributes)
                 .map(provisionSchema::mapToItem)
-                .forEach(provision -> {
+                .map(provision -> WorkflowState.of(provision.key(), provision))
+                .forEach(state -> {
                     try {
-                        String executionId = component.startProvisioning().execute(provision);
+                        String executionId = component.startProvisioning().execute(state);
                         LOGGER.info("Started execution {}", executionId);
                     } catch (WorkflowExecutionException e) {
                         // TODO: handle this better
-                        LOGGER.error("Failed to start workflow for {}", provision, e);
+                        LOGGER.error("Failed to start workflow for {}", state, e);
                     }
                 });
     }
@@ -99,8 +106,55 @@ public class DevicePoolEvents {
         }
     }
 
+    /**
+     * Maps to create manual reservations step.
+     *
+     * @param input Lambda input payload
+     * @param output Lambda output payload
+     * @param context Lambda function invoke context
+     */
     public void createReservationStep(InputStream input, OutputStream output, Context context) {
         context.getLogger().log("Create Reservation Step is invoked");
-        handleStep(input, output, ProvisionObject.class, component.createReservationStep());
+        handleStep(input, output, WorkflowState.class, component.createReservationStep());
+    }
+
+    /**
+     * Flags a provision object that it is now provisioning.
+     *
+     * @param input Lambda input payload
+     * @param output Lambda output payload
+     * @param context Lambda function invoke context
+     */
+    public void startProvisionStep(InputStream input, OutputStream output, Context context) {
+        context.getLogger().log("Start Provision Step is invoked");
+        handleStep(input, output, WorkflowState.class, component.startProvisionStep());
+    }
+
+    /**
+     * Terminates a workflow using any error or success condition.
+     *
+     * @param input Lambda input payload
+     * @param output Lambda output payload
+     * @param context Lambda function invoke context
+     */
+    public void finishProvisionStep(InputStream input, OutputStream output, Context context) {
+        context.getLogger().log("Finsih Provision Step is invoked");
+        handleStep(input, output, WorkflowState.class, component.finishProvisionStep());
+    }
+
+    /**
+     * Forces a workflow failure in the catch-all cases.
+     *
+     * @param input Lambda input payload
+     * @param output Lambda output payload
+     * @param context Lambda function invoke context
+     */
+    public void failProvisionStep(InputStream input, OutputStream output, Context context) {
+        context.getLogger().log("Fail Provision Step is invoked");
+        handleStep(input, output, WorkflowState.class, component.failProvisionStep());
+    }
+
+    public void obtainDevicesStep(InputStream input, OutputStream output, Context context) {
+
     }
 }

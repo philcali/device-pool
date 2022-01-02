@@ -105,11 +105,13 @@
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>device-pool-service-backend</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>device-pool-service-events</artifactId>
             <version>${project.parent.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

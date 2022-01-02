@@ -172,7 +172,9 @@ public class DevicePoolInfrastructureStack extends Stack {
         // Attach catch to all invoke steps
         invokeSteps.entrySet().stream()
                 .filter(e -> !e.getKey().equals("failProvision"))
-                .forEach(entry -> entry.getValue().addCatch(invokeSteps.get("failProvision")));
+                .forEach(entry -> entry.getValue().addCatch(invokeSteps.get("failProvision"), CatchProps.builder()
+                        .resultPath("$.error")
+                        .build()));
 
         Wait waitTime = new Wait(this, "waitLoop", WaitProps.builder()
                 .time(WaitTime.duration(Duration.seconds(5)))
@@ -185,9 +187,11 @@ public class DevicePoolInfrastructureStack extends Stack {
                         .otherwise(waitTime.next(invokeSteps.get("obtainDevices"))));
 
         // Entire definition
-        IChainable definition = new Choice(this, "Is Managed?")
-                .when(Condition.stringEquals("$.type", "UNMANAGED"), scaleLoop)
-                .otherwise(invokeSteps.get("createReservation"));
+        IChainable definition = invokeSteps.get("startProvision")
+                .next(new Choice(this, "Is Managed?")
+                        .when(Condition.stringEquals("$.type", "UNMANAGED"), scaleLoop)
+                        .otherwise(invokeSteps.get("createReservation")
+                                .next(invokeSteps.get("finishProvision"))));
 
         StateMachine provisioningWorkflow = StateMachine.Builder.create(this, "ProvisioningWorkflow")
                 .definition(definition)
