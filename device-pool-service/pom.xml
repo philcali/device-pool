@@ -28,5 +28,6 @@
         <module>device-pool-service-backend</module>
         <module>device-pool-service-local</module>
         <module>device-pool-service-events</module>
+        <module>device-pool-service-rpc</module>
     </modules>
 </project>
