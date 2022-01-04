@@ -15,7 +15,10 @@ import javax.inject.Singleton;
         JacksonModule.class,
         WorkflowModule.class,
         DynamoDBModule.class,
-        ApplicationModule.class
+        ApplicationModule.class,
+        HttpModule.class,
+        LambdaModule.class,
+        DevicePoolClientModule.class
 })
 @Singleton
 public interface DevicePoolEventComponent {

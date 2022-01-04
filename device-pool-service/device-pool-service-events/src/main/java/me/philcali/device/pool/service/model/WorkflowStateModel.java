@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import me.philcali.device.pool.model.ApiModel;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.model.CompositeKey;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpoint;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import org.immutables.value.Value;
 
@@ -17,6 +18,9 @@ abstract class WorkflowStateModel {
     abstract CompositeKey key();
 
     abstract ProvisionObject provision();
+
+    @Nullable
+    abstract DevicePoolEndpoint endpoint();
 
     @Value.Default
     boolean done() {

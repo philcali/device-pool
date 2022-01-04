@@ -1,7 +1,6 @@
 package me.philcali.device.pool.service.rpc.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.auto.service.AutoService;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.rpc.DevicePoolClient;
 import me.philcali.device.pool.service.rpc.exception.RemoteServiceException;
@@ -20,7 +19,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
-@AutoService(DevicePoolClient.class)
 public class DevicePoolClientHttp implements DevicePoolClient {
     private static final Logger LOGGER = LogManager.getLogger(DevicePoolClientHttp.class);
     private final HttpClient client;
@@ -32,10 +30,6 @@ public class DevicePoolClientHttp implements DevicePoolClient {
             final ObjectMapper mapper) {
         this.client = client;
         this.mapper = mapper;
-    }
-
-    public DevicePoolClientHttp() {
-        this(HttpClient.newHttpClient(), new ObjectMapper());
     }
 
     @Override

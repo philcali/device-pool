@@ -1,6 +1,10 @@
 package me.philcali.device.pool.service.workflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.philcali.device.pool.service.api.DevicePoolRepo;
+import me.philcali.device.pool.service.api.exception.NotFoundException;
+import me.philcali.device.pool.service.api.model.CompositeKey;
+import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.exception.RetryableException;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
 import me.philcali.device.pool.service.model.WorkflowState;
@@ -23,26 +27,36 @@ public class StartStep implements WorkflowStep<WorkflowState, String> {
     private final String workflowId;
     private final SfnClient states;
     private final ObjectMapper mapper;
+    private final DevicePoolRepo poolRepo;
 
     @Inject
     StartStep(
             @Named(Constants.WORKFLOW_ID) String workflowId,
             SfnClient states,
+            DevicePoolRepo poolRepo,
             ObjectMapper mapper) {
         this.workflowId = workflowId;
         this.states = states;
+        this.poolRepo = poolRepo;
         this.mapper = mapper;
     }
 
     @Override
     public String execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         try {
+            DevicePoolObject pool = poolRepo.get(CompositeKey.of(input.key().account()), input.provision().poolId());
             final StartExecutionResponse response = states.startExecution(StartExecutionRequest.builder()
                     .stateMachineArn(workflowId)
-                    .input(mapper.writeValueAsString(input))
+                    .input(mapper.writeValueAsString(WorkflowState.builder()
+                            .from(input)
+                            .endpoint(pool.endpoint())
+                            .build()))
                     .build());
             LOGGER.info("Created a new execution for {}: {}", input, response.executionArn());
             return response.executionArn();
+        } catch (NotFoundException e) {
+            LOGGER.warn("Failed to get pool {}", input.provision().poolId());
+            return input.provision().poolId();
         } catch (IOException ie) {
             LOGGER.error("Failed to serialize {}", input, ie);
             throw new WorkflowExecutionException(ie);

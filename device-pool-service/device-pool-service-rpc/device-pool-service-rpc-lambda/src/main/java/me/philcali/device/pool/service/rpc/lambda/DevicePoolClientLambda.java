@@ -1,7 +1,6 @@
 package me.philcali.device.pool.service.rpc.lambda;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.auto.service.AutoService;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.rpc.DevicePoolClient;
 import me.philcali.device.pool.service.rpc.exception.RemoteServiceException;
@@ -21,7 +20,6 @@ import software.amazon.awssdk.services.lambda.model.LogType;
 import javax.inject.Inject;
 import java.io.IOException;
 
-@AutoService(DevicePoolClient.class)
 public class DevicePoolClientLambda implements DevicePoolClient {
     private static final Logger LOGGER = LogManager.getLogger(DevicePoolClientLambda.class);
     private final LambdaClient lambda;
@@ -33,10 +31,6 @@ public class DevicePoolClientLambda implements DevicePoolClient {
             final ObjectMapper mapper) {
         this.lambda = lambda;
         this.mapper = mapper;
-    }
-
-    public DevicePoolClientLambda() {
-        this(LambdaClient.create(), new ObjectMapper());
     }
 
     @Override
