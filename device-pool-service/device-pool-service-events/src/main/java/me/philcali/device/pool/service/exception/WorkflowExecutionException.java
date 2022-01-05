@@ -6,4 +6,8 @@ public class WorkflowExecutionException extends Exception {
     public WorkflowExecutionException(Throwable ex) {
         super(ex);
     }
+
+    public WorkflowExecutionException(String message) {
+        super(message);
+    }
 }

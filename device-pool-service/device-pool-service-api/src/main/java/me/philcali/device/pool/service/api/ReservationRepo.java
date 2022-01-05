@@ -6,5 +6,4 @@ import me.philcali.device.pool.service.api.model.UpdateReservationObject;
 
 public interface ReservationRepo
         extends ObjectRepository<ReservationObject, CreateReservationObject, UpdateReservationObject> {
-    int MAX_ITEMS = 100;
 }

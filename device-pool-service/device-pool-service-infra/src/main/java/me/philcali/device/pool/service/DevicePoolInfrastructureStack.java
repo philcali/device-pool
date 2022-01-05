@@ -99,7 +99,7 @@ public class DevicePoolInfrastructureStack extends Stack {
         final String serviceModule = "device-pool-service-backend";
         Function controlPlaneFunction = Function.Builder.create(this, "DeviceLabFunction")
                 .handler("me.philcali.device.pool.service.DevicePools::handleRequest")
-                .environment(new HashMap<String, String>() {{
+                .environment(new HashMap<>() {{
                     put("TABLE_NAME", table.getTableName());
                     put("API_VERSION", "V1");
                 }})
@@ -153,7 +153,7 @@ public class DevicePoolInfrastructureStack extends Stack {
                         stepName -> {
                             Function stepFunction = Function.Builder.create(this, stepName + "Function")
                                     .handler("me.philcali.device.pool.service.DevicePoolEvents::" + stepName + "Step")
-                                    .environment(new HashMap<String, String>() {{
+                                    .environment(new HashMap<>() {{
                                         put("TABLE_NAME", table.getTableName());
                                     }})
                                     .memorySize(512)
@@ -189,7 +189,7 @@ public class DevicePoolInfrastructureStack extends Stack {
         // Entire definition
         IChainable definition = invokeSteps.get("startProvision")
                 .next(new Choice(this, "Is Managed?")
-                        .when(Condition.stringEquals("$.type", "UNMANAGED"), scaleLoop)
+                        .when(Condition.stringEquals("$.poolType", "UNMANAGED"), scaleLoop)
                         .otherwise(invokeSteps.get("createReservation")
                                 .next(invokeSteps.get("finishProvision"))));
 
@@ -200,7 +200,8 @@ public class DevicePoolInfrastructureStack extends Stack {
 
         Function eventsFunction = Function.Builder.create(this, "DeviceLabEvents")
                 .handler("me.philcali.device.pool.service.DevicePoolEvents::handleProvisionCreation")
-                .environment(new HashMap<String, String>() {{
+                .environment(new HashMap<>() {{
+                    put("TABLE_NAME", table.getTableName());
                     put("WORKFLOW_ID", provisioningWorkflow.getStateMachineArn());
                 }})
                 .memorySize(512)

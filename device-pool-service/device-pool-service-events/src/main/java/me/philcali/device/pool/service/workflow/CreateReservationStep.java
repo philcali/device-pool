@@ -15,12 +15,14 @@ import me.philcali.device.pool.service.exception.WorkflowExecutionException;
 import me.philcali.device.pool.service.model.WorkflowState;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Singleton
 public class CreateReservationStep implements WorkflowStep<WorkflowState, WorkflowState> {
     private final ReservationRepo reservationRepo;
     private final DeviceRepo deviceRepo;
@@ -47,10 +49,7 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
 
     @Override
     public WorkflowState execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
-        List<DeviceObject> devices = deviceRepo.list(input.provision().poolKey(), QueryParams.builder()
-                .limit(input.provision().amount())
-                .build())
-                .results();
+        List<DeviceObject> devices = listAll(input.provision().poolKey(), deviceRepo);
         Map<String, ReservationObject> reservations = provisionalReservations(input.provision());
         if (devices.size() < input.provision().amount() - reservations.size()) {
             return input.fail("Requesting " + input.provision().amount()

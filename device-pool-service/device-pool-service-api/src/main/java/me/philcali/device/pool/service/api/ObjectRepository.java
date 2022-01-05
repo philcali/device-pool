@@ -8,6 +8,8 @@ import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 
 public interface ObjectRepository<T, C, U> {
+    int MAX_ITEMS = 100;
+
     T get(CompositeKey account, String id) throws NotFoundException, ServiceException;
 
     QueryResults<T> list(CompositeKey account, QueryParams params) throws ServiceException;

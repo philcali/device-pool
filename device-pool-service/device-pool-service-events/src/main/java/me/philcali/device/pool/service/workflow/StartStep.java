@@ -11,6 +11,7 @@ import me.philcali.device.pool.service.model.WorkflowState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sfn.SfnClient;
+import software.amazon.awssdk.services.sfn.model.ExecutionLimitExceededException;
 import software.amazon.awssdk.services.sfn.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.sfn.model.SfnException;
 import software.amazon.awssdk.services.sfn.model.StartExecutionRequest;
@@ -49,6 +50,7 @@ public class StartStep implements WorkflowStep<WorkflowState, String> {
                     .stateMachineArn(workflowId)
                     .input(mapper.writeValueAsString(WorkflowState.builder()
                             .from(input)
+                            .poolType(pool.type())
                             .endpoint(pool.endpoint())
                             .build()))
                     .build());
@@ -56,16 +58,23 @@ public class StartStep implements WorkflowStep<WorkflowState, String> {
             return response.executionArn();
         } catch (NotFoundException e) {
             LOGGER.warn("Failed to get pool {}", input.provision().poolId());
-            return input.provision().poolId();
+            throw new WorkflowExecutionException(e);
         } catch (IOException ie) {
             LOGGER.error("Failed to serialize {}", input, ie);
             throw new WorkflowExecutionException(ie);
         } catch (ResourceNotFoundException e) {
             LOGGER.error("State machine is not found, {}", workflowId, e);
             throw new WorkflowExecutionException(e);
-        } catch (SfnException e) {
-            LOGGER.error("Failed to create a new execution, retrying: {}", input, e);
+        } catch (ExecutionLimitExceededException e) {
+            LOGGER.warn("Execution limit was reached, {}, retrying", workflowId);
             throw new RetryableException(e);
+        } catch (SfnException e) {
+            if (e.isThrottlingException() || e.statusCode() >= 500) {
+                LOGGER.warn("Failed to create a new execution, retrying: {}", input, e);
+                throw new RetryableException(e);
+            }
+            LOGGER.error("Failed to create a new execution, {}", input, e);
+            throw new WorkflowExecutionException(e);
         }
     }
 }

@@ -154,7 +154,15 @@ public class DevicePoolEvents {
         handleStep(input, output, WorkflowState.class, component.failProvisionStep());
     }
 
+    /**
+     * Step to obtain devices from a remote source.
+     *
+     * @param input Lambda input payload
+     * @param output Lambda output payload
+     * @param context Lambda function invoke context
+     */
     public void obtainDevicesStep(InputStream input, OutputStream output, Context context) {
-
+        context.getLogger().log("Obtain Devices Step is invoked");
+        handleStep(input, output, WorkflowState.class, component.obtainDevicesStep());
     }
 }

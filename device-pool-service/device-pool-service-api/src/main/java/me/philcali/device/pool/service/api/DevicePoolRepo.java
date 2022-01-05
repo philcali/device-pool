@@ -9,8 +9,6 @@ import java.util.function.Consumer;
 
 public interface DevicePoolRepo
         extends ObjectRepository<DevicePoolObject, CreateDevicePoolObject, UpdateDevicePoolObject> {
-    int MAX_ITEMS = 100;
-
     default DevicePoolObject create(CompositeKey account, Consumer<CreateDevicePoolObject.Builder> thunk) {
         CreateDevicePoolObject.Builder builder = CreateDevicePoolObject.builder();
         thunk.accept(builder);
