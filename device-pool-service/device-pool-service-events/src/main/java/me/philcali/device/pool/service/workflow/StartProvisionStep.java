@@ -27,7 +27,7 @@ public class StartProvisionStep implements WorkflowStep<WorkflowState, WorkflowS
         try {
             return WorkflowState.builder()
                     .from(input)
-                    .provision(provisionRepo.update(input.key(), UpdateProvisionObject.builder()
+                    .provision(provisionRepo.update(input.key().parentKey(), UpdateProvisionObject.builder()
                             .id(input.provision().id())
                             .status(Status.PROVISIONING)
                             .build()))

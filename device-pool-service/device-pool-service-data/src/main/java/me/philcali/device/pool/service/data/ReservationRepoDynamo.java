@@ -1,6 +1,5 @@
 package me.philcali.device.pool.service.data;
 
-import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ReservationRepo;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateReservationObject;
@@ -49,7 +48,7 @@ public class ReservationRepoDynamo
                         .deviceId(create.deviceId())
                         .createdAt(now)
                         .updatedAt(now)
-                        .status(Status.REQUESTED)
+                        .status(create.status())
                         .build())
                 .build();
     }

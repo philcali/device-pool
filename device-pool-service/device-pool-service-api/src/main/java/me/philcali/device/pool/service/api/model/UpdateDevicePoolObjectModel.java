@@ -21,4 +21,7 @@ interface UpdateDevicePoolObjectModel {
 
     @Nullable
     DevicePoolEndpoint endpoint();
+
+    @Nullable
+    DevicePoolLockOptions lockOptions();
 }

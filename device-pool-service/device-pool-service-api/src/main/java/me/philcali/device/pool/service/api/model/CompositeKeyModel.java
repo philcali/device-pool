@@ -1,20 +1,33 @@
 package me.philcali.device.pool.service.api.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import me.philcali.device.pool.model.ApiModel;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 
 @ApiModel
 @Value.Immutable
+@JsonDeserialize(as = CompositeKey.class)
 abstract class CompositeKeyModel {
     private static final String DELIMITER = ":";
 
     abstract String account();
+
+    public CompositeKey parentKey() {
+        if (Objects.isNull(resources()) || resources().isEmpty()) {
+            return null;
+        }
+        return CompositeKey.builder()
+                .from(this)
+                .resources(resources().subList(0, resources().size() - 1))
+                .build();
+    }
 
     @Nullable
     abstract List<String> resources();

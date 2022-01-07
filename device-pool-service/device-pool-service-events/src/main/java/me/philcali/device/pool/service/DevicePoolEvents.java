@@ -96,12 +96,16 @@ public class DevicePoolEvents {
                 });
     }
 
-    private <T, O> void handleStep(InputStream in, OutputStream out, Class<T> payloadClass, WorkflowStep<T, O> step) {
+    private <T, O> void handleStep(
+            InputStream in,
+            OutputStream out,
+            Class<T> payloadClass,
+            WorkflowStep<T, O> step) throws WorkflowExecutionException {
         try {
             final T result = component.mapper().readValue(in, payloadClass);
             final O executionResult = step.execute(result);
             component.mapper().writeValue(out, executionResult);
-        } catch (IOException | WorkflowExecutionException e) {
+        } catch (IOException e) {
             LOGGER.error("Failed to handle JSON payload for {}", payloadClass, e);
         }
     }
@@ -112,8 +116,10 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
+     * @throws WorkflowExecutionException when invoking the step fails demonstrably
      */
-    public void createReservationStep(InputStream input, OutputStream output, Context context) {
+    public void createReservationStep(InputStream input, OutputStream output, Context context)
+            throws WorkflowExecutionException {
         context.getLogger().log("Create Reservation Step is invoked");
         handleStep(input, output, WorkflowState.class, component.createReservationStep());
     }
@@ -124,8 +130,10 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
+     * @throws WorkflowExecutionException when invoking the step fails demonstrably
      */
-    public void startProvisionStep(InputStream input, OutputStream output, Context context) {
+    public void startProvisionStep(InputStream input, OutputStream output, Context context)
+            throws WorkflowExecutionException {
         context.getLogger().log("Start Provision Step is invoked");
         handleStep(input, output, WorkflowState.class, component.startProvisionStep());
     }
@@ -136,9 +144,11 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
+     * @throws WorkflowExecutionException when invoking the step fails demonstrably
      */
-    public void finishProvisionStep(InputStream input, OutputStream output, Context context) {
-        context.getLogger().log("Finsih Provision Step is invoked");
+    public void finishProvisionStep(InputStream input, OutputStream output, Context context)
+            throws WorkflowExecutionException {
+        context.getLogger().log("Finish Provision Step is invoked");
         handleStep(input, output, WorkflowState.class, component.finishProvisionStep());
     }
 
@@ -148,8 +158,10 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
+     * @throws WorkflowExecutionException when invoking the step fails demonstrably
      */
-    public void failProvisionStep(InputStream input, OutputStream output, Context context) {
+    public void failProvisionStep(InputStream input, OutputStream output, Context context)
+            throws WorkflowExecutionException {
         context.getLogger().log("Fail Provision Step is invoked");
         handleStep(input, output, WorkflowState.class, component.failProvisionStep());
     }
@@ -160,8 +172,10 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
+     * @throws WorkflowExecutionException when invoking the step fails demonstrably
      */
-    public void obtainDevicesStep(InputStream input, OutputStream output, Context context) {
+    public void obtainDevicesStep(InputStream input, OutputStream output, Context context)
+            throws WorkflowExecutionException {
         context.getLogger().log("Obtain Devices Step is invoked");
         handleStep(input, output, WorkflowState.class, component.obtainDevicesStep());
     }

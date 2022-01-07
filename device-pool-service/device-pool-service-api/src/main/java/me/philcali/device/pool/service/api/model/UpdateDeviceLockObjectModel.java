@@ -1,6 +1,5 @@
 package me.philcali.device.pool.service.api.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import me.philcali.device.pool.model.ApiModel;
 import org.immutables.value.Value;
 
@@ -9,17 +8,13 @@ import java.time.Instant;
 
 @ApiModel
 @Value.Immutable
-@JsonDeserialize(as = CreateDeviceObject.class)
-interface CreateDeviceObjectModel {
+interface UpdateDeviceLockObjectModel {
+    @Nullable
     String id();
 
-    @Nullable
-    String poolId();
+    String provisionId();
 
-    @Nullable
-    String privateAddress();
-
-    String publicAddress();
+    String reservationId();
 
     @Nullable
     Instant expiresIn();

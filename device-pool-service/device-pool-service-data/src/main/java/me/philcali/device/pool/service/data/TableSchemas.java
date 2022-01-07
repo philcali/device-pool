@@ -2,9 +2,11 @@ package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.model.CompositeKey;
+import me.philcali.device.pool.service.api.model.DeviceLockObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpoint;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
+import me.philcali.device.pool.service.api.model.DevicePoolLockOptions;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.DevicePoolType;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
@@ -53,6 +55,18 @@ public class TableSchemas {
                 .build();
     }
 
+    private static TableSchema<DevicePoolLockOptions> lockOptions() {
+        return StaticImmutableTableSchema.builder(DevicePoolLockOptions.class, DevicePoolLockOptions.Builder.class)
+                .newItemBuilder(DevicePoolLockOptions::builder, DevicePoolLockOptions.Builder::build)
+                .addAttribute(Boolean.class, a -> a.name("enabled")
+                        .getter(DevicePoolLockOptions::enabled)
+                        .setter(DevicePoolLockOptions.Builder::enabled))
+                .addAttribute(Long.class, a -> a.name("initialDuration")
+                        .getter(DevicePoolLockOptions::initialDuration)
+                        .setter(DevicePoolLockOptions.Builder::initialDuration))
+                .build();
+    }
+
     public static TableSchema<DevicePoolObject> poolTableSchema() {
         return commonTable(DevicePoolObject.class, DevicePoolObject.Builder.class,
                 DevicePoolObject::key, DevicePoolObject.Builder::key,
@@ -65,6 +79,9 @@ public class TableSchemas {
                 .addAttribute(EnhancedType.documentOf(DevicePoolEndpoint.class, endpoint()), a -> a.name("endpoint")
                         .getter(DevicePoolObject::endpoint)
                         .setter(DevicePoolObject.Builder::endpoint))
+                .addAttribute(EnhancedType.documentOf(DevicePoolLockOptions.class, lockOptions()), a -> a.name("lockOptions")
+                        .getter(DevicePoolObject::lockOptions)
+                        .setter(DevicePoolObject.Builder::lockOptions))
                 .addAttribute(String.class, a -> a.name("description")
                         .getter(DevicePoolObject::description)
                         .setter(DevicePoolObject.Builder::description))
@@ -139,6 +156,29 @@ public class TableSchemas {
                 .addAttribute(String.class, a -> a.name("privateAddress")
                         .getter(DeviceObject::privateAddress)
                         .setter(DeviceObject.Builder::privateAddress))
+                .addAttribute(Long.class, a -> a.name("createdAt")
+                        .getter(d -> Optional.ofNullable(d.createdAt()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("updatedAt")
+                        .getter(pool -> pool.updatedAt().getEpochSecond())
+                        .setter((builder, value) -> builder.updatedAt(Instant.ofEpochSecond(value))))
+                .addAttribute(Long.class, a -> a.name("expiresIn")
+                        .getter(d -> Optional.ofNullable(d.expiresIn()).map(Instant::getEpochSecond).orElse(null))
+                        .setter((builder, value) -> builder.expiresIn(Instant.ofEpochSecond(value))))
+                .build();
+    }
+
+    public static TableSchema<DeviceLockObject> deviceLockSchema() {
+        return commonTable(DeviceLockObject.class, DeviceLockObject.Builder.class,
+                DeviceLockObject::key, DeviceLockObject.Builder::key,
+                DeviceLockObject::id, DeviceLockObject.Builder::id)
+                .newItemBuilder(DeviceLockObject::builder, DeviceLockObject.Builder::build)
+                .addAttribute(String.class, a -> a.name("provisionId")
+                        .getter(DeviceLockObject::provisionId)
+                        .setter(DeviceLockObject.Builder::provisionId))
+                .addAttribute(String.class, a -> a.name("reservationId")
+                        .getter(DeviceLockObject::reservationId)
+                        .setter(DeviceLockObject.Builder::reservationId))
                 .addAttribute(Long.class, a -> a.name("createdAt")
                         .getter(d -> Optional.ofNullable(d.createdAt()).map(Instant::getEpochSecond).orElse(null))
                         .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))

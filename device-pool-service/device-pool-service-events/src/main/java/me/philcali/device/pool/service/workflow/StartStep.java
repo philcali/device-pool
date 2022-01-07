@@ -52,6 +52,7 @@ public class StartStep implements WorkflowStep<WorkflowState, String> {
                             .from(input)
                             .poolType(pool.type())
                             .endpoint(pool.endpoint())
+                            .poolLockOptions(pool.lockOptions())
                             .build()))
                     .build());
             LOGGER.info("Created a new execution for {}: {}", input, response.executionArn());

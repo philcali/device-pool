@@ -46,6 +46,7 @@ public class DevicePoolRepoDynamo
                 .endpoint(create.endpoint())
                 .type(create.type())
                 .key(toPartitionKey(account))
+                .lockOptions(create.lockOptions())
                 .build();
         if (Objects.isNull(create.endpoint()) && create.type() == DevicePoolType.UNMANAGED) {
             throw new InvalidInputException("Cannot have an empty endpoint for an " + create.type() + " pool");
@@ -89,6 +90,7 @@ public class DevicePoolRepoDynamo
                         .endpoint(update.endpoint())
                         .type(update.type())
                         .key(toPartitionKey(account))
+                        .lockOptions(update.lockOptions())
                         .updatedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
                         .build())
                 .build();

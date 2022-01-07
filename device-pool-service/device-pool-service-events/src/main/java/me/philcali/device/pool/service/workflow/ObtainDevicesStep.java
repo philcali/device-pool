@@ -1,8 +1,10 @@
 package me.philcali.device.pool.service.workflow;
 
 import me.philcali.device.pool.model.Status;
+import me.philcali.device.pool.service.api.DeviceRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
 import me.philcali.device.pool.service.api.model.CreateReservationObject;
+import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
 import me.philcali.device.pool.service.api.model.UpdateReservationObject;
 import me.philcali.device.pool.service.exception.RetryableException;
@@ -13,6 +15,8 @@ import me.philcali.device.pool.service.rpc.DevicePoolClientFactory;
 import me.philcali.device.pool.service.rpc.model.Context;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceRequest;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,13 +29,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Singleton
 public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowState> {
+    private static final Logger LOGGER = LogManager.getLogger(ObtainDevicesStep.class);
     private final ReservationRepo reservationRepo;
+    private final DeviceRepo deviceRepo;
     private final DevicePoolClientFactory clientFactory;
 
     @Inject
     public ObtainDevicesStep(
+            final DeviceRepo deviceRepo,
             final ReservationRepo reservationRepo,
             final DevicePoolClientFactory clientFactory) {
+        this.deviceRepo = deviceRepo;
         this.reservationRepo = reservationRepo;
         this.clientFactory = clientFactory;
     }
@@ -47,6 +55,7 @@ public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowSt
         int finalized = 0;
         Queue<ReservationObject> pendingReservations = new LinkedList<>();
         for (ReservationObject existingReservation : existing) {
+            LOGGER.debug("Found existing reservation {}", existingReservation.id());
             if (existingReservation.status().isTerminal()) {
                 finalized++;
             } else {
@@ -62,12 +71,16 @@ public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowSt
                     .accountKey(input.key())
                     .reservation(reservationObject)
                     .build());
+            LOGGER.info("Response from {}: {}", input.endpoint().uri(), response);
+            DeviceObject newDevice = deviceRepo.put(input.provision().poolKey(), response.device());
+            LOGGER.info("Updated device {}", newDevice.id());
             // Obtained a new one, create the entry
             if (Objects.isNull(reservationObject)) {
                 reservationObject = reservationRepo.create(input.provision().selfKey(), CreateReservationObject.builder()
-                        .deviceId(response.device().id())
+                        .deviceId(newDevice.id())
                         .id(UUID.randomUUID().toString())
                         .build());
+                LOGGER.info("Created a new reservation: {}", reservationObject.id());
             }
             // Update with status code and message
             reservationRepo.update(reservationObject.key(), UpdateReservationObject.builder()

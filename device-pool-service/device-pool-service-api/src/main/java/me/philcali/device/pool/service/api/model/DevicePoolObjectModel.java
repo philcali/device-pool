@@ -27,4 +27,10 @@ abstract class DevicePoolObjectModel implements Modifiable, UniqueEntity {
 
     @Nullable
     abstract DevicePoolEndpoint endpoint();
+
+    @Nullable
+    @Value.Default
+    DevicePoolLockOptions lockOptions() {
+        return DevicePoolLockOptions.of(false);
+    }
 }

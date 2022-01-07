@@ -29,6 +29,7 @@ import software.amazon.awscdk.services.stepfunctions.CatchProps;
 import software.amazon.awscdk.services.stepfunctions.Choice;
 import software.amazon.awscdk.services.stepfunctions.Condition;
 import software.amazon.awscdk.services.stepfunctions.IChainable;
+import software.amazon.awscdk.services.stepfunctions.Pass;
 import software.amazon.awscdk.services.stepfunctions.StateMachine;
 import software.amazon.awscdk.services.stepfunctions.Wait;
 import software.amazon.awscdk.services.stepfunctions.WaitProps;
@@ -166,6 +167,7 @@ public class DevicePoolInfrastructureStack extends Stack {
                             return LambdaInvoke.Builder.create(this, stepName + "Step")
                                     .lambdaFunction(stepFunction)
                                     .retryOnServiceExceptions(true)
+                                    .outputPath("$.Payload")
                                     .build();
                         }));
 
@@ -180,18 +182,18 @@ public class DevicePoolInfrastructureStack extends Stack {
                 .time(WaitTime.duration(Duration.seconds(5)))
                 .build());
 
-        // Scale loop for unmanaged pools
-        IChainable scaleLoop = invokeSteps.get("obtainDevices")
-                .next(new Choice(this, "Is Done?")
-                        .when(Condition.booleanEquals("$.done", true), invokeSteps.get("finishProvision"))
-                        .otherwise(waitTime.next(invokeSteps.get("obtainDevices"))));
+        Pass passThrough = new Pass(this, "scalingEntry");
 
         // Entire definition
         IChainable definition = invokeSteps.get("startProvision")
+                .next(passThrough)
                 .next(new Choice(this, "Is Managed?")
-                        .when(Condition.stringEquals("$.poolType", "UNMANAGED"), scaleLoop)
-                        .otherwise(invokeSteps.get("createReservation")
-                                .next(invokeSteps.get("finishProvision"))));
+                        .when(Condition.stringEquals("$.poolType", "UNMANAGED"), invokeSteps.get("obtainDevices"))
+                        .otherwise(invokeSteps.get("createReservation"))
+                        .afterwards()
+                        .next(new Choice(this, "Is Done?")
+                                .when(Condition.booleanEquals("$.done", true), invokeSteps.get("finishProvision"))
+                                .otherwise(waitTime.next(passThrough))));
 
         StateMachine provisioningWorkflow = StateMachine.Builder.create(this, "ProvisioningWorkflow")
                 .definition(definition)
@@ -214,6 +216,12 @@ public class DevicePoolInfrastructureStack extends Stack {
                 .effect(Effect.ALLOW)
                 .actions(Collections.singletonList("states:StartExecution"))
                 .resources(Collections.singletonList(provisioningWorkflow.getStateMachineArn()))
+                .build());
+
+        eventsFunction.addToRolePolicy(PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Collections.singletonList("dynamodb:GetItem"))
+                .resources(Collections.singletonList(table.getTableArn()))
                 .build());
 
         eventsFunction.addEventSource(new DynamoEventSource(table, DynamoEventSourceProps.builder()

@@ -22,4 +22,9 @@ interface CreateDevicePoolObjectModel {
 
     @Nullable
     DevicePoolEndpoint endpoint();
+
+    @Value.Default
+    default DevicePoolLockOptions lockOptions() {
+        return DevicePoolLockOptions.of(false);
+    }
 }

@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Optional;
 
 @Singleton
 public class FinishProvisionStep implements WorkflowStep<WorkflowState, WorkflowState> {
@@ -36,7 +37,7 @@ public class FinishProvisionStep implements WorkflowStep<WorkflowState, Workflow
         UpdateProvisionObject.Builder update = UpdateProvisionObject.builder()
                 .id(input.provision().id())
                 .status(input.provision().status())
-                .message(input.error());
+                .message(input.provision().message());
         try {
             List<ReservationObject> reservationObjects = listAll(input.provision().selfKey(), reservationRepo);
             if (reservationObjects.isEmpty()) {
@@ -51,7 +52,7 @@ public class FinishProvisionStep implements WorkflowStep<WorkflowState, Workflow
             }
             return WorkflowState.builder()
                     .from(input)
-                    .provision(provisionRepo.update(input.key(), update.build()))
+                    .provision(provisionRepo.update(input.key().parentKey(), update.build()))
                     .build();
         } catch (NotFoundException e) {
             LOGGER.error("Provision with key {} was not found", input.provision().selfKey());
