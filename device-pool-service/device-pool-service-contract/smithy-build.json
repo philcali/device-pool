@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "plugins": {
+    "openapi": {
+      "service": "device.pool#DeviceLab",
+      "protocol": "aws.protocols#restJson1",
+      "useIntegerType": true,
+      "apiGatewayType": "REST",
+      "disableCloudFormationSubstitution": true
+    }
+  }
+}
