@@ -15,6 +15,9 @@ interface UpdateProvisionObjectModel {
     @Nullable
     String id();
 
+    @Nullable
+    String executionId();
+
     Status status();
 
     @Nullable

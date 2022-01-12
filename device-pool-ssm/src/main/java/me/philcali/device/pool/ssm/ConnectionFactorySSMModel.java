@@ -59,4 +59,9 @@ abstract class ConnectionFactorySSMModel implements ConnectionFactory {
                 .documentName(hostDocument().apply(host))
                 .build();
     }
+
+    @Override
+    public void close() throws Exception {
+        ssm().close();
+    }
 }

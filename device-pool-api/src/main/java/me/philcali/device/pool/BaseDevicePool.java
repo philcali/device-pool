@@ -8,7 +8,7 @@ import me.philcali.device.pool.exceptions.ConnectionException;
 import me.philcali.device.pool.exceptions.ContentTransferException;
 import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.exceptions.ReservationException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
@@ -20,9 +20,9 @@ import org.immutables.value.Value;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class BaseDevicePoolModel implements DevicePool {
+public abstract class BaseDevicePool implements DevicePool {
     abstract ProvisionService provisionService();
 
     abstract ReservationService reservationService();
@@ -30,6 +30,22 @@ abstract class BaseDevicePoolModel implements DevicePool {
     abstract ConnectionFactory connections();
 
     abstract ContentTransferAgentFactory transfers();
+
+    static class Builder extends ImmutableBaseDevicePool.Builder {
+        public final <T extends ProvisionService & ReservationService> Builder provisionAndReservationService(
+                T service) {
+            return provisionService(service).reservationService(service);
+        }
+
+        public final <T extends ConnectionFactory & ContentTransferAgentFactory> Builder connectionAndContentFactory(
+                T factory) {
+            return connections(factory).transfers(factory);
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
 
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
@@ -66,6 +82,6 @@ abstract class BaseDevicePoolModel implements DevicePool {
 
     @Override
     public void close() {
-        SafeClosable.safelyClose(reservationService(), provisionService(), transfers(), connections());
+        SafeClosable.safelyClose(provisionService(), reservationService(), transfers(), connections());
     }
 }

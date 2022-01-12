@@ -5,9 +5,4 @@ import me.philcali.device.pool.model.Host;
 
 public interface ConnectionFactory extends AutoCloseable {
     Connection connect(Host host) throws ConnectionException;
-
-    @Override
-    default void close() throws Exception {
-        // no-op
-    }
 }

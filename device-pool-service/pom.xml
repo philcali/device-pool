@@ -31,5 +31,6 @@
         <module>device-pool-service-events</module>
         <module>device-pool-service-rpc</module>
         <module>device-pool-service-contract</module>
+        <module>device-pool-service-client</module>
     </modules>
 </project>

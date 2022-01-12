@@ -34,4 +34,9 @@ abstract class ContentTransferAgentFactoryS3Model implements ContentTransferAgen
                 .prefix(String.format("%s/%s", id, host.deviceId()))
                 .build();
     }
+
+    @Override
+    public void close() throws Exception {
+        s3().close();
+    }
 }

@@ -17,6 +17,7 @@
         <module>device-pool-ddb</module>
         <module>device-pool-s3</module>
         <module>device-pool-service</module>
+        <module>device-pool-client</module>
     </modules>
 
     <properties>

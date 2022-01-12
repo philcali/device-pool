@@ -6,9 +6,4 @@ import me.philcali.device.pool.model.Reservation;
 
 public interface ReservationService extends AutoCloseable {
     Host exchange(Reservation reservation) throws ReservationException;
-
-    @Override
-    default void close() throws Exception {
-        // no-op
-    }
 }

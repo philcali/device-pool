@@ -34,6 +34,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--
             <plugin>
                 <groupId>io.swagger.codegen.v3</groupId>
                 <artifactId>swagger-codegen-maven-plugin</artifactId>
@@ -46,11 +47,12 @@
                         <configuration>
                             <inputSpec>${project.basedir}/build/smithyprojections/device-pool-service-contract/source/openapi/DeviceLab.openapi.json</inputSpec>
                             <language>java</language>
-                            <library>jersey2</library>
+                            <library>retrofit2</library>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 

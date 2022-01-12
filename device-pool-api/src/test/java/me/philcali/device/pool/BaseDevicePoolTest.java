@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,6 +42,18 @@ class BaseDevicePoolTest {
     private ConnectionFactory connections;
     @Mock
     private ContentTransferAgentFactory transfers;
+    @Mock
+    private DoubleService doubleService;
+    @Mock
+    private DoubleFactory doubleFactory;
+
+    interface DoubleService extends ProvisionService, ReservationService {
+
+    }
+
+    interface DoubleFactory extends ConnectionFactory, ContentTransferAgentFactory {
+
+    }
 
     @BeforeEach
     void setup() {
@@ -159,5 +172,17 @@ class BaseDevicePoolTest {
         verify(provisionService).close();
         verify(transfers).close();
         verify(connections).close();
+    }
+
+    @Test
+    void GIVEN_special_pool_is_created_WHEN_pool_closes_THEN_all_closeables_are_called() throws Exception {
+        pool = BaseDevicePool.builder()
+                .connectionAndContentFactory(doubleFactory)
+                .provisionAndReservationService(doubleService)
+                .build();
+        pool.close();
+
+        verify(doubleService, times(2)).close();
+        verify(doubleFactory, times(2)).close();
     }
 }

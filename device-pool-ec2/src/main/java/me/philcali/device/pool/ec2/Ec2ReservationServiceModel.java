@@ -69,4 +69,9 @@ abstract class Ec2ReservationServiceModel implements ReservationService {
             throw new ReservationException(e);
         }
     }
+
+    @Override
+    public void close() throws Exception {
+        ec2().close();
+    }
 }

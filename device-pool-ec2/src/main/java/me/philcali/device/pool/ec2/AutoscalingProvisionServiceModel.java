@@ -245,4 +245,9 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
             throw new ProvisioningException(e);
         }
     }
+
+    @Override
+    public void close() throws Exception {
+        autoscaling().close();
+    }
 }

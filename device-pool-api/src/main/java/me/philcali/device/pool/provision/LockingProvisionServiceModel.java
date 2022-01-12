@@ -41,4 +41,9 @@ abstract class LockingProvisionServiceModel implements ProvisionService {
     public ProvisionOutput describe(ProvisionOutput provisionOutput) throws ProvisioningException {
         return provisionService().describe(provisionOutput);
     }
+
+    @Override
+    public void close() throws Exception {
+        provisionService().close();
+    }
 }

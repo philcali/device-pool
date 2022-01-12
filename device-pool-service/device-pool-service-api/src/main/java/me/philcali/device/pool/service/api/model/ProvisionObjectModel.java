@@ -36,6 +36,10 @@ abstract class ProvisionObjectModel implements Modifiable, UniqueEntity {
         return key().resources().get(key().resources().size() - 2);
     }
 
+    @JsonIgnore
+    @Nullable
+    abstract String executionId();
+
     abstract Status status();
 
     @Nullable
