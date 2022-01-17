@@ -4,6 +4,7 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoSet;
 import me.philcali.device.pool.service.workflow.CancelProvisionWorkflowFunction;
+import me.philcali.device.pool.service.workflow.CancelReservationFunction;
 import me.philcali.device.pool.service.workflow.DevicePoolEventRouterFunction;
 import me.philcali.device.pool.service.workflow.StartProvisionWorkflowFunction;
 
@@ -22,6 +23,13 @@ class EventRouterModule {
     @Singleton
     @IntoSet
     DevicePoolEventRouterFunction providesCancelProvisionFunction(CancelProvisionWorkflowFunction function) {
+        return function;
+    }
+
+    @Provides
+    @Singleton
+    @IntoSet
+    DevicePoolEventRouterFunction providesCancelReservationFunction(CancelReservationFunction function) {
         return function;
     }
 }

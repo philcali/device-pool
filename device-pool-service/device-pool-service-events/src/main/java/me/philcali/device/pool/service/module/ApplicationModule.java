@@ -8,6 +8,7 @@ import me.philcali.device.pool.service.api.DeviceRepo;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
+import me.philcali.device.pool.service.api.model.ReservationObject;
 import me.philcali.device.pool.service.data.DeviceLockRepoDynamo;
 import me.philcali.device.pool.service.data.DevicePoolRepoDynamo;
 import me.philcali.device.pool.service.data.DeviceRepoDynamo;
@@ -48,6 +49,12 @@ class ApplicationModule {
     @Singleton
     static TableSchema<ProvisionObject> providesProvisionSchema() {
         return TableSchemas.provisionTableSchema();
+    }
+
+    @Provides
+    @Singleton
+    static TableSchema<ReservationObject> providesReservationSchema() {
+        return TableSchemas.reservationTableSchema();
     }
 
     @Provides

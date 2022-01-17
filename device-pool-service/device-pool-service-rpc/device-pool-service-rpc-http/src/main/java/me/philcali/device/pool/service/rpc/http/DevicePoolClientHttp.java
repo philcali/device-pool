@@ -21,11 +21,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 public class DevicePoolClientHttp implements DevicePoolClient {
     private static final Logger LOGGER = LogManager.getLogger(DevicePoolClientHttp.class);
     private final HttpClient client;
     private final ObjectMapper mapper;
+    private static final Set<Integer> RETRY_CODES = Set.of(
+            408, 429,
+            500, 502, 503, 504);
 
     @Inject
     public DevicePoolClientHttp(
@@ -56,7 +60,9 @@ public class DevicePoolClientHttp implements DevicePoolClient {
             HttpResponse<byte[]> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
             if (response.statusCode() < 200 || response.statusCode() > 299) {
                 LOGGER.error("Invoking {} resulted in {}", context.endpoint().uri(), response.statusCode());
-                throw new RemoteServiceException(new String(response.body(), StandardCharsets.UTF_8));
+                throw new RemoteServiceException(
+                        new String(response.body(), StandardCharsets.UTF_8),
+                        RETRY_CODES.contains(response.statusCode()));
             }
             return mapper.readValue(response.body(), responseClass);
         } catch (URISyntaxException e) {
@@ -66,7 +72,7 @@ public class DevicePoolClientHttp implements DevicePoolClient {
             LOGGER.error("Failed to invoke {}", context.endpoint().uri(), e);
             throw new RemoteServiceException(e);
         } catch (InterruptedException e) {
-            throw new RemoteServiceException(e);
+            throw new RemoteServiceException(e, true);
         }
     }
 

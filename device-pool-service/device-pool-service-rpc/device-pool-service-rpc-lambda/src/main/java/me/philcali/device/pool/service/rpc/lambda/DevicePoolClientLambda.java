@@ -69,7 +69,9 @@ public class DevicePoolClientLambda implements DevicePoolClient {
             throw new RemoteServiceException(e);
         } catch (LambdaException e) {
             LOGGER.error("Failed to invoke {}", context.endpoint().uri(), e);
-            throw new RemoteServiceException(e);
+            throw new RemoteServiceException(e,
+                    e.isThrottlingException()
+                    || (e.statusCode() >= 500 && e.statusCode() <= 504));
         }
     }
 

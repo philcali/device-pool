@@ -15,14 +15,25 @@ import java.util.Objects;
 abstract class ReservationObjectModel implements Modifiable, UniqueEntity {
     @Nullable
     @JsonIgnore
-    public CompositeKey deviceKey() {
+    @Value.Default
+    public CompositeKey provisionKey() {
         if (Objects.isNull(key())) {
             return null;
         }
         return CompositeKey.builder()
                 .account(key().account())
-                .addResources(deviceId())
+                .resources(key().resources().subList(0, 2))
                 .build();
+    }
+
+    @Nullable
+    @JsonIgnore
+    @Value.Default
+    public String provisionId() {
+        if (Objects.isNull(key())) {
+            return null;
+        }
+        return key().resources().get(3);
     }
 
     @Nullable
