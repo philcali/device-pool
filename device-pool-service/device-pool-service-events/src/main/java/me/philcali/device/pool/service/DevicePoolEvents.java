@@ -9,6 +9,7 @@ import me.philcali.device.pool.service.data.ProvisionRepoDynamo;
 import me.philcali.device.pool.service.data.TableSchemas;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
 import me.philcali.device.pool.service.model.WorkflowState;
+import me.philcali.device.pool.service.model.WorkflowStateWrapper;
 import me.philcali.device.pool.service.module.DaggerDevicePoolEventComponent;
 import me.philcali.device.pool.service.module.DevicePoolEventComponent;
 import me.philcali.device.pool.service.workflow.WorkflowStep;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DevicePoolEvents {
@@ -90,23 +92,37 @@ public class DevicePoolEvents {
                         String executionId = component.startProvisioning().execute(state);
                         LOGGER.info("Started execution {}", executionId);
                     } catch (WorkflowExecutionException e) {
-                        // TODO: handle this better
                         LOGGER.error("Failed to start workflow for {}", state, e);
+                        try {
+                            component.finishProvisionStep()
+                                    .execute(state.fail("Failed to start workflow: " + e.getMessage()));
+                        } catch (WorkflowExecutionException inner) {
+                            LOGGER.error("Failed to update provision to failed {}", state, inner);
+                        }
                     }
                 });
     }
 
-    private <T, O> void handleStep(
+    private <O> void handleWorkflowStep(
+            InputStream in,
+            OutputStream out,
+            WorkflowStep<WorkflowState, O> step) throws WorkflowExecutionException {
+        handleStep(in, out, WorkflowStateWrapper.class, WorkflowStateWrapper::input, step);
+    }
+
+    private <T, R, O> void handleStep(
             InputStream in,
             OutputStream out,
             Class<T> payloadClass,
-            WorkflowStep<T, O> step) throws WorkflowExecutionException {
+            Function<T, R> transform,
+            WorkflowStep<R, O> step) throws WorkflowExecutionException {
         try {
             final T result = component.mapper().readValue(in, payloadClass);
-            final O executionResult = step.execute(result);
+            final O executionResult = step.execute(transform.apply(result));
             component.mapper().writeValue(out, executionResult);
         } catch (IOException e) {
             LOGGER.error("Failed to handle JSON payload for {}", payloadClass, e);
+            throw new WorkflowExecutionException(e);
         }
     }
 
@@ -121,7 +137,7 @@ public class DevicePoolEvents {
     public void createReservationStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
         context.getLogger().log("Create Reservation Step is invoked");
-        handleStep(input, output, WorkflowState.class, component.createReservationStep());
+        handleWorkflowStep(input, output, component.createReservationStep());
     }
 
     /**
@@ -135,7 +151,7 @@ public class DevicePoolEvents {
     public void startProvisionStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
         context.getLogger().log("Start Provision Step is invoked");
-        handleStep(input, output, WorkflowState.class, component.startProvisionStep());
+        handleWorkflowStep(input, output, component.startProvisionStep());
     }
 
     /**
@@ -149,7 +165,7 @@ public class DevicePoolEvents {
     public void finishProvisionStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
         context.getLogger().log("Finish Provision Step is invoked");
-        handleStep(input, output, WorkflowState.class, component.finishProvisionStep());
+        handleWorkflowStep(input, output, component.finishProvisionStep());
     }
 
     /**
@@ -163,7 +179,7 @@ public class DevicePoolEvents {
     public void failProvisionStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
         context.getLogger().log("Fail Provision Step is invoked");
-        handleStep(input, output, WorkflowState.class, component.failProvisionStep());
+        handleWorkflowStep(input, output, component.failProvisionStep());
     }
 
     /**
@@ -177,6 +193,6 @@ public class DevicePoolEvents {
     public void obtainDevicesStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
         context.getLogger().log("Obtain Devices Step is invoked");
-        handleStep(input, output, WorkflowState.class, component.obtainDevicesStep());
+        handleWorkflowStep(input, output, component.obtainDevicesStep());
     }
 }

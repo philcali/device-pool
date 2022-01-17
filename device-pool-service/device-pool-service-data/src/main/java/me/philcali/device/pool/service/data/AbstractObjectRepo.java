@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
@@ -25,6 +26,7 @@ import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractObjectRepo.class);
@@ -65,13 +67,21 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
         }
     }
 
+    protected DeleteItemEnhancedRequest.Builder deleteRequest(Key key) {
+        return DeleteItemEnhancedRequest.builder().key(key);
+    }
+
     @Override
     public void delete(CompositeKey account, String id) throws ServiceException {
         try {
-            table.deleteItem(Key.builder()
+            table.deleteItem(deleteRequest(Key.builder()
                     .partitionValue(toPartitionValue(account))
                     .sortValue(id)
+                    .build())
                     .build());
+        } catch (ConditionalCheckFailedException e) {
+            LOGGER.info("Not in a valid state {} {}: {}", resourceName, account, id, e);
+            throw new InvalidInputException("The " + resourceName + " with id " + id + " is not in a valid state.");
         } catch (DynamoDbException e) {
             LOGGER.error("Failed to delete {} {}: {}", resourceName, account, id, e);
             throw new ServiceException(e);

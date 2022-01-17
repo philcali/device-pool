@@ -2,6 +2,7 @@ package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ProvisionRepo;
+import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
@@ -9,6 +10,8 @@ import me.philcali.device.pool.service.api.model.UpdateProvisionObject;
 import me.philcali.device.pool.service.data.token.TokenMarshaller;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -17,6 +20,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 @Singleton
 public class ProvisionRepoDynamo
@@ -65,12 +70,35 @@ public class ProvisionRepoDynamo
                         .message(update.message())
                         .updatedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
                         .build())
+                // Can't transition from a terminal to a non-terminal status
                 .conditionExpression(Expression.builder()
                         .expression("attribute_exists(#key) and #id = :id")
                         .putExpressionName("#key", PK)
                         .putExpressionName("#id", SK)
-                        .putExpressionValue(":id", AttributeValue.builder().s(update.id()).build())
+                        .putExpressionValue(":id", AttributeValue.builder()
+                                .s(update.id())
+                                .build())
                         .build())
                 .build();
+    }
+
+    @Override
+    protected DeleteItemEnhancedRequest.Builder deleteRequest(Key key) {
+        List<String> statusValueKeys = new ArrayList<>();
+        Expression.Builder builder = Expression.builder();
+        int index = 0;
+        for (Status status : Status.values()) {
+            if (status.isTerminal()) {
+                String valueKey = ":s" + (++index);
+                statusValueKeys.add(valueKey);
+                builder.putExpressionValue(valueKey, AttributeValue.builder()
+                        .s(status.name())
+                        .build());
+            }
+        }
+        return super.deleteRequest(key).conditionExpression(builder
+                .expression("#status in (" + String.join(", ", statusValueKeys) + ")")
+                .putExpressionName("#status", "status")
+                .build());
     }
 }

@@ -1,9 +1,12 @@
 package me.philcali.device.pool.service.rpc.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.rpc.DevicePoolClient;
 import me.philcali.device.pool.service.rpc.exception.RemoteServiceException;
+import me.philcali.device.pool.service.rpc.model.CancelReservationRequest;
+import me.philcali.device.pool.service.rpc.model.CancelReservationResponse;
 import me.philcali.device.pool.service.rpc.model.Context;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceRequest;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
@@ -37,22 +40,25 @@ public class DevicePoolClientHttp implements DevicePoolClient {
         return DevicePoolEndpointType.HTTP;
     }
 
-    @Override
-    public ObtainDeviceResponse obtainDevice(Context context, ObtainDeviceRequest request)
-            throws RemoteServiceException {
+    private <Req, Res> Res invoke(
+            Context context,
+            CompositeKey accountKey,
+            Req req,
+            Class<Res> responseClass) throws RemoteServiceException {
         try {
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(new URI(context.endpoint().uri()))
                     .header("Content-Type", "application/json")
-                    .header("Authorization", request.accountKey().account())
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(request), StandardCharsets.UTF_8))
+                    .header("Authorization", accountKey.account())
+                    .header("X-Operation", req.getClass().getSimpleName().replace("Request", ""))
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(req), StandardCharsets.UTF_8))
                     .build();
             HttpResponse<byte[]> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
             if (response.statusCode() < 200 || response.statusCode() > 299) {
                 LOGGER.error("Invoking {} resulted in {}", context.endpoint().uri(), response.statusCode());
                 throw new RemoteServiceException(new String(response.body(), StandardCharsets.UTF_8));
             }
-            return mapper.readValue(response.body(), ObtainDeviceResponse.class);
+            return mapper.readValue(response.body(), responseClass);
         } catch (URISyntaxException e) {
             LOGGER.error("Failed to parse {}", context.endpoint().uri(), e);
             throw new RemoteServiceException(e);
@@ -62,5 +68,17 @@ public class DevicePoolClientHttp implements DevicePoolClient {
         } catch (InterruptedException e) {
             throw new RemoteServiceException(e);
         }
+    }
+
+    @Override
+    public CancelReservationResponse cancelReservation(Context context, CancelReservationRequest request)
+            throws RemoteServiceException {
+        return invoke(context, request.accountKey(), request, CancelReservationResponse.class);
+    }
+
+    @Override
+    public ObtainDeviceResponse obtainDevice(Context context, ObtainDeviceRequest request)
+            throws RemoteServiceException {
+        return invoke(context, request.accountKey(), request, ObtainDeviceResponse.class);
     }
 }

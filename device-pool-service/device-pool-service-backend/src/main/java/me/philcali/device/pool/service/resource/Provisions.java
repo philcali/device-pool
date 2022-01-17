@@ -1,5 +1,6 @@
 package me.philcali.device.pool.service.resource;
 
+import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.DevicePoolRepo;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
@@ -73,14 +74,17 @@ public class Provisions extends RepositoryResource<ProvisionObject, CreateProvis
         return createItem(context, create, poolId);
     }
 
-    @PUT
+    @POST
     @Path("/{" + ID + "}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(
+    public Response cancel(
             @Context SecurityContext context,
             @PathParam(Pools.ID) String poolId,
-            @PathParam(ID) String provisionId,
-            UpdateProvisionObject update) {
-        return updateItem(context, UpdateProvisionObject.builder().from(update).id(provisionId).build(), poolId);
+            @PathParam(ID) String provisionId) {
+        UpdateProvisionObject update = UpdateProvisionObject.builder()
+                .id(provisionId)
+                .status(Status.CANCELING)
+                .build();
+        return updateItem(context, update, poolId);
     }
 }

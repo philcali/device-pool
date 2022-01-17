@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.philcali.device.pool.ddb.DynamoDBExtension;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ProvisionRepo;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
+import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
@@ -20,6 +22,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith({DynamoDBExtension.class})
 class ProvisionRepoDynamoTest {
@@ -55,11 +58,17 @@ class ProvisionRepoDynamoTest {
 
         assertEquals(provision, provisionRepo.get(key, provision.id()));
 
+        assertThrows(InvalidInputException.class, () -> provisionRepo.delete(key, provision.id()));
+
         ProvisionObject updated = provisionRepo.update(key, UpdateProvisionObject.builder()
                 .id(provision.id())
-                .status(Status.REQUESTED)
+                .status(Status.CANCELED)
                 .build());
 
         assertEquals(updated, provisionRepo.get(key, provision.id()));
+
+        provisionRepo.delete(key, updated.id());
+
+        assertThrows(NotFoundException.class, () -> provisionRepo.get(key, updated.id()));
     }
 }

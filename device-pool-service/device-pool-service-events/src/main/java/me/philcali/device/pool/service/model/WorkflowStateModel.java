@@ -26,6 +26,18 @@ abstract class WorkflowStateModel {
     abstract ProvisionObject provision();
 
     @Nullable
+    abstract String executionArn();
+
+    @Nullable
+    @Value.Default
+    String executionId() {
+        if (Objects.isNull(executionArn())) {
+            return null;
+        }
+        return executionArn().substring(executionArn().lastIndexOf(':'));
+    }
+
+    @Nullable
     abstract DevicePoolType poolType();
 
     @Nullable

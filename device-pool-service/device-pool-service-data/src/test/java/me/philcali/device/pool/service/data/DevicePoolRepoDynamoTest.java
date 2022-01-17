@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -204,7 +205,7 @@ class DevicePoolRepoDynamoTest {
                 .name("TestPool")
                 .build()));
         // Service Failure on Delete
-        doThrow(DynamoDbException.class).when(mockedTable).deleteItem(any(Key.class));
+        doThrow(DynamoDbException.class).when(mockedTable).deleteItem(any(DeleteItemEnhancedRequest.class));
         assertThrows(ServiceException.class, () -> poolRepo.delete(account, "TestPool"));
     }
 }

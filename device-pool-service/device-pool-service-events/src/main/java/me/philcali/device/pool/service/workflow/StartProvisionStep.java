@@ -30,6 +30,7 @@ public class StartProvisionStep implements WorkflowStep<WorkflowState, WorkflowS
                     .provision(provisionRepo.update(input.key().parentKey(), UpdateProvisionObject.builder()
                             .id(input.provision().id())
                             .status(Status.PROVISIONING)
+                            .executionId(input.executionArn())
                             .build()))
                     .build();
         } catch (NotFoundException e) {

@@ -40,7 +40,7 @@ public class FinishProvisionStep implements WorkflowStep<WorkflowState, Workflow
                 .message(input.provision().message());
         try {
             List<ReservationObject> reservationObjects = listAll(input.provision().selfKey(), reservationRepo);
-            if (reservationObjects.isEmpty()) {
+            if (reservationObjects.isEmpty() && !input.provision().status().equals(Status.FAILED)) {
                 update.status(Status.FAILED).message("Provision completed without reservations");
             } else {
                 for (ReservationObject reservationObject : reservationObjects) {

@@ -31,6 +31,7 @@ import software.amazon.awscdk.services.stepfunctions.Condition;
 import software.amazon.awscdk.services.stepfunctions.IChainable;
 import software.amazon.awscdk.services.stepfunctions.Pass;
 import software.amazon.awscdk.services.stepfunctions.StateMachine;
+import software.amazon.awscdk.services.stepfunctions.TaskInput;
 import software.amazon.awscdk.services.stepfunctions.Wait;
 import software.amazon.awscdk.services.stepfunctions.WaitProps;
 import software.amazon.awscdk.services.stepfunctions.WaitTime;
@@ -168,6 +169,10 @@ public class DevicePoolInfrastructureStack extends Stack {
                                     .lambdaFunction(stepFunction)
                                     .retryOnServiceExceptions(true)
                                     .outputPath("$.Payload")
+                                    .payload(TaskInput.fromObject(new HashMap<>() {{
+                                        put("input.$", "$");
+                                        put("executionName.$", "$$.Execution.Id");
+                                    }}))
                                     .build();
                         }));
 
