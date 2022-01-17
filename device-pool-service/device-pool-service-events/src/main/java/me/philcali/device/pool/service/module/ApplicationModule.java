@@ -7,11 +7,14 @@ import me.philcali.device.pool.service.api.DevicePoolRepo;
 import me.philcali.device.pool.service.api.DeviceRepo;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
+import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.data.DeviceLockRepoDynamo;
 import me.philcali.device.pool.service.data.DevicePoolRepoDynamo;
 import me.philcali.device.pool.service.data.DeviceRepoDynamo;
 import me.philcali.device.pool.service.data.ProvisionRepoDynamo;
 import me.philcali.device.pool.service.data.ReservationRepoDynamo;
+import me.philcali.device.pool.service.data.TableSchemas;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 import javax.inject.Singleton;
 
@@ -39,6 +42,12 @@ class ApplicationModule {
     @Singleton
     static DeviceRepo providesDeviceRepo(DeviceRepoDynamo dynamo) {
         return dynamo;
+    }
+
+    @Provides
+    @Singleton
+    static TableSchema<ProvisionObject> providesProvisionSchema() {
+        return TableSchemas.provisionTableSchema();
     }
 
     @Provides

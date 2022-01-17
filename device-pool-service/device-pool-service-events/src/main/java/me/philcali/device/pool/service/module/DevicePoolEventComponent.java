@@ -3,11 +3,11 @@ package me.philcali.device.pool.service.module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Component;
 import me.philcali.device.pool.service.workflow.CreateReservationStep;
+import me.philcali.device.pool.service.workflow.DevicePoolEventRouter;
 import me.philcali.device.pool.service.workflow.FailProvisionStep;
 import me.philcali.device.pool.service.workflow.FinishProvisionStep;
 import me.philcali.device.pool.service.workflow.ObtainDevicesStep;
 import me.philcali.device.pool.service.workflow.StartProvisionStep;
-import me.philcali.device.pool.service.workflow.StartStep;
 
 import javax.inject.Singleton;
 
@@ -18,13 +18,14 @@ import javax.inject.Singleton;
         ApplicationModule.class,
         HttpModule.class,
         LambdaModule.class,
-        DevicePoolClientModule.class
+        DevicePoolClientModule.class,
+        EventRouterModule.class
 })
 @Singleton
 public interface DevicePoolEventComponent {
     ObjectMapper mapper();
 
-    StartStep startProvisioning();
+    DevicePoolEventRouter eventRouter();
 
     StartProvisionStep startProvisionStep();
 

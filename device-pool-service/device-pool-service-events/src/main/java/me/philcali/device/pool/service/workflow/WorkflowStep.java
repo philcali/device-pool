@@ -1,30 +1,8 @@
 package me.philcali.device.pool.service.workflow;
 
-import me.philcali.device.pool.service.api.ObjectRepository;
-import me.philcali.device.pool.service.api.model.CompositeKey;
-import me.philcali.device.pool.service.api.model.QueryParams;
-import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.exception.RetryableException;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-public interface WorkflowStep<I, O> {
+public interface WorkflowStep<I, O> extends ListAllMixin {
     O execute(I input) throws WorkflowExecutionException, RetryableException;
-
-    default <T> List<T> listAll(CompositeKey key, ObjectRepository<T, ?, ?> repository) {
-        List<T> existingObjects = new ArrayList<>();
-        QueryResults<T> results = null;
-        do {
-            results = repository.list(key, QueryParams.builder()
-                    .limit(ObjectRepository.MAX_ITEMS)
-                    .nextToken(Optional.ofNullable(results).map(QueryResults::nextToken).orElse(null))
-                    .build());
-            existingObjects.addAll(results.results());
-        } while (results.isTruncated());
-        return Collections.unmodifiableList(existingObjects);
-    }
 }

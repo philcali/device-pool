@@ -206,7 +206,7 @@ public class DevicePoolInfrastructureStack extends Stack {
                 .build();
 
         Function eventsFunction = Function.Builder.create(this, "DeviceLabEvents")
-                .handler("me.philcali.device.pool.service.DevicePoolEvents::handleProvisionCreation")
+                .handler("me.philcali.device.pool.service.DevicePoolEvents::handleDatabaseEvents")
                 .environment(new HashMap<>() {{
                     put("TABLE_NAME", table.getTableName());
                     put("WORKFLOW_ID", provisioningWorkflow.getStateMachineArn());

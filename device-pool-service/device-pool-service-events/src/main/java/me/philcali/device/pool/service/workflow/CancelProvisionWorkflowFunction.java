@@ -1,15 +1,20 @@
 package me.philcali.device.pool.service.workflow;
 
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.OperationType;
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.Record;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.UpdateProvisionObject;
 import me.philcali.device.pool.service.api.model.UpdateReservationObject;
+import me.philcali.device.pool.service.data.ProvisionRepoDynamo;
 import me.philcali.device.pool.service.exception.RetryableException;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.sfn.SfnClient;
 import software.amazon.awssdk.services.sfn.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.sfn.model.SfnException;
@@ -18,27 +23,52 @@ import software.amazon.awssdk.services.sfn.model.StopExecutionResponse;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Map;
 import java.util.Objects;
 
 @Singleton
-public class CancelProvisionStep implements WorkflowStep<ProvisionObject, ProvisionObject> {
-    private static final Logger LOGGER = LogManager.getLogger(CancelProvisionStep.class);
+public class CancelProvisionWorkflowFunction implements DevicePoolEventRouterFunction {
+    private static final Logger LOGGER = LogManager.getLogger(CancelProvisionWorkflowFunction.class);
     private final ProvisionRepo provisionRepo;
     private final ReservationRepo reservationRepo;
     private final SfnClient sfn;
+    private final TableSchema<ProvisionObject> provisionSchema;
 
     @Inject
-    public CancelProvisionStep(
+    public CancelProvisionWorkflowFunction(
             final ProvisionRepo provisionRepo,
             final ReservationRepo reservationRepo,
-            final SfnClient sfn) {
+            final SfnClient sfn,
+            final TableSchema<ProvisionObject> provisionSchema) {
         this.provisionRepo = provisionRepo;
         this.reservationRepo = reservationRepo;
         this.sfn = sfn;
+        this.provisionSchema = provisionSchema;
     }
 
     @Override
-    public ProvisionObject execute(ProvisionObject input) throws WorkflowExecutionException, RetryableException {
+    public boolean test(Record record) {
+        // A provision was modified to canceling from a non-canceled status.
+        return record.getEventName().equals(OperationType.MODIFY.name())
+                && primaryKey(record).endsWith(ProvisionRepoDynamo.RESOURCE)
+                && record.getDynamodb().getNewImage().get("status").equals(Status.CANCELING.name())
+                && !record.getDynamodb().getOldImage().get("status").equals(Status.CANCELING.name());
+    }
+
+    @Override
+    public void accept(
+            Map<String, AttributeValue> newImage,
+            Map<String, AttributeValue> oldImage) {
+        ProvisionObject provision = provisionSchema.mapToItem(newImage);
+        try {
+            ProvisionObject updated = execute(provision);
+            LOGGER.info("Canceled provision {}", updated);
+        } catch (WorkflowExecutionException e) {
+            LOGGER.error("Failed to cancel execution for {}", provision, e);
+        }
+    }
+
+    private ProvisionObject execute(ProvisionObject input) throws WorkflowExecutionException, RetryableException {
         if (Objects.nonNull(input.executionId())) {
             try {
                 StopExecutionResponse response = sfn.stopExecution(StopExecutionRequest.builder()
