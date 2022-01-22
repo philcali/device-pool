@@ -1,4 +1,4 @@
-package me.philcali.device.pool.service.workflow;
+package me.philcali.device.pool.service.event;
 
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.Record;

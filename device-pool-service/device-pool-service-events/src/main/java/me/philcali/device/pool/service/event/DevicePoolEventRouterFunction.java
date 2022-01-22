@@ -1,10 +1,13 @@
-package me.philcali.device.pool.service.workflow;
+package me.philcali.device.pool.service.event;
 
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.Record;
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.StreamRecord;
+import me.philcali.device.pool.service.workflow.ListAllMixin;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 
@@ -13,7 +16,13 @@ public interface DevicePoolEventRouterFunction
     String PK = "PK";
 
     default String primaryKey(Record record) {
-        return record.getDynamodb().getNewImage().get(PK).getS();
+        return primaryKeyFrom(record, StreamRecord::getNewImage);
+    }
+
+    default String primaryKeyFrom(
+            Record record,
+            Function<StreamRecord, Map<String, com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue>> getImage) {
+        return getImage.apply(record.getDynamodb()).get(PK).getS();
     }
 
     @Override
