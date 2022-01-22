@@ -23,9 +23,10 @@ public class DynamoDBExtension implements BeforeAllCallback, AfterAllCallback, P
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
+        String port = extensionContext.getConfigurationParameter("ddb.port").orElseGet(() -> Integer.toString(PORT));
         server = ServerRunner.createServerFromCommandLineArgs(new String[] {
                 "-inMemory",
-                "-port", Integer.toString(PORT)
+                "-port", port
         });
         server.start();
         ddb = DynamoDbClient.builder()

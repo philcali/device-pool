@@ -11,10 +11,10 @@ import dagger.Provides;
 import javax.inject.Singleton;
 
 @Module
-class JacksonModule {
+public class JacksonModule {
     @Provides
     @Singleton
-    static ObjectMapper providesObjectMapper() {
+    ObjectMapper providesObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

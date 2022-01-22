@@ -21,13 +21,24 @@ import javax.inject.Singleton;
 import java.security.NoSuchAlgorithmException;
 
 @Module
-class DynamoDBModule {
+public class DynamoDBModule {
     private static final String TABLE_NAME = "TABLE_NAME";
+    private final DynamoDbClient dynamoDbClient;
+    private final String tableName;
+
+    public DynamoDBModule(DynamoDbClient dynamoDbClient, String tableName) {
+        this.dynamoDbClient = dynamoDbClient;
+        this.tableName = tableName;
+    }
+
+    DynamoDBModule() {
+        this(DynamoDbClient.create(), System.getenv(TABLE_NAME));
+    }
 
     @Provides
     @Singleton
-    static DynamoDbClient providesDynamoDBClient() {
-        return DynamoDbClient.create();
+    DynamoDbClient providesDynamoDBClient() {
+        return dynamoDbClient;
     }
 
     @Provides
@@ -41,8 +52,8 @@ class DynamoDBModule {
     @Provides
     @Singleton
     @Named(TABLE_NAME)
-    static String providesTableName() {
-        return System.getenv(TABLE_NAME);
+    String providesTableName() {
+        return tableName;
     }
 
     @Provides

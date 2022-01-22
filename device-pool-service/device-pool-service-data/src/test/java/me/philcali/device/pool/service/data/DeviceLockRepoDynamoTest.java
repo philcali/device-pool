@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.philcali.device.pool.ddb.DynamoDBExtension;
 import me.philcali.device.pool.service.api.DeviceLockRepo;
 import me.philcali.device.pool.service.api.exception.InvalidInputException;
-import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateDeviceLockObject;
 import me.philcali.device.pool.service.api.model.DeviceLockObject;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.Extensions;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -26,7 +26,9 @@ import java.time.temporal.ChronoUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith({DynamoDBExtension.class})
+@Extensions({
+        @ExtendWith({DynamoDBExtension.class})
+})
 class DeviceLockRepoDynamoTest {
     static DynamoDbTable<DeviceLockObject> table;
     private DeviceLockRepo deviceLockRepo;
