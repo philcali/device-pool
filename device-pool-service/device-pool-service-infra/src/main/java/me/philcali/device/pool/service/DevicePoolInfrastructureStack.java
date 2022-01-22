@@ -1,5 +1,7 @@
 package me.philcali.device.pool.service;
 
+import software.amazon.awscdk.core.ArnComponents;
+import software.amazon.awscdk.core.ArnFormat;
 import software.amazon.awscdk.core.Duration;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.StackProps;
@@ -225,9 +227,16 @@ public class DevicePoolInfrastructureStack extends Stack {
 
         eventsFunction.addToRolePolicy(PolicyStatement.Builder.create()
                 .effect(Effect.ALLOW)
-                .actions(Collections.singletonList("dynamodb:GetItem"))
-                .resources(Collections.singletonList(table.getTableArn()))
+                .actions(Collections.singletonList("states:StopExecution"))
+                .resources(Collections.singletonList(formatArn(ArnComponents.builder()
+                        .service("states")
+                        .resource("execution")
+                        .arnFormat(ArnFormat.COLON_RESOURCE_NAME)
+                        .resourceName(provisioningWorkflow.getStateMachineName() + ":*")
+                        .build())))
                 .build());
+
+        eventsFunction.addToRolePolicy(databaseInteractionPolicy);
 
         eventsFunction.addEventSource(new DynamoEventSource(table, DynamoEventSourceProps.builder()
                 .enabled(true)
