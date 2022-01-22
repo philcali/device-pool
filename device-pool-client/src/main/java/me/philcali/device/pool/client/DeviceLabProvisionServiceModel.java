@@ -27,9 +27,9 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,9 +37,12 @@ import java.util.stream.Collectors;
 @Value.Immutable
 abstract class DeviceLabProvisionServiceModel implements ProvisionService, ReservationService {
     private static final Logger LOGGER = LogManager.getLogger(DeviceLabProvisionService.class);
-    private final Set<String> inflightProvisions = new HashSet<>();
+    private final Set<String> inflightProvisions = ConcurrentHashMap.newKeySet();
 
-    abstract DeviceLabService deviceLabService();
+    @Value.Default
+    DeviceLabService deviceLabService() {
+        return DeviceLabService.create();
+    }
 
     abstract PlatformOS platform();
 
@@ -142,5 +145,6 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
             Call<ProvisionObject> result = deviceLabService().cancelProvision(poolId(), provisionId);
             safelyCall(result, ProvisioningException::new, true);
         });
+        inflightProvisions.clear();
     }
 }
