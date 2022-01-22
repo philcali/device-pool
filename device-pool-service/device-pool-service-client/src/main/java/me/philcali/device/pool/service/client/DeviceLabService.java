@@ -1,5 +1,7 @@
 package me.philcali.device.pool.service.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
@@ -24,99 +26,101 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public interface DeviceLabService {
-    @GET("/pools")
+    @GET("pools")
     Call<QueryResults<DevicePoolObject>> listDevicePools(
             @Query("nextToken") String nextToken,
             @Query("limit") Integer limit);
 
-    @GET("/pools/{poolId}")
+    @GET("pools/{poolId}")
     Call<DevicePoolObject> getDevicePool(
             @Path("poolId") String poolId);
 
-    @POST("/pools")
+    @POST("pools")
     Call<DevicePoolObject> createDevicePool(
             @Body CreateDevicePoolObject create);
 
-    @PUT("/pools/{poolId}")
+    @PUT("pools/{poolId}")
     Call<DevicePoolObject> updateDevicePool(
             @Path("poolId") String poolId,
             @Body UpdateDevicePoolObject update);
 
-    @DELETE("/pools/{poolId}")
-    void deleteDevicePool(
+    @DELETE("pools/{poolId}")
+    Call<Void> deleteDevicePool(
             @Path("poolId") String poolId);
 
-    @GET("/pools/{poolId}/devices")
+    @GET("pools/{poolId}/devices")
     Call<QueryResults<DeviceObject>> listDevices(
             @Path("poolId") String poolId,
             @Query("nextToken") String nextToken,
             @Query("limit") Integer limit);
 
-    @GET("/pools/{poolId}/devices/{deviceId}")
+    @GET("pools/{poolId}/devices/{deviceId}")
     Call<DeviceObject> getDevice(
             @Path("poolId") String poolId,
             @Path("deviceId") String deviceId);
 
-    @POST("/pools/{poolId}/devices")
+    @POST("pools/{poolId}/devices")
     Call<DeviceObject> createDevice(
             @Path("poolId") String poolId,
             @Body CreateDeviceObject create);
 
-    @PUT("/pools/{poolId}/devices/{deviceId}")
+    @PUT("pools/{poolId}/devices/{deviceId}")
     Call<DeviceObject> updateDevice(
             @Path("poolId") String poolId,
             @Path("deviceId") String deviceId,
             @Body UpdateDeviceObject update);
 
-    @DELETE("/pools/{poolId}/devices/{deviceId}")
-    void deleteDevice(
+    @DELETE("pools/{poolId}/devices/{deviceId}")
+    Call<Void> deleteDevice(
             @Path("poolId") String poolId,
             @Path("deviceId") String deviceId);
 
-    @GET("/pools/{poolId}/provisions")
+    @GET("pools/{poolId}/provisions")
     Call<QueryResults<ProvisionObject>> listProvisions(
             @Path("poolId") String poolId,
             @Query("nextToken") String nextToken,
             @Query("limit") Integer limit);
 
-    @GET("/pools/{poolId}/provisions/{provisionId}")
+    @GET("pools/{poolId}/provisions/{provisionId}")
     Call<ProvisionObject> getProvision(
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId);
 
-    @POST("/pools/{poolId}/provisions")
+    @POST("pools/{poolId}/provisions")
     Call<ProvisionObject> createProvision(
             @Path("poolId") String poolId,
             @Body CreateProvisionObject create);
 
-    @POST("/pools/{poolId}/provisions/{provisionId}")
+    @POST("pools/{poolId}/provisions/{provisionId}")
     Call<ProvisionObject> cancelProvision(
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId);
 
-    @DELETE("/pools/{poolId}/provisions/{provisionId}")
-    void deleteProvision(
+    @DELETE("pools/{poolId}/provisions/{provisionId}")
+    Call<Void> deleteProvision(
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId);
 
-    @GET("/pools/{poolId}/provisions/{provisionId}/reservations")
+    @GET("pools/{poolId}/provisions/{provisionId}/reservations")
     Call<QueryResults<ReservationObject>> listReservations(
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId,
             @Query("nextToken") String nextToken,
             @Query("limit") Integer limit);
 
-    @GET("/pools/{poolId}/provision/{provisionId}/reservations/{reservationId}")
+    @GET("pools/{poolId}/provision/{provisionId}/reservations/{reservationId}")
     Call<ReservationObject> getReservation(
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId,
             @Path("reservationId") String reservationId);
 
-    @POST("/pools/{poolId}/provision/{provisionId}/reservations/{reservationId}")
+    @POST("pools/{poolId}/provision/{provisionId}/reservations/{reservationId}")
     Call<ReservationObject> cancelReservation(
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId,
@@ -141,8 +145,8 @@ public interface DeviceLabService {
         return listReservations(poolId, provisionId, params.nextToken(), params.limit());
     }
 
-    static Consumer<Retrofit.Builder> defaultClientBuilder() {
-        return builder -> {
+    static BiConsumer<OkHttpClient.Builder, Retrofit.Builder> defaultClientBuilder() {
+        return (clientBuilder, retrofit) -> {
             final Duration callTimeout = Duration.ofSeconds(Optional.ofNullable(System.getenv("DEVICE_LAB_CALL_TIMEOUT"))
                     .map(Integer::parseInt)
                     .orElse(0));
@@ -155,27 +159,32 @@ public interface DeviceLabService {
             final Duration writeTimeout = Duration.ofSeconds(Optional.ofNullable(System.getenv("DEVICE_LAB_WRITE_TIMEOUT"))
                     .map(Integer::parseInt)
                     .orElse(20));
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .callTimeout(callTimeout)
+            clientBuilder.callTimeout(callTimeout)
                     .connectTimeout(connectTimeout)
                     .readTimeout(readTimeout)
-                    .writeTimeout(writeTimeout)
-                    .build();
-            builder.client(client);
+                    .writeTimeout(writeTimeout);
         };
     }
 
-    static DeviceLabService create(Consumer<Retrofit.Builder> thunk) {
+    static DeviceLabService create(BiConsumer<OkHttpClient.Builder, Retrofit.Builder> thunk) {
         Retrofit.Builder retrofitBuilder = new Retrofit.Builder();
-        defaultClientBuilder().andThen(thunk).accept(retrofitBuilder);
-        Retrofit retrofit = retrofitBuilder.build();
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        defaultClientBuilder().andThen(thunk).accept(clientBuilder, retrofitBuilder);
+        Retrofit retrofit = retrofitBuilder.client(clientBuilder.build()).build();
         return retrofit.create(DeviceLabService.class);
     }
 
     static DeviceLabService create() {
-        return create(builder -> {
-            builder.addConverterFactory(JacksonConverterFactory.create())
-                    .baseUrl(System.getenv("DEVICE_LAB_SERVICE_ENDPOINT"));
+        return create((client, builder) -> {
+            String baseUrl = System.getenv("DEVICE_LAB_SERVICE_ENDPOINT");
+            if (Objects.nonNull(baseUrl) && !baseUrl.endsWith("/")) {
+                baseUrl += "/";
+            }
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            client.addInterceptor(AwsV4SigningInterceptor.create());
+            builder.addConverterFactory(JacksonConverterFactory.create(mapper))
+                    .baseUrl(baseUrl);
         });
     }
 }
