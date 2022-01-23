@@ -51,8 +51,8 @@ public class CancelProvisionWorkflowFunction implements DevicePoolEventRouterFun
         // A provision was modified to canceling from a non-canceled status.
         return record.getEventName().equals(OperationType.MODIFY.name())
                 && primaryKey(record).endsWith(ProvisionRepoDynamo.RESOURCE)
-                && record.getDynamodb().getNewImage().get("status").equals(Status.CANCELING.name())
-                && !record.getDynamodb().getOldImage().get("status").equals(Status.CANCELING.name());
+                && record.getDynamodb().getNewImage().get("status").getS().equals(Status.CANCELING.name())
+                && !record.getDynamodb().getOldImage().get("status").getS().equals(Status.CANCELING.name());
     }
 
     @Override

@@ -3,7 +3,6 @@ package me.philcali.device.pool.service.module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Module;
 import dagger.Provides;
-import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.DeviceLockObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
@@ -18,7 +17,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.security.NoSuchAlgorithmException;
 
 @Module
 public class DynamoDBModule {
@@ -59,11 +57,7 @@ public class DynamoDBModule {
     @Provides
     @Singleton
     static TokenMarshaller providesTokenMarshaller(final ObjectMapper mapper) {
-        try {
-            return new EncryptedTokenMarshaller(mapper);
-        } catch (NoSuchAlgorithmException e) {
-            throw new ServiceException(e);
-        }
+        return new EncryptedTokenMarshaller(mapper);
     }
 
     @Provides
