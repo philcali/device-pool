@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (c) 2022 Philip Cali
+    Released under Apache-2.0 License
+        (https://www.apache.org/licenses/LICENSE-2.0)
+
+-->
+<additionalHeaders>
+    <java_style>
+        <firstLine>/*</firstLine>
+        <beforeEachLine> * </beforeEachLine>
+        <endLine> */EOL</endLine>
+        <firstLineDetectionPattern>(\\s|\\t)*/\\*.*$</firstLineDetectionPattern>
+        <lastLineDetectionPattern>.*\\*/(\\s|\\t)*$</lastLineDetectionPattern>
+        <allowBlankLines>false</allowBlankLines>
+        <isMultiline>true</isMultiline>
+        <padLines>false</padLines>
+    </java_style>
+</additionalHeaders>
