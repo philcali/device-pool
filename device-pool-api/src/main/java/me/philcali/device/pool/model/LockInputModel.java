@@ -22,15 +22,11 @@ interface LockInputModel {
         try {
             Predicate<InterfaceAddress> localAddress = interfaceAddress -> (
                     interfaceAddress.getAddress().isLinkLocalAddress()
-                    || interfaceAddress.getAddress().isLoopbackAddress()
                     || interfaceAddress.getAddress().isAnyLocalAddress()
                     || interfaceAddress.getAddress().isSiteLocalAddress());
             Enumeration<NetworkInterface> interfaceEnumeration = NetworkInterface.getNetworkInterfaces();
             while (interfaceEnumeration.hasMoreElements()) {
                 NetworkInterface networkInterface = interfaceEnumeration.nextElement();
-                if (networkInterface.isLoopback()) {
-                    continue;
-                }
                 if (networkInterface.isUp()) {
                     Optional<String> firstAddress = networkInterface.getInterfaceAddresses().stream()
                             .filter(localAddress.negate())
