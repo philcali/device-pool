@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Conventional Commit Checker
-      uses: agenthunt/conventional-commit-checker-action@v1.0.0
+      uses: wagoid/commitlint-github-action@v4
     - name: Set up JDK 11
       uses: actions/setup-java@v2
       with:
