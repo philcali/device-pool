@@ -58,7 +58,7 @@ public class CancelReservationFunction implements DevicePoolEventRouterFunction 
     public boolean test(Record record) {
         return record.getEventName().equals(OperationType.MODIFY.name())
                 && primaryKey(record).endsWith(ReservationRepoDynamo.RESOURCE)
-                && record.getDynamodb().getNewImage().get("status").equals(Status.CANCELING.name());
+                && record.getDynamodb().getNewImage().get("status").getS().equals(Status.CANCELING.name());
     }
 
     @Override

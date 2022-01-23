@@ -16,16 +16,17 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,22 +35,16 @@ import java.util.stream.Collectors;
 
 public class EncryptedTokenMarshaller implements TokenMarshaller {
     private static final Logger LOGGER = LoggerFactory.getLogger(EncryptedTokenMarshaller.class);
-    private static final int ITERATIONS = 65536;
-    private static final int BITS = 256;
+    private static final int BITS = 128;
+    private static final int GCM_IV_LENGTH = 12;
     private static final String KEY_SPEC = "AES";
-    private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
-    private final SecretKeyFactory secrets;
+    private static final String CIPHER_ALGORITHM = "AES/GCM/NoPadding";
     private final ObjectMapper mapper;
+    private final SecureRandom random;
 
-    public EncryptedTokenMarshaller(
-            final ObjectMapper mapper,
-            final SecretKeyFactory secrets) {
+    public EncryptedTokenMarshaller(final ObjectMapper mapper) {
         this.mapper = mapper;
-        this.secrets = secrets;
-    }
-
-    public EncryptedTokenMarshaller(ObjectMapper mapper) throws NoSuchAlgorithmException {
-        this(mapper, SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256"));
+        this.random = new SecureRandom();
     }
 
     @Nullable
@@ -119,24 +114,32 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         }
     }
 
-    protected SecretKey generateSecret(CompositeKey owner) throws InvalidKeySpecException {
-        KeySpec keySpec = new PBEKeySpec(owner.toString().toCharArray(), owner.toString().getBytes(), ITERATIONS, BITS);
-        return new SecretKeySpec(secrets.generateSecret(keySpec).getEncoded(), KEY_SPEC);
+    protected SecretKey generateSecret(CompositeKey owner) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] encodedBytes = digest.digest(owner.toString().getBytes(StandardCharsets.UTF_8));
+        return new SecretKeySpec(encodedBytes, KEY_SPEC);
     }
 
     protected String encrypt(byte[] input, SecretKey secret)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
+        byte[] iv = new byte[GCM_IV_LENGTH];
+        random.nextBytes(iv);
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secret, new IvParameterSpec(new byte[16]));
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(BITS, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secret, parameterSpec);
         byte[] cipherText = cipher.doFinal(input);
-        return Base64.getEncoder().encodeToString(cipherText);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + cipherText.length);
+        byteBuffer.put(iv);
+        byteBuffer.put(cipherText);
+        return Base64.getEncoder().encodeToString(byteBuffer.array());
     }
 
     protected byte[] decrypt(String cipherText, SecretKey secret)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
-        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(new byte[16]));
         byte[] decodedBytes = Base64.getDecoder().decode(cipherText);
-        return cipher.doFinal(decodedBytes);
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(BITS, decodedBytes, 0, GCM_IV_LENGTH);
+        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, secret, parameterSpec);
+        return cipher.doFinal(decodedBytes, GCM_IV_LENGTH, decodedBytes.length - GCM_IV_LENGTH);
     }
 }
