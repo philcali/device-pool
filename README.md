@@ -1,5 +1,6 @@
 # Simplified Device Pools
 
+[![codecov](https://codecov.io/gh/philcali/device-pool/branch/main/graph/badge.svg?token=WIIU9GHW69)](https://codecov.io/gh/philcali/device-pool)
 [![Java CI with Maven](https://github.com/philcali/device-pool/actions/workflows/maven.yml/badge.svg)](https://github.com/philcali/device-pool/actions/workflows/maven.yml)
 
 This collection of software provides an end-to-end solution for provisioning, obtaining,
