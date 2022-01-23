@@ -30,7 +30,9 @@
         <module>device-pool-service-local</module>
         <module>device-pool-service-events</module>
         <module>device-pool-service-rpc</module>
+        <!-- Smithy build is non-standard and causes issues with repo scanners
         <module>device-pool-service-contract</module>
+        -->
         <module>device-pool-service-client</module>
     </modules>
 </project>
