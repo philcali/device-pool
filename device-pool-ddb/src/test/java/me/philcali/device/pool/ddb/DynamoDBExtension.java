@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.net.URI;
@@ -16,6 +18,7 @@ public class DynamoDBExtension implements BeforeAllCallback, AfterAllCallback, P
     private static final int PORT = 8080;
     private DynamoDBProxyServer server;
     private DynamoDbClient ddb;
+    private AwsCredentialsProvider mockProvider;
 
     static {
         System.setProperty("sqlite4java.library.path", "native-libs");
@@ -29,8 +32,20 @@ public class DynamoDBExtension implements BeforeAllCallback, AfterAllCallback, P
                 "-port", port
         });
         server.start();
+        mockProvider = () -> new AwsCredentials() {
+            @Override
+            public String accessKeyId() {
+                return extensionContext.getDisplayName();
+            }
+
+            @Override
+            public String secretAccessKey() {
+                return extensionContext.getUniqueId();
+            }
+        };
         ddb = DynamoDbClient.builder()
                 .endpointOverride(new URI("http://localhost:" + PORT))
+                .credentialsProvider(mockProvider)
                 .build();
     }
 
@@ -40,12 +55,19 @@ public class DynamoDBExtension implements BeforeAllCallback, AfterAllCallback, P
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter().getType() == DynamoDbClient.class;
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+            throws ParameterResolutionException {
+        return parameterContext.getParameter().getType() == DynamoDbClient.class
+                || parameterContext.getParameter().getType() == AwsCredentialsProvider.class;
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return ddb;
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+            throws ParameterResolutionException {
+        if (parameterContext.getParameter().getType() == DynamoDbClient.class) {
+            return ddb;
+        } else {
+            return mockProvider;
+        }
     }
 }

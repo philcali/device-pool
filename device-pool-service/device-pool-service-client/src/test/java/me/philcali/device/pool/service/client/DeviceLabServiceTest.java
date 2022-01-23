@@ -29,6 +29,10 @@ import org.junit.jupiter.api.extension.Extensions;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.io.IOException;
@@ -48,7 +52,7 @@ class DeviceLabServiceTest {
     static Server localServer;
 
     @BeforeAll
-    static void beforeAll(DynamoDbClient client) throws IOException {
+    static void beforeAll(DynamoDbClient client, AwsCredentialsProvider credentialsProvider) throws IOException {
         String endpoint = "http://localhost:8000";
         String tableName = "DeviceLab";
         DevicePoolsComponent component = DaggerDevicePoolsComponent.builder()
@@ -61,7 +65,11 @@ class DeviceLabServiceTest {
                 .build();
         CreateTables.createTableFromSchema(client, tableName, TableSchemas.poolTableSchema());
         service = DeviceLabService.create((httpClient, retrofit) -> {
-            httpClient.addInterceptor(AwsV4SigningInterceptor.create());
+            httpClient.addInterceptor(new AwsV4SigningInterceptor(
+                    credentialsProvider,
+                    DefaultAwsRegionProviderChain.builder().build(),
+                    Aws4Signer.create()
+            ));
             httpClient.addInterceptor(chain -> {
                 assertNotNull(
                         chain.request().header("Authorization"),
