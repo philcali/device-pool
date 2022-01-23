@@ -25,4 +25,4 @@ jobs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v2.5.1
     - name: Build with Maven
-      run: mvn -Daws.region=us-east-1 -B package --file pom.xml
+      run: mvn -B package --file pom.xml

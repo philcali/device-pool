@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.net.URI;
@@ -46,6 +47,7 @@ public class DynamoDBExtension implements BeforeAllCallback, AfterAllCallback, P
         ddb = DynamoDbClient.builder()
                 .endpointOverride(new URI("http://localhost:" + PORT))
                 .credentialsProvider(mockProvider)
+                .region(Region.US_EAST_1)
                 .build();
     }
 

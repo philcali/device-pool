@@ -29,10 +29,9 @@ import org.junit.jupiter.api.extension.Extensions;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.converter.jackson.JacksonConverterFactory;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
-import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.io.IOException;
@@ -67,7 +66,7 @@ class DeviceLabServiceTest {
         service = DeviceLabService.create((httpClient, retrofit) -> {
             httpClient.addInterceptor(new AwsV4SigningInterceptor(
                     credentialsProvider,
-                    DefaultAwsRegionProviderChain.builder().build(),
+                    () -> Region.US_EAST_1,
                     Aws4Signer.create()
             ));
             httpClient.addInterceptor(chain -> {
