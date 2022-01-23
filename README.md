@@ -1,5 +1,7 @@
 # Simplified Device Pools
 
+[![Java CI with Maven](https://github.com/philcali/device-pool/actions/workflows/maven.yml/badge.svg)](https://github.com/philcali/device-pool/actions/workflows/maven.yml)
+
 This collection of software provides an end-to-end solution for provisioning, obtaining,
 and interacting with devices from a device pool.
 
