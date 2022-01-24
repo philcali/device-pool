@@ -1,7 +1,7 @@
 # Simplified Device Pools
 
-[![codecov](https://codecov.io/gh/philcali/device-pool/branch/main/graph/badge.svg?token=WIIU9GHW69)](https://codecov.io/gh/philcali/device-pool)
 [![Java CI with Maven](https://github.com/philcali/device-pool/actions/workflows/maven.yml/badge.svg)](https://github.com/philcali/device-pool/actions/workflows/maven.yml)
+[![codecov](https://codecov.io/gh/philcali/device-pool/branch/main/graph/badge.svg?token=WIIU9GHW69)](https://codecov.io/gh/philcali/device-pool)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool?ref=badge_shield)
 
 This collection of software provides an end-to-end solution for provisioning, obtaining,
