@@ -56,18 +56,18 @@ public class DeleteDevicePoolFunction implements DevicePoolEventRouterFunction {
             LOGGER.info("Removing associated device from pool {}: {}",
                     deletedPool.id(),
                     device.id());
-            deviceRepo.delete(device.key(), device.id());
+            deviceRepo.delete(deletedPool.selfKey(), device.id());
         });
         listAll(deletedPool.selfKey(), provisionRepo).forEach(provisionObject -> {
             if (!provisionObject.status().isTerminal()) {
                 // Send update first to cancel, then remove
-                provisionRepo.update(provisionObject.key(), UpdateProvisionObject.builder()
+                provisionRepo.update(deletedPool.selfKey(), UpdateProvisionObject.builder()
                         .id(provisionObject.id())
                         .message("Cancellation triggered from device pool deletion.")
                         .status(Status.CANCELING)
                         .build());
             }
-            provisionRepo.delete(provisionObject.key(), provisionObject.id());
+            provisionRepo.delete(deletedPool.selfKey(), provisionObject.id());
             LOGGER.info("Removing associated provision from pool {}: {}",
                     deletedPool.id(),
                     provisionObject.id());
