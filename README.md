@@ -65,3 +65,6 @@ is performed, namely through the `MANAGED` and `UNMANAGED` types.
 
 The rest of the modules support the former, introducing contracts, database implementation and
 other advanced extension points.
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool?ref=badge_large)
