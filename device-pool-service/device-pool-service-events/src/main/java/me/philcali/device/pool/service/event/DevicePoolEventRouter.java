@@ -75,7 +75,7 @@ public class DevicePoolEventRouter implements Consumer<DynamodbEvent> {
             LOGGER.debug("Found record {}", record);
             functions.stream()
                     .filter(function -> function.test(record))
-                    .peek(function -> LOGGER.debug("Function {} satisfies record {}",
+                    .peek(function -> LOGGER.info("Function {} satisfies record {}",
                             function.getClass().getSimpleName(),
                             record))
                     .findFirst()

@@ -93,13 +93,13 @@ public class CancelProvisionWorkflowFunction implements DevicePoolEventRouterFun
         listAll(input.selfKey(), reservationRepo).forEach(reservationObject -> {
             // Terminal statuses can't be reset
             if (!reservationObject.status().isTerminal()) {
-                reservationRepo.update(reservationObject.key(), UpdateReservationObject.builder()
+                reservationRepo.update(input.selfKey(), UpdateReservationObject.builder()
                         .id(reservationObject.id())
                         .status(Status.CANCELING)
                         .build());
             }
         });
-        return provisionRepo.update(input.key(), UpdateProvisionObject.builder()
+        return provisionRepo.update(input.key().parentKey(), UpdateProvisionObject.builder()
                 .id(input.id())
                 .status(Status.CANCELED)
                 .build());

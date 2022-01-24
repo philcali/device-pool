@@ -38,7 +38,7 @@ public class DeleteProvisionFunction implements DevicePoolEventRouterFunction {
     @Override
     public boolean test(Record record) {
         return record.getEventName().equals(OperationType.REMOVE.name())
-                && primaryKeyFrom(record, StreamRecord::getOldImage).equals(ProvisionRepoDynamo.RESOURCE);
+                && primaryKeyFrom(record, StreamRecord::getOldImage).endsWith(ProvisionRepoDynamo.RESOURCE);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DeleteProvisionFunction implements DevicePoolEventRouterFunction {
                 LOGGER.warn("Removing a non-terminal reservation, investigation is needed: {}",
                         reservationObject);
             }
-            reservationRepo.delete(reservationObject.key(), reservationObject.id());
+            reservationRepo.delete(provisionObject.selfKey(), reservationObject.id());
             LOGGER.info("Removing associated reservation from provision {}: {}",
                     provisionObject.id(),
                     reservationObject.id());
