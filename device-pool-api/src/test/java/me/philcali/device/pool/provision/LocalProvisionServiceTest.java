@@ -13,6 +13,7 @@ import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.content.ContentTransferAgent;
 import me.philcali.device.pool.content.ContentTransferAgentFactory;
+import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
@@ -25,9 +26,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -68,14 +72,14 @@ class LocalProvisionServiceTest {
                 .transfers(transfers)
                 .provisionAndReservationService(service)
                 .build();
-
-        // The point of this test is to not exercise data-plane
-        doReturn(connection).when(connections).connect(any(Host.class));
-        doReturn(agent).when(transfers).connect(anyString(), eq(connection), any(Host.class));
     }
 
     @Test
     void GIVEN_local_service_is_created_WHEN_provisioning_THEN_obtains_devices() throws Exception {
+        // The point of this test is to not exercise data-plane
+        doReturn(connection).when(connections).connect(any(Host.class));
+        doReturn(agent).when(transfers).connect(anyString(), eq(connection), any(Host.class));
+
         ProvisionInput input = ProvisionInput.builder()
                 .id("first-test")
                 .amount(20)
@@ -110,5 +114,24 @@ class LocalProvisionServiceTest {
         assertEquals(0, service.releaseAvailable(System.currentTimeMillis()));
 
         service.close();
+    }
+
+    @Test
+    void GIVEN_local_service_created_WHEN_extraneous_paths_are_exercised_THEN_coverage_is_increased() throws Exception {
+        service.close();
+        assertThrows(ProvisioningException.class, () -> service.describe(ProvisionOutput.of("non-existent")));
+        assertEquals(0, service.release(ProvisionOutput.of("non-existence")));
+
+        assertThrows(IllegalArgumentException.class, () -> LocalProvisionService.builder()
+                .addHosts()
+                .build());
+
+        ExecutorService newOne = Executors.newCachedThreadPool();
+        LocalProvisionService anotherOne = LocalProvisionService.builder()
+                .addAllHosts(service.hosts())
+                .expireProvisions(false)
+                .executorService(newOne)
+                .build();
+        newOne.shutdownNow();
     }
 }

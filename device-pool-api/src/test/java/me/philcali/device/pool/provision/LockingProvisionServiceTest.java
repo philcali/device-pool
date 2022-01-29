@@ -98,4 +98,10 @@ class LockingProvisionServiceTest {
         lockingProvisionService.describe(provisionOutput);
         verify(provisionService).describe(eq(provisionOutput));
     }
+
+    @Test
+    void GIVEN_locking_provision_service_WHEN_close_is_invoked_THEN_forwards_to_service() throws Exception {
+        lockingProvisionService.close();
+        verify(provisionService).close();
+    }
 }
