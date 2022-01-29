@@ -37,7 +37,7 @@ public abstract class BaseDevicePool implements DevicePool {
 
     abstract ContentTransferAgentFactory transfers();
 
-    static class Builder extends ImmutableBaseDevicePool.Builder {
+    public static class Builder extends ImmutableBaseDevicePool.Builder {
         public final <T extends ProvisionService & ReservationService> Builder provisionAndReservationService(
                 T service) {
             return provisionService(service).reservationService(service);

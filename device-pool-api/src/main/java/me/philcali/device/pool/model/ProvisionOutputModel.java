@@ -17,7 +17,6 @@ interface ProvisionOutputModel {
 
     List<Reservation> reservations();
 
-    @Value.Default
     default boolean succeeded() {
         return status() == Status.SUCCEEDED;
     }

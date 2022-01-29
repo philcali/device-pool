@@ -134,7 +134,6 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
         return ProvisionOutput.builder()
                 .id(provisionObject.id())
                 .status(provisionObject.status())
-                .succeeded(false)
                 .build();
     }
 
@@ -146,7 +145,7 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         inflightProvisions.forEach(provisionId -> {
             Call<ProvisionObject> result = deviceLabService().cancelProvision(poolId(), provisionId);
             safelyCall(result, ProvisioningException::new, true);
