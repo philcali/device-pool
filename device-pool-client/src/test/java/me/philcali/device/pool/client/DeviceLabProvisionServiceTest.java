@@ -88,7 +88,6 @@ class DeviceLabProvisionServiceTest {
         ProvisionOutput expectedOutput = ProvisionOutput.builder()
                 .id("provision-123")
                 .status(Status.REQUESTED)
-                .succeeded(false)
                 .build();
 
         assertEquals(expectedOutput, provisionOutput);
