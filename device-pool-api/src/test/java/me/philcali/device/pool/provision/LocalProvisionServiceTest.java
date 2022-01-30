@@ -91,14 +91,26 @@ class LocalProvisionServiceTest {
                 .id("second-test")
                 .amount(3)
                 .build();
-
+        ProvisionInput thirdSet = ProvisionInput.builder()
+                .id("third-test")
+                .amount(3)
+                .build();
         service.extend(ProvisionOutput.of(input.id()));
+
+        assertThrows(ProvisioningException.class, () -> devicePool.provisionWait(anotherSet, 100, TimeUnit.MILLISECONDS));
+        assertThrows(ProvisioningException.class, () -> devicePool.provisionWait(thirdSet, 100, TimeUnit.MILLISECONDS));
+        // Force removal
+        service.release(ProvisionOutput.of(anotherSet.id()));
+        // Skips this one
+        service.release(ProvisionOutput.of(thirdSet.id()));
+        // Exercise break check, and flush to valid entry
+        service.release(devices.get(0));
 
         final long waitTime = TimeUnit.MILLISECONDS.toMillis(500);
         Thread timebomb = new Thread(() -> {
             try {
                 Thread.sleep(waitTime);
-                devices.stream().limit(3).forEach(service::release);
+                devices.stream().skip(1).limit(2).forEach(service::release);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -132,6 +144,9 @@ class LocalProvisionServiceTest {
                 .expireProvisions(false)
                 .executorService(newOne)
                 .build();
+        service.close();
+        anotherOne.close();
+        TimeUnit.SECONDS.sleep(1);
         newOne.shutdownNow();
     }
 }

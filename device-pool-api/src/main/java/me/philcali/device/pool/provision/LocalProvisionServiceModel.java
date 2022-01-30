@@ -20,8 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -135,30 +133,40 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         public void run() {
             try {
                 while (running) {
-                    // Only acquire reaping lock if unlocked on active entry
                     final LocalProvisionEntry entry = activeProvisions.take();
-                    lock.lock();
-                    reservations.computeIfPresent(entry.input.id(), (id, cache) -> new CachedEntry<>(
-                            ProvisionOutput.builder()
-                                .from(cache.value)
-                                .status(Status.PROVISIONING)
-                                .build(), cache.expiresIn));
-                    final List<Reservation> pendingReservations = new ArrayList<>();
-                    for (int time = 0; time < entry.input.amount(); time++) {
-                        final Host host = availableHosts.take();
-                        pendingReservations.add(Reservation.builder()
-                                .deviceId(host.deviceId())
-                                .status(Status.SUCCEEDED)
-                                .build());
-                        LOGGER.info("Adding host {} to provision {}", host.deviceId(), entry.input.id());
+                    final CachedEntry<ProvisionOutput> existing = reservations.computeIfPresent(entry.input.id(),
+                            (id, cache) -> new CachedEntry<>(ProvisionOutput.builder()
+                                    .from(cache.value)
+                                    .status(Status.PROVISIONING)
+                                    .build(), cache.expiresIn));
+                    if (Objects.isNull(existing)) {
+                        LOGGER.info("Provision {} is no longer active", entry.input.id());
+                        continue;
                     }
-                    reservations.computeIfPresent(entry.input.id(), (id, cache) -> new CachedEntry<>(
-                            ProvisionOutput.builder()
-                                .from(cache.value)
-                                .status(Status.SUCCEEDED)
-                                .addAllReservations(pendingReservations)
-                                .build(), cache.expiresIn));
-                    lock.unlock();
+                    for (int i = 1; i <= entry.input.amount(); i++) {
+                        final Host host = availableHosts.take();
+                        // Adding a host to a provision is atomic, complete with checks of existence
+                        lock.lock();
+                        try {
+                            // Provision was swept or released before host was obtained, recycle host and break
+                            if (!reservations.containsKey(entry.input.id())) {
+                                LOGGER.warn("Host {} was applied to provision that no longer exists {}",
+                                        host.deviceId(),
+                                        entry.input.id());
+                                availableHosts.offer(host);
+                                break;
+                            }
+                            final Status status = i == entry.input.amount() ? Status.SUCCEEDED : Status.PROVISIONING;
+                            reservations.computeIfPresent(entry.input.id(), (id, cache) -> new CachedEntry<>(
+                                    ProvisionOutput.builder()
+                                            .from(cache.value)
+                                            .status(status)
+                                            .addReservations(Reservation.of(host.deviceId(), Status.SUCCEEDED))
+                                            .build(), cache.expiresIn));
+                        } finally {
+                            lock.unlock();
+                        }
+                    }
                 }
             } catch (InterruptedException ie) {
                 LOGGER.info("Queue poll interrupted, stopping");
