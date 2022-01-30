@@ -14,9 +14,9 @@ import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.config.hosts.HostConfigEntry;
+import org.apache.sshd.client.future.AuthFuture;
 import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.client.session.ClientSession;
-import org.apache.sshd.scp.client.DefaultScpClient;
 import org.apache.sshd.scp.client.ScpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -63,9 +64,15 @@ class ConnectionFactorySSHTest {
     }
 
     @Test
+    void GIVEN_factory_WHEN_create_THEN_factory_is_provided() {
+        assertNotNull(ConnectionFactorySSH.create());
+    }
+
+    @Test
     void GIVEN_factory_is_created_WHEN_connecting_through_ssh_THEN_ssh_connection_is_created() throws IOException {
         final ConnectFuture connectFuture = mock(ConnectFuture.class);
         final ClientSession session = mock(ClientSession.class);
+        final AuthFuture authFuture = mock(AuthFuture.class);
         doReturn(false).when(sshClient).isStarted();
         when(sshClient.connect(any(HostConfigEntry.class), eq(null), eq(null))).then(answer -> {
             HostConfigEntry entry = answer.getArgument(0);
@@ -76,6 +83,8 @@ class ConnectionFactorySSHTest {
         });
         when(connectFuture.verify(eq(Duration.ofSeconds(5L)))).thenReturn(connectFuture);
         doReturn(session).when(connectFuture).getSession();
+        doReturn(authFuture).when(session).auth();
+        when(authFuture.verify(eq(Duration.ofSeconds(5L)))).thenReturn(authFuture);
         Connection connection = factory.connect(host);
         assertEquals(ConnectionSSH.of(session), connection);
         verify(sshClient).start();
@@ -85,6 +94,7 @@ class ConnectionFactorySSHTest {
     void GIVEN_factory_is_created_WHEN_connecting_through_ssh_THEN_ssh_client_is_reused() throws IOException {
         final ConnectFuture connectFuture = mock(ConnectFuture.class);
         final ClientSession session = mock(ClientSession.class);
+        final AuthFuture authFuture = mock(AuthFuture.class);
         doReturn(true).when(sshClient).isStarted();
         when(sshClient.connect(any(HostConfigEntry.class), eq(null), eq(null))).then(answer -> {
             HostConfigEntry entry = answer.getArgument(0);
@@ -95,6 +105,8 @@ class ConnectionFactorySSHTest {
         });
         when(connectFuture.verify(eq(Duration.ofSeconds(5L)))).thenReturn(connectFuture);
         doReturn(session).when(connectFuture).getSession();
+        doReturn(authFuture).when(session).auth();
+        when(authFuture.verify(eq(Duration.ofSeconds(5L)))).thenReturn(authFuture);
         Connection connection = factory.connect(host);
         assertEquals(ConnectionSSH.of(session), connection);
         verify(sshClient, times(0)).start();
@@ -120,6 +132,7 @@ class ConnectionFactorySSHTest {
     void GIVEN_factory_is_created_WHEN_connecting_through_scp_THEN_new_connection_is_using_scp() throws IOException {
         final ConnectFuture connectFuture = mock(ConnectFuture.class);
         final ClientSession session = mock(ClientSession.class);
+        final AuthFuture authFuture = mock(AuthFuture.class);
         doReturn(true).when(sshClient).isStarted();
         when(sshClient.connect(any(HostConfigEntry.class), eq(null), eq(null))).then(answer -> {
             HostConfigEntry entry = answer.getArgument(0);
@@ -130,6 +143,8 @@ class ConnectionFactorySSHTest {
         });
         when(connectFuture.verify(eq(Duration.ofSeconds(5L)))).thenReturn(connectFuture);
         doReturn(session).when(connectFuture).getSession();
+        doReturn(authFuture).when(session).auth();
+        when(authFuture.verify(eq(Duration.ofSeconds(5L)))).thenReturn(authFuture);
         Connection oldConnection = mock(Connection.class);
         ContentTransferAgent agent = factory.connect("abc-123", oldConnection, host);
         assertEquals(ConnectionSCP.of(scpClient, false), agent);
@@ -139,7 +154,6 @@ class ConnectionFactorySSHTest {
     @Test
     void GIVEN_factory_is_created_WHEN_connecting_through_scp_fails_THEN_wrapped_ex_is_thrown() throws IOException {
         final ConnectFuture connectFuture = mock(ConnectFuture.class);
-        final ClientSession session = mock(ClientSession.class);
         doReturn(true).when(sshClient).isStarted();
         when(sshClient.connect(any(HostConfigEntry.class), eq(null), eq(null))).then(answer -> {
             HostConfigEntry entry = answer.getArgument(0);
@@ -154,7 +168,7 @@ class ConnectionFactorySSHTest {
     }
 
     @Test
-    void GIVEN_factory_is_created_WHEN_connecting_through_scp_THEN_connection_is_reused_for_scp() throws IOException {
+    void GIVEN_factory_is_created_WHEN_connecting_through_scp_THEN_connection_is_reused_for_scp() {
         final ClientSession session = mock(ClientSession.class);
         ConnectionSSH oldConnection = ConnectionSSH.of(session);
         ContentTransferAgent agent = factory.connect("abc-123", oldConnection, host);

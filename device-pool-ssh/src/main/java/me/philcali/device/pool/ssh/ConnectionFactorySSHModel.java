@@ -49,6 +49,11 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
     }
 
     @Value.Default
+    public Duration authTimeout() {
+        return Duration.ofSeconds(5L);
+    }
+
+    @Value.Default
     public String userName() {
         return System.getProperty("user.name");
     }
@@ -63,6 +68,10 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
 
     @Nullable
     abstract SocketAddress localAddress();
+
+    public static ConnectionFactorySSH create() {
+        return ConnectionFactorySSH.builder().build();
+    }
 
     private SshClient forcedStartClient() {
         if (!client().isStarted()) {
@@ -83,7 +92,9 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
         hostConfigEntry.setProxyJump(host.proxyJump());
         hostConfigEntry.setUsername(userName());
         ConnectFuture future = forcedStartClient().connect(hostConfigEntry, attributeRepository(), localAddress());
-        return future.verify(connectionTimeout()).getSession();
+        ClientSession session = future.verify(connectionTimeout()).getSession();
+        session.auth().verify(connectionTimeout());
+        return session;
     }
 
     @Override
