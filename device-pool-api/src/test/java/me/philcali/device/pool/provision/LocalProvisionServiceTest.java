@@ -144,7 +144,9 @@ class LocalProvisionServiceTest {
                 .expireProvisions(false)
                 .executorService(newOne)
                 .build();
-        newOne.shutdownNow();
+        service.close();
         anotherOne.close();
+        TimeUnit.SECONDS.sleep(1);
+        newOne.shutdownNow();
     }
 }
