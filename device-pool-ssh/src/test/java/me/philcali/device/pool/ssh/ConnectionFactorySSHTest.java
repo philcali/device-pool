@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,6 +61,11 @@ class ConnectionFactorySSHTest {
                 .client(sshClient)
                 .scpFactory(session -> scpClient)
                 .build();
+    }
+
+    @Test
+    void GIVEN_factory_WHEN_create_THEN_factory_is_provided() {
+        assertNotNull(ConnectionFactorySSH.create());
     }
 
     @Test
