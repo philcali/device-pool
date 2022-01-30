@@ -33,5 +33,6 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ARTIFACT_WRITER_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ARTIFACT_WRITER_SECRET_KEY }}
+        AWS_REGION: us-east-1
     - name: Codecov
       uses: codecov/codecov-action@v2.1.0
