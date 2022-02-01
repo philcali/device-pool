@@ -12,14 +12,11 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.time.Instant;
 
-@ApiModel
 @Value.Immutable
-abstract class DeviceLockObjectModel implements Modifiable, UniqueEntity {
+@ApiModel
+abstract class LockObjectModel implements UniqueEntity, Modifiable {
     @Nullable
-    abstract String provisionId();
-
-    @Nullable
-    abstract String reservationId();
+    abstract String holder();
 
     @Nullable
     abstract Instant expiresIn();

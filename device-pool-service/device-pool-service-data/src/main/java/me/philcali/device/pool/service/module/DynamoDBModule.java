@@ -9,9 +9,9 @@ package me.philcali.device.pool.service.module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Module;
 import dagger.Provides;
-import me.philcali.device.pool.service.api.model.DeviceLockObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
+import me.philcali.device.pool.service.api.model.LockObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
 import me.philcali.device.pool.service.data.TableSchemas;
@@ -100,9 +100,9 @@ public class DynamoDBModule {
 
     @Provides
     @Singleton
-    static DynamoDbTable<DeviceLockObject> providesDeviceLockTable(
+    static DynamoDbTable<LockObject> providesLockTable(
             @Named(TABLE_NAME) final String tableName,
             final DynamoDbEnhancedClient client) {
-        return client.table(tableName, TableSchemas.deviceLockSchema());
+        return client.table(tableName, TableSchemas.lockSchema());
     }
 }

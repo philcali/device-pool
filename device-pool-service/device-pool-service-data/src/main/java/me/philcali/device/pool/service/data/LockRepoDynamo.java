@@ -6,11 +6,11 @@
 
 package me.philcali.device.pool.service.data;
 
-import me.philcali.device.pool.service.api.DeviceLockRepo;
+import me.philcali.device.pool.service.api.LockRepo;
 import me.philcali.device.pool.service.api.model.CompositeKey;
-import me.philcali.device.pool.service.api.model.CreateDeviceLockObject;
-import me.philcali.device.pool.service.api.model.DeviceLockObject;
-import me.philcali.device.pool.service.api.model.UpdateDeviceLockObject;
+import me.philcali.device.pool.service.api.model.CreateLockObject;
+import me.philcali.device.pool.service.api.model.LockObject;
+import me.philcali.device.pool.service.api.model.UpdateLockObject;
 import me.philcali.device.pool.service.data.token.TokenMarshaller;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
@@ -24,63 +24,60 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Singleton
-public class DeviceLockRepoDynamo
-        extends AbstractObjectRepo<DeviceLockObject, CreateDeviceLockObject, UpdateDeviceLockObject>
-        implements DeviceLockRepo {
-    public static String RESOURCE = "lock";
+public class LockRepoDynamo
+        extends AbstractObjectRepo<LockObject, CreateLockObject, UpdateLockObject>
+        implements LockRepo {
+    public static final String RESOURCE = "lock";
 
     @Inject
-    public DeviceLockRepoDynamo(DynamoDbTable<DeviceLockObject> table, TokenMarshaller marshaller) {
+    public LockRepoDynamo(final DynamoDbTable<LockObject> table, final TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
 
     @Override
-    protected PutItemEnhancedRequest<DeviceLockObject> putItemRequest(
+    protected PutItemEnhancedRequest<LockObject> putItemRequest(
             CompositeKey account,
-            CreateDeviceLockObject create) {
-        final Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        return PutItemEnhancedRequest.builder(DeviceLockObject.class)
+            CreateLockObject create) {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        return PutItemEnhancedRequest.builder(LockObject.class)
                 .conditionExpression(Expression.builder()
                         .expression("attribute_not_exists(#id) and #name <> :id")
                         .putExpressionName("#id", PK)
                         .putExpressionName("#name", SK)
                         .putExpressionValue(":id", AttributeValue.builder().s(create.id()).build())
                         .build())
-                .item(DeviceLockObject.builder()
+                .item(LockObject.builder()
                         .createdAt(now)
                         .updatedAt(now)
-                        .expiresIn(create.expiresIn())
-                        .key(toPartitionKey(account))
                         .id(create.id())
-                        .provisionId(create.provisionId())
-                        .reservationId(create.reservationId())
+                        .expiresIn(create.expiresIn())
+                        .holder(create.holder())
+                        .key(toPartitionKey(account))
                         .build())
                 .build();
     }
 
     @Override
-    protected UpdateItemEnhancedRequest<DeviceLockObject> updateItemRequest(
+    protected UpdateItemEnhancedRequest<LockObject> updateItemRequest(
             CompositeKey account,
-            UpdateDeviceLockObject update) {
-        return UpdateItemEnhancedRequest.builder(DeviceLockObject.class)
+            UpdateLockObject update) {
+        final Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        return UpdateItemEnhancedRequest.builder(LockObject.class)
                 .ignoreNulls(true)
                 .conditionExpression(Expression.builder()
-                        .expression("attribute_exists(#id) and #name = :id and #pid = :pid and #rid = :rid")
+                        .expression("attribute_exists(#id) and #name = :id and #holder = :holder")
                         .putExpressionName("#id", PK)
                         .putExpressionName("#name", SK)
-                        .putExpressionName("#pid", "provisionId")
-                        .putExpressionName("#rid", "reservationId")
+                        .putExpressionName("#holder", "holder")
                         .putExpressionValue(":id", AttributeValue.builder().s(update.id()).build())
-                        .putExpressionValue(":pid", AttributeValue.builder().s(update.provisionId()).build())
-                        .putExpressionValue(":rid", AttributeValue.builder().s(update.reservationId()).build())
+                        .putExpressionValue(":holder", AttributeValue.builder().s(update.holder()).build())
                         .build())
-                .item(DeviceLockObject.builder()
+                .item(LockObject.builder()
+                        .updatedAt(now)
                         .id(update.id())
+                        .holder(update.holder())
                         .key(toPartitionKey(account))
-                        .updatedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
                         .expiresIn(update.expiresIn())
-                        .reservationId(update.reservationId())
-                        .provisionId(update.provisionId())
                         .build())
                 .build();
     }

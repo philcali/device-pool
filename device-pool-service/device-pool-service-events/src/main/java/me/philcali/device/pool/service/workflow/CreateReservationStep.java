@@ -7,12 +7,12 @@
 package me.philcali.device.pool.service.workflow;
 
 import me.philcali.device.pool.model.Status;
-import me.philcali.device.pool.service.api.DeviceLockRepo;
 import me.philcali.device.pool.service.api.DeviceRepo;
+import me.philcali.device.pool.service.api.LockRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
 import me.philcali.device.pool.service.api.exception.ConflictException;
 import me.philcali.device.pool.service.api.exception.ServiceException;
-import me.philcali.device.pool.service.api.model.CreateDeviceLockObject;
+import me.philcali.device.pool.service.api.model.CreateLockObject;
 import me.philcali.device.pool.service.api.model.CreateReservationObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
@@ -20,7 +20,6 @@ import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.ReservationObject;
 import me.philcali.device.pool.service.exception.RetryableException;
 import me.philcali.device.pool.service.exception.WorkflowExecutionException;
-import me.philcali.device.pool.service.model.Error;
 import me.philcali.device.pool.service.model.WorkflowState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,16 +38,16 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
     private static final Logger LOGGER = LogManager.getLogger(CreateReservationStep.class);
     private final ReservationRepo reservationRepo;
     private final DeviceRepo deviceRepo;
-    private final DeviceLockRepo deviceLockRepo;
+    private final LockRepo lockRepo;
 
     @Inject
     public CreateReservationStep(
             final ReservationRepo reservationRepo,
             final DeviceRepo deviceRepo,
-            final DeviceLockRepo deviceLockRepo) {
+            final LockRepo deviceLockRepo) {
         this.reservationRepo = reservationRepo;
         this.deviceRepo = deviceRepo;
-        this.deviceLockRepo = deviceLockRepo;
+        this.lockRepo = deviceLockRepo;
     }
 
     private Map<String, ReservationObject> provisionalReservations(ProvisionObject provision) {
@@ -87,9 +86,8 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
                 String reservationId = UUID.randomUUID().toString();
                 if (input.poolLockOptions().enabled()) {
                     try {
-                        deviceLockRepo.create(device.selfKey(), CreateDeviceLockObject.builder()
-                                .reservationId(reservationId)
-                                .provisionId(input.provision().id())
+                        lockRepo.create(device.selfKey(), CreateLockObject.builder()
+                                .holder(reservationId)
                                 .id("lock")
                                 .duration(Duration.ofSeconds(input.poolLockOptions().initialDuration()))
                                 .build());
@@ -111,7 +109,7 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
                 throw new WorkflowExecutionException(ce);
             } catch (ServiceException se) {
                 // Make sure we go ahead and release the lock
-                deviceLockRepo.delete(device.selfKey(), "lock");
+                lockRepo.delete(device.selfKey(), "lock");
                 throw new RetryableException(se);
             }
         }

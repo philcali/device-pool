@@ -14,13 +14,11 @@ import java.time.Instant;
 
 @ApiModel
 @Value.Immutable
-interface UpdateDeviceLockObjectModel {
+interface UpdateLockObjectModel {
     @Nullable
     String id();
 
-    String provisionId();
-
-    String reservationId();
+    String holder();
 
     @Nullable
     Instant expiresIn();

@@ -21,9 +21,6 @@ interface UpdateDeviceObjectModel {
     String id();
 
     @Nullable
-    String poolId();
-
-    @Nullable
     String privateAddress();
 
     @Nullable
