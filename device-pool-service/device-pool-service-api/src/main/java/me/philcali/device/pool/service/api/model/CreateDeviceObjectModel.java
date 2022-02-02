@@ -20,9 +20,6 @@ interface CreateDeviceObjectModel {
     String id();
 
     @Nullable
-    String poolId();
-
-    @Nullable
     String privateAddress();
 
     String publicAddress();

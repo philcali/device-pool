@@ -14,13 +14,9 @@ import java.time.Instant;
 
 @ApiModel
 @Value.Immutable
-abstract class DeviceLockObjectModel implements Modifiable, UniqueEntity {
-    @Nullable
-    abstract String provisionId();
+interface UpdateLockObjectModel {
+    String holder();
 
     @Nullable
-    abstract String reservationId();
-
-    @Nullable
-    abstract Instant expiresIn();
+    Instant expiresIn();
 }

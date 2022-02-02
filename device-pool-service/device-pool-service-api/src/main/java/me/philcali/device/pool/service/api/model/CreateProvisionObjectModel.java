@@ -19,9 +19,6 @@ import java.time.Instant;
 interface CreateProvisionObjectModel {
     String id();
 
-    @Nullable
-    String poolId();
-
     @Value.Default
     default int amount() {
         return 1;

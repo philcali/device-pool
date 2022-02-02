@@ -8,13 +8,13 @@ package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.model.CompositeKey;
-import me.philcali.device.pool.service.api.model.DeviceLockObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpoint;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.api.model.DevicePoolLockOptions;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.DevicePoolType;
+import me.philcali.device.pool.service.api.model.LockObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
 import software.amazon.awssdk.enhanced.dynamodb.EnhancedType;
@@ -174,17 +174,14 @@ public class TableSchemas {
                 .build();
     }
 
-    public static TableSchema<DeviceLockObject> deviceLockSchema() {
-        return commonTable(DeviceLockObject.class, DeviceLockObject.Builder.class,
-                DeviceLockObject::key, DeviceLockObject.Builder::key,
-                DeviceLockObject::id, DeviceLockObject.Builder::id)
-                .newItemBuilder(DeviceLockObject::builder, DeviceLockObject.Builder::build)
-                .addAttribute(String.class, a -> a.name("provisionId")
-                        .getter(DeviceLockObject::provisionId)
-                        .setter(DeviceLockObject.Builder::provisionId))
-                .addAttribute(String.class, a -> a.name("reservationId")
-                        .getter(DeviceLockObject::reservationId)
-                        .setter(DeviceLockObject.Builder::reservationId))
+    public static TableSchema<LockObject> lockSchema() {
+        return commonTable(LockObject.class, LockObject.Builder.class,
+                LockObject::key, LockObject.Builder::key,
+                LockObject::id, LockObject.Builder::id)
+                .newItemBuilder(LockObject::builder, LockObject.Builder::build)
+                .addAttribute(String.class, a -> a.name("holder")
+                        .getter(LockObject::holder)
+                        .setter(LockObject.Builder::holder))
                 .addAttribute(Long.class, a -> a.name("createdAt")
                         .getter(d -> Optional.ofNullable(d.createdAt()).map(Instant::getEpochSecond).orElse(null))
                         .setter((builder, value) -> builder.createdAt(Instant.ofEpochSecond(value))))

@@ -8,17 +8,17 @@ package me.philcali.device.pool.service.module;
 
 import dagger.Module;
 import dagger.Provides;
-import me.philcali.device.pool.service.api.DeviceLockRepo;
 import me.philcali.device.pool.service.api.DevicePoolRepo;
 import me.philcali.device.pool.service.api.DeviceRepo;
+import me.philcali.device.pool.service.api.LockRepo;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
-import me.philcali.device.pool.service.data.DeviceLockRepoDynamo;
 import me.philcali.device.pool.service.data.DevicePoolRepoDynamo;
 import me.philcali.device.pool.service.data.DeviceRepoDynamo;
+import me.philcali.device.pool.service.data.LockRepoDynamo;
 import me.philcali.device.pool.service.data.ProvisionRepoDynamo;
 import me.philcali.device.pool.service.data.ReservationRepoDynamo;
 import me.philcali.device.pool.service.data.TableSchemas;
@@ -72,7 +72,7 @@ class ApplicationModule {
 
     @Provides
     @Singleton
-    static DeviceLockRepo providesDeviceLockRepo(DeviceLockRepoDynamo dynamo) {
+    static LockRepo providesDeviceLockRepo(LockRepoDynamo dynamo) {
         return dynamo;
     }
 }

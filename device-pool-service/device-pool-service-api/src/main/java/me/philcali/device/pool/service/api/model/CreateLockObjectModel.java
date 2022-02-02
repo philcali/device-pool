@@ -17,28 +17,24 @@ import java.util.Objects;
 
 @ApiModel
 @Value.Immutable
-abstract class CreateDeviceLockObjectModel {
-    abstract String id();
-
-    abstract String reservationId();
-
-    abstract String provisionId();
-
-    @Nullable
-    abstract Instant expiresIn();
+abstract class CreateLockObjectModel {
+    abstract String holder();
 
     @Nullable
     abstract Duration duration();
 
+    @Nullable
+    abstract Instant expiresIn();
+
     @Value.Check
-    CreateDeviceLockObjectModel validate() {
-        if (Objects.isNull(expiresIn()) && Objects.isNull(duration())) {
-            throw new IllegalStateException("DeviceLock needs either an expire time or duration");
+    CreateLockObjectModel validate() {
+        if (Objects.isNull(duration()) && Objects.isNull(expiresIn())) {
+            throw new IllegalStateException("CreateLockObject needs either a duration or expiresIn");
         }
         if (Objects.nonNull(expiresIn())) {
             return this;
         }
-        return CreateDeviceLockObject.builder()
+        return CreateLockObject.builder()
                 .from(this)
                 .expiresIn(Instant.now().plus(duration()).truncatedTo(ChronoUnit.SECONDS))
                 .build();
