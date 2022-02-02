@@ -69,7 +69,6 @@ class LockRepoDynamoTest {
 
         String holder = UUID.randomUUID().toString();
         LockObject lockObject = lockRepo.create(key, CreateLockObject.builder()
-                .id("abc-123")
                 .holder(holder)
                 .duration(Duration.ofSeconds(10))
                 .build());
@@ -77,7 +76,6 @@ class LockRepoDynamoTest {
         assertEquals(lockObject, lockRepo.get(key, lockObject.id()));
 
         LockObject updated = lockRepo.update(key, UpdateLockObject.builder()
-                .id(lockObject.id())
                 .holder(holder)
                 .expiresIn(Instant.now().plus(Duration.ofHours(1)).truncatedTo(ChronoUnit.SECONDS))
                 .build());

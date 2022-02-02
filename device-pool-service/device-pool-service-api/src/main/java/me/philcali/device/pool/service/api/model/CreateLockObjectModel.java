@@ -18,8 +18,6 @@ import java.util.Objects;
 @ApiModel
 @Value.Immutable
 abstract class CreateLockObjectModel {
-    abstract String id();
-
     abstract String holder();
 
     @Nullable

@@ -15,9 +15,6 @@ import java.time.Instant;
 @ApiModel
 @Value.Immutable
 interface UpdateLockObjectModel {
-    @Nullable
-    String id();
-
     String holder();
 
     @Nullable

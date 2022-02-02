@@ -27,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 public class LockRepoDynamo
         extends AbstractObjectRepo<LockObject, CreateLockObject, UpdateLockObject>
         implements LockRepo {
+    private static final String SINGLETON = "singleton";
     public static final String RESOURCE = "lock";
 
     @Inject
@@ -44,12 +45,12 @@ public class LockRepoDynamo
                         .expression("attribute_not_exists(#id) and #name <> :id")
                         .putExpressionName("#id", PK)
                         .putExpressionName("#name", SK)
-                        .putExpressionValue(":id", AttributeValue.builder().s(create.id()).build())
+                        .putExpressionValue(":id", AttributeValue.builder().s(SINGLETON).build())
                         .build())
                 .item(LockObject.builder()
                         .createdAt(now)
                         .updatedAt(now)
-                        .id(create.id())
+                        .id(SINGLETON)
                         .expiresIn(create.expiresIn())
                         .holder(create.holder())
                         .key(toPartitionKey(account))
@@ -69,12 +70,12 @@ public class LockRepoDynamo
                         .putExpressionName("#id", PK)
                         .putExpressionName("#name", SK)
                         .putExpressionName("#holder", "holder")
-                        .putExpressionValue(":id", AttributeValue.builder().s(update.id()).build())
+                        .putExpressionValue(":id", AttributeValue.builder().s(SINGLETON).build())
                         .putExpressionValue(":holder", AttributeValue.builder().s(update.holder()).build())
                         .build())
                 .item(LockObject.builder()
                         .updatedAt(now)
-                        .id(update.id())
+                        .id(SINGLETON)
                         .holder(update.holder())
                         .key(toPartitionKey(account))
                         .expiresIn(update.expiresIn())
