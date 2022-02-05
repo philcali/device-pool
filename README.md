@@ -63,10 +63,13 @@ is performed, namely through the `MANAGED` and `UNMANAGED` types.
 
 - `device-pool-service-backend`: Jersey Lambda container that handles the endpoints.
 - `device-pool-service-events`: Event Lambda handling provisioning workflow steps.
-- `device-pool-service-infra`: Java based CDK that creates the database and endpoints for the service.
 
 The rest of the modules support the former, introducing contracts, database implementation and
 other advanced extension points.
+
+Interested in setting up your own control plane? Super easy. Check out the infrastructure [setup instructions][2].
+
+[2]: https://github.com/philcali/philcali-cdk/tree/master/device-lab
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool?ref=badge_large)
