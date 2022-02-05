@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2022 Philip Cali
+ * Released under Apache-2.0 License
+ *     (https://www.apache.org/licenses/LICENSE-2.0)
+ */
+
 package me.philcali.device.pool.example;
 
 import me.philcali.device.pool.example.lab.Destroy;
@@ -16,13 +22,15 @@ public class Lab {
     @CommandLine.Option(
             names = "--endpoint",
             required = true,
-            description = "Override for device lab endpoint")
+            description = "Override for device lab endpoint",
+            scope = CommandLine.ScopeType.INHERIT)
     String endpoint;
 
     @CommandLine.Option(
             names = {"-d", "--name"},
             description = "Name of the device pool",
-            defaultValue = "examplePool")
+            defaultValue = "examplePool",
+            scope = CommandLine.ScopeType.INHERIT)
     String poolName;
 
     public String poolName() {
