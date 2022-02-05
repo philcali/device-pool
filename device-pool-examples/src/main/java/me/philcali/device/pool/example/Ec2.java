@@ -11,6 +11,7 @@ import me.philcali.device.pool.Device;
 import me.philcali.device.pool.DevicePool;
 import me.philcali.device.pool.ec2.AutoscalingProvisionService;
 import me.philcali.device.pool.ec2.Ec2ReservationService;
+import me.philcali.device.pool.example.util.PlatformOSConverter;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.ssh.ConnectionFactorySSH;
@@ -42,18 +43,6 @@ public class Ec2 implements Runnable {
 
     @CommandLine.Option(names = {"-i", "--identity"})
     KeyPair pemFile;
-
-    static class PlatformOSConverter implements CommandLine.ITypeConverter<PlatformOS> {
-        @Override
-        public PlatformOS convert(String str) {
-            String[] parts = str.split(":");
-            if (parts.length < 2) {
-                throw new CommandLine.TypeConversionException(
-                        "platform / os should be in the form of 'os:arch', but was " + str);
-            }
-            return PlatformOS.of(parts[0], parts[1]);
-        }
-    }
 
     @Override
     public void run() {
