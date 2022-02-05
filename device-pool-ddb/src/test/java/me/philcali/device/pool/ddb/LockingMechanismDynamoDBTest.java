@@ -6,6 +6,7 @@
 
 package me.philcali.device.pool.ddb;
 
+import me.philcali.device.pool.exceptions.LockingConflictException;
 import me.philcali.device.pool.lock.LockingMechanism;
 import me.philcali.device.pool.model.LockInput;
 import me.philcali.device.pool.model.LockOutput;
@@ -88,6 +89,14 @@ class LockingMechanismDynamoDBTest {
         assertEquals(input.id(), output.id());
         assertEquals(input.value(), output.value());
         assertTrue(output.expiresIn() >= now.plus(15, ChronoUnit.SECONDS).getEpochSecond());
+
+        output = mechanism.extend(input);
+        assertTrue(output.expiresIn() >= now.plus(15, ChronoUnit.SECONDS).getEpochSecond());
+
+        assertThrows(LockingConflictException.class, () -> mechanism.extend(LockInput.builder()
+                .from(input)
+                .holder("second-helper")
+                .build()));
     }
 
     @Test
