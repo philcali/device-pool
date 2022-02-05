@@ -63,6 +63,12 @@
             <artifactId>device-pool-ec2</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!-- Needed for Device Lab provisioning -->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-client</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

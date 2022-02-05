@@ -174,6 +174,9 @@ public interface DeviceLabService {
     static DeviceLabService create(BiConsumer<OkHttpClient.Builder, Retrofit.Builder> thunk) {
         Retrofit.Builder retrofitBuilder = new Retrofit.Builder();
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        retrofitBuilder.addConverterFactory(JacksonConverterFactory.create(mapper));
         defaultClientBuilder().andThen(thunk).accept(clientBuilder, retrofitBuilder);
         Retrofit retrofit = retrofitBuilder.client(clientBuilder.build()).build();
         return retrofit.create(DeviceLabService.class);
@@ -185,11 +188,8 @@ public interface DeviceLabService {
             if (Objects.nonNull(baseUrl) && !baseUrl.endsWith("/")) {
                 baseUrl += "/";
             }
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
             client.addInterceptor(AwsV4SigningInterceptor.create());
-            builder.addConverterFactory(JacksonConverterFactory.create(mapper))
-                    .baseUrl(baseUrl);
+            builder.baseUrl(baseUrl);
         });
     }
 }

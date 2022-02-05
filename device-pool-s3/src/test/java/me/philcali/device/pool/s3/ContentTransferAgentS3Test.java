@@ -11,6 +11,7 @@ import me.philcali.device.pool.content.ContentTransferAgent;
 import me.philcali.device.pool.model.CommandInput;
 import me.philcali.device.pool.model.CommandOutput;
 import me.philcali.device.pool.model.CopyInput;
+import me.philcali.device.pool.model.CopyOption;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -83,6 +86,40 @@ class ContentTransferAgentS3Test {
 
     private void writeTestFile(Path location) throws IOException {
         Files.write(location.resolve("test.txt"), "Hello World!".getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void GIVEN_transfer_is_created_WHEN_transfer_sends_directory_THEN_s3_is_recursive() {
+        CopyInput input = CopyInput.builder()
+                .source(tempDir.resolve("a").toString())
+                .destination("a")
+                .addOptions(CopyOption.RECURSIVE)
+                .build();
+        final Set<String> uuids = new HashSet<>();
+        when(s3.putObject(any(PutObjectRequest.class), any(RequestBody.class))).then(answer -> {
+            PutObjectRequest request = answer.getArgument(0);
+            String[] parts = request.key().split("/");
+            uuids.add(parts[1]);
+            assertEquals(prefix, parts[0]);
+            assertEquals("test.txt", parts[2]);
+            assertEquals(bucketName, request.bucket());
+            return PutObjectResponse.builder()
+                    .build();
+        });
+        when(command.copy(any(CopyInput.class))).then(answer -> {
+            CopyInput commandInput = answer.getArgument(0);
+            assertEquals(input.destination(), commandInput.destination());
+            String[] parts = commandInput.source().split("/");
+            assertTrue(uuids.contains(parts[4]), "uuids does not contain " + parts[4]);
+            return CommandInput.of("echo Hello World");
+        });
+        when(connection.execute(eq(CommandInput.of("echo Hello World")))).thenReturn(CommandOutput.builder()
+                .exitCode(0)
+                .originalInput(CommandInput.of("echo Hello World"))
+                .stdout("Hello World".getBytes(StandardCharsets.UTF_8))
+                .build());
+        agent.send(input);
+        assertEquals(2, uuids.size());
     }
 
     @Test

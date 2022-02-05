@@ -25,6 +25,7 @@ import software.amazon.awssdk.services.ec2.model.Instance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class})
@@ -40,8 +41,6 @@ class Ec2ReservationServiceTest {
         service = Ec2ReservationService.builder()
                 .ec2(ec2)
                 .proxyJump("proxy-host.amazon.com")
-                .port(8080)
-                .hostAddress(Instance::privateIpAddress)
                 .platformOS(PlatformOS.of("Linux", "aarch64"))
                 .build();
 
@@ -53,20 +52,20 @@ class Ec2ReservationServiceTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void GIVEN_reservation_service_WHEN_exchange_is_made_THEN_host_is_provided() {
+    void GIVEN_reservation_service_WHEN_exchange_is_made_THEN_host_is_provided() throws Exception {
         DescribeInstancesRequest describeInstancesRequest = DescribeInstancesRequest.builder()
                 .instanceIds(reservation.deviceId())
                 .build();
 
         when(ec2.describeInstances(eq(describeInstancesRequest))).thenReturn(DescribeInstancesResponse.builder()
                 .reservations(builder -> builder.instances(Instance.builder()
-                        .privateIpAddress("10.0.6.1")
+                        .publicIpAddress("10.0.6.1")
                         .instanceId(reservation.deviceId())
                         .build()))
                 .build());
 
         Host expectedHost = Host.builder()
-                .port(8080)
+                .port(22)
                 .hostName("10.0.6.1")
                 .platform(service.platformOS())
                 .proxyJump(service.proxyJump())
@@ -75,6 +74,9 @@ class Ec2ReservationServiceTest {
 
         Host host = service.exchange(reservation);
         assertEquals(expectedHost, host);
+
+        service.close();
+        verify(ec2).close();
     }
 
     @Test

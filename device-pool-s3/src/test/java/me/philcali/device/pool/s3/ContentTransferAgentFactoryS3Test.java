@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.s3.S3Client;
 
+import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith({MockitoExtension.class})
@@ -45,7 +46,7 @@ class ContentTransferAgentFactoryS3Test {
     }
 
     @Test
-    void GIVEN_factory_is_created_WHEN_connecting_to_a_host_THEN_agent_is_returned() {
+    void GIVEN_factory_is_created_WHEN_connecting_to_a_host_THEN_agent_is_returned() throws Exception {
         ContentTransferAgent agent = factory.connect("abc-123", connection, host);
 
         ContentTransferAgent expectedAgent = ContentTransferAgentS3.builder()
@@ -57,5 +58,8 @@ class ContentTransferAgentFactoryS3Test {
                 .build();
 
         assertEquals(expectedAgent, agent);
+
+        factory.close();
+        verify(s3).close();
     }
 }
