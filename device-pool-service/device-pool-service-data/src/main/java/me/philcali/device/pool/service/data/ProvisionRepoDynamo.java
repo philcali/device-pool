@@ -8,7 +8,6 @@ package me.philcali.device.pool.service.data;
 
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ProvisionRepo;
-import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
@@ -94,7 +93,8 @@ public class ProvisionRepoDynamo
         Expression.Builder builder = Expression.builder();
         int index = 0;
         for (Status status : Status.values()) {
-            if (status.isTerminal()) {
+            // We allow an exception fo cancelling, since we need to seed the stream
+            if (status.isTerminal() || status == Status.CANCELING) {
                 String valueKey = ":s" + (++index);
                 statusValueKeys.add(valueKey);
                 builder.putExpressionValue(valueKey, AttributeValue.builder()

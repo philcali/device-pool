@@ -67,9 +67,9 @@ public class TableSchemas {
                 .addAttribute(Boolean.class, a -> a.name("enabled")
                         .getter(DevicePoolLockOptions::enabled)
                         .setter(DevicePoolLockOptions.Builder::enabled))
-                .addAttribute(Long.class, a -> a.name("initialDuration")
-                        .getter(DevicePoolLockOptions::initialDuration)
-                        .setter(DevicePoolLockOptions.Builder::initialDuration))
+                .addAttribute(Long.class, a -> a.name("duration")
+                        .getter(DevicePoolLockOptions::duration)
+                        .setter(DevicePoolLockOptions.Builder::duration))
                 .build();
     }
 

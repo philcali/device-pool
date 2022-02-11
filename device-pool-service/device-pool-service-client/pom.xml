@@ -12,7 +12,7 @@
     <artifactId>device-pool-service-client</artifactId>
 
     <properties>
-        <retrofit2.version>2.9.0</retrofit2.version>
+        <retrofit2.version>2.7.1</retrofit2.version>
     </properties>
 
     <build>

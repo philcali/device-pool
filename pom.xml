@@ -19,6 +19,7 @@
         <module>device-pool-service</module>
         <module>device-pool-client</module>
         <module>device-pool-examples</module>
+        <module>device-pool-cli</module>
     </modules>
 
     <properties>
@@ -44,6 +45,7 @@
         <enforcer.version>3.0.0-M2</enforcer.version>
         <ddb.local.version>1.16.0</ddb.local.version>
         <aws.sdk.version>2.16.52</aws.sdk.version>
+        <picocli.version>4.6.2</picocli.version>
     </properties>
 
     <reporting>

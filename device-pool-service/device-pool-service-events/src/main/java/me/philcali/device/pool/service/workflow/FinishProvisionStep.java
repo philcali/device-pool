@@ -9,6 +9,7 @@ package me.philcali.device.pool.service.workflow;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
 import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.ReservationObject;
@@ -60,9 +61,9 @@ public class FinishProvisionStep implements WorkflowStep<WorkflowState, Workflow
                     .from(input)
                     .provision(provisionRepo.update(input.key().parentKey(), update.build()))
                     .build();
-        } catch (NotFoundException e) {
-            LOGGER.error("Provision with key {} was not found", input.provision().selfKey());
-            throw new WorkflowExecutionException(e);
+        } catch (NotFoundException | InvalidInputException e) {
+            LOGGER.warn("Provision with key {} was not found", input.provision().selfKey());
+            return input;
         } catch (ServiceException e) {
             LOGGER.error("Failed to update provision {}, retrying", input.provision().selfKey(), e);
             throw new RetryableException(e);
