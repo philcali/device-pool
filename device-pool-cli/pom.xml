@@ -9,8 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>device-pool-examples</artifactId>
-
+    <artifactId>device-pool-cli</artifactId>
 
     <build>
         <plugins>
@@ -32,7 +31,7 @@
                             </artifactSet>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>me.philcali.device.pool.example.ExampleApp</mainClass>
+                                    <mainClass>me.philcali.device.pool.cli.DeviceLabCLI</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -44,26 +43,23 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j18-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>${picocli.version}</version>
         </dependency>
-        <!-- Needed for SSH device interaction -->
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>device-pool-ssh</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <!-- Needed for EC2 provisioning -->
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>device-pool-ec2</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <!-- Needed for Device Lab provisioning -->
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>device-pool-client</artifactId>
+            <artifactId>device-pool-service-client</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

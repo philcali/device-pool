@@ -11,6 +11,8 @@ import com.amazonaws.services.lambda.runtime.events.models.dynamodb.Record;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.ProvisionRepo;
 import me.philcali.device.pool.service.api.ReservationRepo;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
+import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.UpdateProvisionObject;
 import me.philcali.device.pool.service.api.model.UpdateReservationObject;
@@ -69,6 +71,8 @@ public class CancelProvisionWorkflowFunction implements DevicePoolEventRouterFun
         try {
             ProvisionObject updated = execute(provision);
             LOGGER.info("Canceled provision {}", updated);
+        } catch (NotFoundException | InvalidInputException e) {
+            LOGGER.warn("Provision no longer exists {}", provision.id());
         } catch (WorkflowExecutionException e) {
             LOGGER.error("Failed to cancel execution for {}", provision, e);
         }

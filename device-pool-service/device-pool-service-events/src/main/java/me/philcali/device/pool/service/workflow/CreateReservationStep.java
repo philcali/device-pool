@@ -88,7 +88,7 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
                     try {
                         lockRepo.create(device.selfKey(), CreateLockObject.builder()
                                 .holder(reservationId)
-                                .duration(Duration.ofSeconds(input.poolLockOptions().initialDuration()))
+                                .duration(Duration.ofSeconds(input.poolLockOptions().duration()))
                                 .build());
                         LOGGER.info("Obtained a lock on the device");
                     } catch (ConflictException ce) {

@@ -15,11 +15,17 @@ import java.time.Duration;
 @ApiModel
 @Value.Immutable
 @JsonDeserialize(as = DevicePoolLockOptions.class)
-abstract class DevicePoolLockOptionsModel {
-    abstract boolean enabled();
+interface DevicePoolLockOptionsModel {
+    boolean enabled();
 
     @Value.Default
-    Long initialDuration() {
+    @Deprecated
+    default long initialDuration() {
+        return duration();
+    }
+
+    @Value.Default
+    default long duration() {
         return Duration.ofHours(1).toSeconds();
     }
 }
