@@ -9,6 +9,7 @@ package me.philcali.device.pool.examples.infra;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.StackProps;
 
+@Generated
 public class DevicePoolExamplesInfraApp {
     public static void main(final String[] args) {
         App app = new App();
