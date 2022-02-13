@@ -6,12 +6,12 @@
 
 package me.philcali.device.pool.example.lab;
 
+import me.philcali.device.pool.example.util.PlatformOSConverter;
 import me.philcali.device.pool.BaseDevicePool;
 import me.philcali.device.pool.Device;
 import me.philcali.device.pool.DevicePool;
 import me.philcali.device.pool.client.DeviceLabProvisionService;
 import me.philcali.device.pool.example.Lab;
-import me.philcali.device.pool.example.util.PlatformOSConverter;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.ssh.ConnectionFactorySSH;
@@ -53,7 +53,7 @@ public class Provision implements Runnable {
                 .build();
         List<Device> devices = pool.provisionWait(ProvisionInput.builder()
                 .amount(amount)
-                .build(), 20, TimeUnit.SECONDS);
+                .build(), 5, TimeUnit.MINUTES);
         for (Device device : devices) {
             System.out.println("Provisioned device through control plane " + device.id());
         }
