@@ -6,9 +6,9 @@
 
 package me.philcali.device.pool.example.local;
 
+import me.philcali.device.pool.example.Local;
 import me.philcali.device.pool.Device;
 import me.philcali.device.pool.DevicePool;
-import me.philcali.device.pool.example.Local;
 import me.philcali.device.pool.model.CommandInput;
 import me.philcali.device.pool.model.CommandOutput;
 import me.philcali.device.pool.model.ProvisionInput;

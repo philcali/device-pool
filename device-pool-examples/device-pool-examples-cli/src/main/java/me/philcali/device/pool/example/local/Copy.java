@@ -6,9 +6,9 @@
 
 package me.philcali.device.pool.example.local;
 
+import me.philcali.device.pool.example.Local;
 import me.philcali.device.pool.Device;
 import me.philcali.device.pool.DevicePool;
-import me.philcali.device.pool.example.Local;
 import me.philcali.device.pool.model.CopyInput;
 import me.philcali.device.pool.model.ProvisionInput;
 import picocli.CommandLine;
