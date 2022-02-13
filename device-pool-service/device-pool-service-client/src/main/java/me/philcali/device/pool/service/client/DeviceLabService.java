@@ -10,15 +10,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
+import me.philcali.device.pool.service.api.model.CreateLockObject;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
+import me.philcali.device.pool.service.api.model.LockObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.ReservationObject;
 import me.philcali.device.pool.service.api.model.UpdateDeviceObject;
 import me.philcali.device.pool.service.api.model.UpdateDevicePoolObject;
+import me.philcali.device.pool.service.api.model.UpdateLockObject;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -130,6 +133,45 @@ public interface DeviceLabService {
             @Path("poolId") String poolId,
             @Path("provisionId") String provisionId,
             @Path("reservationId") String reservationId);
+
+    @GET("pools/{poolId}/locks")
+    Call<LockObject> getDevicePoolLock(@Path("poolId") String poolId);
+
+    @GET("pools/{poolId}/devices/{deviceId}/locks")
+    Call<LockObject> getDeviceLock(
+            @Path("poolId") String poolId,
+            @Path("deviceId") String deviceId);
+
+    @POST("pools/{poolId}/locks")
+    Call<LockObject> createDevicePoolLock(
+            @Path("poolId") String poolId,
+            @Body CreateLockObject create);
+
+    @POST("pools/{poolId}/devices/{deviceId}/locks")
+    Call<LockObject> createDeviceLock(
+            @Path("poolId") String poolId,
+            @Path("deviceId") String deviceId,
+            @Body CreateLockObject create);
+
+    @PUT("pools/{poolId}/locks")
+    Call<LockObject> extendDevicePoolLock(
+            @Path("poolId") String poolId,
+            @Body UpdateLockObject update);
+
+    @PUT("pools/{poolId}/devices/{deviceId}/locks")
+    Call<LockObject> extendDeviceLock(
+            @Path("poolId") String poolId,
+            @Path("deviceId") String deviceId,
+            @Body UpdateLockObject update);
+
+    @DELETE("pools/{poolId}/locks")
+    Call<Void> releaseDevicePoolLock(@Path("poolId") String poolId);
+
+    @DELETE("pools/{poolId}/devices/{deviceId}/locks")
+    Call<Void> releaseDeviceLock(
+            @Path("poolId") String poolId,
+            @Path("deviceId") String deviceId);
+
 
     default Call<QueryResults<DevicePoolObject>> listDevicePools(QueryParams params) {
         return listDevicePools(params.nextToken(), params.limit());

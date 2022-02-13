@@ -11,16 +11,19 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import me.philcali.device.pool.ddb.DynamoDBExtension;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
+import me.philcali.device.pool.service.api.model.CreateLockObject;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.DevicePoolLockOptions;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.DevicePoolType;
+import me.philcali.device.pool.service.api.model.LockObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.UpdateDeviceObject;
 import me.philcali.device.pool.service.api.model.UpdateDevicePoolObject;
+import me.philcali.device.pool.service.api.model.UpdateLockObject;
 import me.philcali.device.pool.service.data.TableSchemas;
 import me.philcali.device.pool.service.local.Server;
 import me.philcali.device.pool.service.module.DaggerDevicePoolsComponent;
@@ -41,12 +44,15 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Extensions({
@@ -99,6 +105,13 @@ class DeviceLabServiceTest {
 
     private <T> T executeAndReturn(Call<T> call) throws IOException {
         Response<T> response = call.execute();
+        assertNull(response.errorBody(), () -> {
+            try {
+                return response.errorBody().string();
+            } catch (IOException e) {
+                return e.getMessage();
+            }
+        });
         assertTrue(response.isSuccessful(), "Response "
                 + response.code() + " was not successful "
                 + response.errorBody());
@@ -123,6 +136,25 @@ class DeviceLabServiceTest {
         Call<DevicePoolObject> getCall = service.getDevicePool(created.id());
         assertEquals(created, executeAndReturn(getCall));
 
+        Call<LockObject> createDevicePoolLockCall = service.createDevicePoolLock(created.id(), CreateLockObject.builder()
+                .holder("integ-test")
+                .duration(Duration.ofSeconds(30))
+                .build());
+        LockObject poolLock = executeAndReturn(createDevicePoolLockCall);
+        assertEquals(poolLock, executeAndReturn(service.getDevicePoolLock(created.id())));
+
+        Call<LockObject> extendDevicePoolLockCall = service.extendDevicePoolLock(created.id(), UpdateLockObject.builder()
+                .holder("integ-test")
+                .expiresIn(poolLock.expiresIn().plus(Duration.ofHours(2)).truncatedTo(ChronoUnit.SECONDS))
+                .build());
+        LockObject updatedLock = executeAndReturn(extendDevicePoolLockCall);
+        assertEquals(updatedLock.expiresIn(), poolLock.expiresIn().plus(Duration.ofHours(2)).truncatedTo(ChronoUnit.SECONDS));
+
+        executeAndReturn(service.releaseDevicePoolLock(created.id()));
+        Response<LockObject> emptyLock = service.getDevicePoolLock(created.id()).execute();
+        assertFalse(emptyLock.isSuccessful(), "Response was supposed to be client error");
+        assertEquals(404, emptyLock.code(), "Response was supposed to be 404");
+
         Call<DevicePoolObject> updateCall = service.updateDevicePool(created.id(), UpdateDevicePoolObject.builder()
                 .description("An updated pool")
                 .lockOptions(DevicePoolLockOptions.of(false))
@@ -144,6 +176,25 @@ class DeviceLabServiceTest {
                 .addResults(createdDevice)
                 .isTruncated(false)
                 .build(), executeAndReturn(listDevices));
+
+        Call<LockObject> createDeviceLockCall = service.createDeviceLock(updated.id(), createdDevice.id(), CreateLockObject.builder()
+                .holder("integ-test")
+                .duration(Duration.ofSeconds(30))
+                .build());
+        LockObject createdLock = executeAndReturn(createDeviceLockCall);
+        assertEquals(createdLock, executeAndReturn(service.getDeviceLock(updated.id(), createdDevice.id())));
+
+        Call<LockObject> extendedLockCall = service.extendDeviceLock(updated.id(), createdDevice.id(), UpdateLockObject.builder()
+                .holder("integ-test")
+                .expiresIn(createdLock.expiresIn().plus(Duration.ofHours(2)).truncatedTo(ChronoUnit.SECONDS))
+                .build());
+        LockObject extendedLock = executeAndReturn(extendedLockCall);
+        assertEquals(extendedLock.expiresIn(), createdLock.expiresIn().plus(Duration.ofHours(2)).truncatedTo(ChronoUnit.SECONDS));
+        executeAndReturn(service.releaseDeviceLock(updated.id(), createdDevice.id()));
+
+        Response<LockObject> emptyDeviceLock = service.getDeviceLock(updated.id(), createdDevice.id()).execute();
+        assertFalse(emptyDeviceLock.isSuccessful(), "Response was not supposed to succeed");
+        assertEquals(404, emptyDeviceLock.code());
 
         Call<DeviceObject> updatedDeviceCall = service.updateDevice(updated.id(), createdDevice.id(), UpdateDeviceObject.builder()
                 .publicAddress("192.168.1.206")
