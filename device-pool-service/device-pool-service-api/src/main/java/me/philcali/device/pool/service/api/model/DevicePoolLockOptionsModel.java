@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import me.philcali.device.pool.model.ApiModel;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 
 @ApiModel
@@ -18,14 +19,15 @@ import java.time.Duration;
 interface DevicePoolLockOptionsModel {
     boolean enabled();
 
+    @Nullable
     @Value.Default
     @Deprecated
-    default long initialDuration() {
+    default Long initialDuration() {
         return duration();
     }
 
     @Value.Default
-    default long duration() {
+    default Long duration() {
         return Duration.ofHours(1).toSeconds();
     }
 }

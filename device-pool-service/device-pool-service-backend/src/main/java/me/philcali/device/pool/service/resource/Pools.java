@@ -54,6 +54,11 @@ public class Pools extends RepositoryResource<DevicePoolObject, CreateDevicePool
         return Provisions.class;
     }
 
+    @Path("/{" + ID + "}/locks")
+    public Class<PoolLocks> locks() {
+        return PoolLocks.class;
+    }
+
     @GET
     public Response list(
             @Context SecurityContext context,

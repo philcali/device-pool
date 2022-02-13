@@ -39,7 +39,7 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
         super(devices, pools);
     }
 
-    @Path("/locks")
+    @Path("/{" + ID + "}/locks")
     public Class<DeviceLocks> locks() {
         return DeviceLocks.class;
     }
