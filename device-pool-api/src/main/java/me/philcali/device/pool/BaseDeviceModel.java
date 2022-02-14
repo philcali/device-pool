@@ -19,6 +19,12 @@ import me.philcali.device.pool.model.Host;
 import org.immutables.value.Value;
 
 
+/**
+ * The {@link BaseDevice} implements the {@link Device} abstraction by forwarding commands to the
+ * underlying data plane components for command execution and file transfer. Command execution is
+ * handled by a {@link Connection} implementation and file transfers are handled by {@link ContentTransferAgent},
+ * respectively.
+ */
 @ApiModel
 @Value.Immutable
 abstract class BaseDeviceModel implements Device {

@@ -26,6 +26,16 @@ import org.immutables.value.Value;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The {@link BaseDevicePool} implements the {@link DevicePool} breaking down the control plane
+ * implementation into distinct components for flexible injection. Some components might represent
+ * both the {@link ReservationService} and {@link ProvisionService} control plane functions, for which
+ * they can be set simultaneously via the {@link Builder}. The same is also true with {@link ConnectionFactory}
+ * and {@link ContentTransferAgentFactory} for generating {@link Device}. The {@link BaseDevicePool}
+ * implements the <code>obtain</code> method by exchanging complete {@link me.philcali.device.pool.model.Reservation}
+ * detail for {@link Host} data path information to be used in generated {@link Connection} and
+ * {@link ContentTransferAgent}. The {@link Device} implementation is a {@link BaseDevice}.
+ */
 @APIShadowModel
 @Value.Immutable
 public abstract class BaseDevicePool implements DevicePool {
