@@ -12,7 +12,7 @@ import me.philcali.device.pool.model.CommandOutput;
 import me.philcali.device.pool.model.CopyInput;
 
 /**
- * The main abstraction for interacting with a {@link Device} of any kind. The
+ * The client side abstraction for interacting with a {@link Device} of any kind. The
  * {@link Device} interface represent the data plane interface for interacting
  * with {@link Device}s.
  */
