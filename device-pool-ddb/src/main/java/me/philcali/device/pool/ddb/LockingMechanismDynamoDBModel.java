@@ -143,7 +143,7 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         try {
             dynamoDbClient().deleteItem(DeleteItemRequest.builder()
                     .tableName(tableName())
-                    .key(new HashMap<String, AttributeValue>() {{
+                    .key(new HashMap<>() {{
                         put(ID, AttributeValue.builder().s(lockId).build());
                     }})
                     .build());
