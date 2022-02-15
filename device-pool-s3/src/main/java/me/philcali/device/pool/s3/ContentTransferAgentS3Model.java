@@ -36,6 +36,9 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+/**
+ * A {@link ContentTransferAgent} backed by an S3 blob store.
+ */
 @ApiModel
 @Value.Immutable
 abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
@@ -64,7 +67,7 @@ abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
             final PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName())
                     .key(newKey)
-                    .metadata(new HashMap<String, String>() {{
+                    .metadata(new HashMap<>() {{
                         put("source", input.source());
                         put("destination", input.destination());
                     }})
