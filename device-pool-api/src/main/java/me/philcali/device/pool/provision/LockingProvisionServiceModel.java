@@ -18,6 +18,11 @@ import org.immutables.value.Value;
 
 import java.util.function.Function;
 
+/**
+ * A {@link ProvisionService} that blocks on acquiring devices from a single pool. It's possible
+ * to lock on provision identifiers, {@link me.philcali.device.pool.DevicePool} metadata,
+ * {@link me.philcali.device.pool.Device} identifiers, and other interesting information.
+ */
 @ApiModel
 @Value.Immutable
 abstract class LockingProvisionServiceModel implements ProvisionService {

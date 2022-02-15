@@ -54,6 +54,7 @@ provisioning, reservations, and interacting with devices. The modules are then:
 - `device-pool-ssh`: execute commands over SSH and SCP files transfer.
 - `device-pool-ddb`: provides a distributed lock to be used for locking devices or pools.
 - `device-pool-client`: provides an abstraction over a customized `DeviceLab` control-plane.
+- `device-pool-cli`: tooling to interact a managed or custom `DeviceLab`
 
 ## What is the DeviceLab control-plane?
 
@@ -67,9 +68,11 @@ is performed, namely through the `MANAGED` and `UNMANAGED` types.
 The rest of the modules support the former, introducing contracts, database implementation and
 other advanced extension points.
 
-Interested in setting up your own control plane? Super easy. Check out the infrastructure [setup instructions][2].
+Interested in setting up your own control plane? Super easy. Check out the infrastructure [setup instructions][2] or
+take a peek at the [infrastructure example][3] within this repo.
 
 [2]: https://github.com/philcali/philcali-cdk/tree/master/device-lab
+[3]: device-pool-examples/device-pool-examples-infra/README.md
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool?ref=badge_large)

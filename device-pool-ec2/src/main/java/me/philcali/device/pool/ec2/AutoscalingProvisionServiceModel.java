@@ -44,6 +44,13 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * The {@link AutoscalingProvisionService} implements the {@link ProvisionService}
+ * for creating virtual EC2 instances as the underlying {@link me.philcali.device.pool.Device}.
+ * The goal behind the use of {@link AutoScalingClient} is to detach instances via the
+ * provisioning process. The provision method will wait until the amount requested in
+ * the {@link ProvisionInput} is fulfilled.
+ */
 @ApiModel
 @Value.Immutable
 abstract class AutoscalingProvisionServiceModel implements ProvisionService {
@@ -253,7 +260,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         autoscaling().close();
     }
 }

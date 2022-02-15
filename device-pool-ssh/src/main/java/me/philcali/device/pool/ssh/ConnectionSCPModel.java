@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/**
+ * A {@link ContentTransferAgent} driven by an {@link ScpClient}, which reuses the same
+ * {@link org.apache.sshd.client.SshClient} that drives {@link me.philcali.device.pool.connection.Connection}
+ * information.
+ */
 @ApiModel
 @Value.Immutable
 abstract class ConnectionSCPModel implements ContentTransferAgent {

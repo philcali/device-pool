@@ -39,6 +39,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * A {@link ReservationService} and {@link ProvisionService} that uses the {@link DeviceLabService}
+ * client. The control plane is a remote device lab control plane. A single {@link DeviceLabProvisionService}
+ * is tied to a homogenous device pool and expects a {@link PlatformOS} hint.
+ */
 @ApiModel
 @Value.Immutable
 abstract class DeviceLabProvisionServiceModel implements ProvisionService, ReservationService {

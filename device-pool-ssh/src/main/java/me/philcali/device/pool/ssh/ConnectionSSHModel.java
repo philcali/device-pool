@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * A {@link Connection} implemented by an {@link org.apache.sshd.client.SshClient}.
+ */
 @ApiModel
 @Value.Immutable
 abstract class ConnectionSSHModel implements Connection {

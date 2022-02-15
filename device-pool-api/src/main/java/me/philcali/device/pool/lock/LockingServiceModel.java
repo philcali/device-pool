@@ -26,10 +26,27 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * The {@link LockingService} wraps the {@link LockingMechanism} for automatic lock extension
+ * for the duration of a longer running process. The component is a convenience that simply
+ * tracks all of the {@link LockOutput}s acquired by a client to the {@link LockingMechanism}.
+ * The service is useful to lock control plane resources for whatever reason. The typical use
+ * case is:
+ * <br>
+ * <code>
+ *     LockingService locker = LockingService.of(lockingMechanism);
+ *     <br>
+ *     try (LockingService.Lock lock = locker.tryAcquire(LockInput.of(id)) {
+ *         <br>
+ *         // Do something with held resource
+ *         <br>
+ *     }
+ * </code>
+ */
 @ApiModel
 @Value.Immutable
 abstract class LockingServiceModel implements AutoCloseable {
-    protected static final Logger LOGGER = LogManager.getLogger(LockingServiceModel.class);
+    protected static final Logger LOGGER = LogManager.getLogger(LockingService.class);
     protected final Map<String, Lock> activeLocks = new ConcurrentHashMap<>();
     protected ScheduledFuture<Void> extensionSchedule;
 
@@ -82,10 +99,26 @@ abstract class LockingServiceModel implements AutoCloseable {
         }
     }
 
+    /**
+     * Tries to acquire a lock within a set duration.
+     *
+     * @param input Information to hold the lock in the form of a {@link LockInput}
+     * @param amount The amount of {@link TimeUnit} to block
+     * @param unit The {@link TimeUnit} value to apply to the wait
+     * @return The {@link Lock} tracking the {@link LockInput} and resulting {@link LockOutput}
+     * @throws InterruptedException
+     */
     public Lock tryAcquire(LockInput input, long amount, TimeUnit unit) throws InterruptedException {
         return lock(input, future -> future.get(amount, unit));
     }
 
+    /**
+     * Tries to acquire a lock in the form of a {@link LockInput}, indefinitely.
+     *
+     * @param input Information to hold the lock in the form of a {@link LockInput}
+     * @return The {@link Lock} tracking the {@link LockInput} and resulting {@link LockOutput}
+     * @throws InterruptedException Thrown if the thread is interrupted waiting to acquire a lock
+     */
     public Lock tryAcquire(LockInput input) throws InterruptedException {
         return lock(input, CompletableFuture::get);
     }
@@ -148,6 +181,9 @@ abstract class LockingServiceModel implements AutoCloseable {
         }
     }
 
+    /**
+     * Attempts to clear all actively held locks from this {@link LockingService} instance.
+     */
     public void clearLocks() {
         for (Map.Entry<String, Lock> stringLockEntry : activeLocks.entrySet()) {
             Lock lock = stringLockEntry.getValue();
@@ -155,6 +191,11 @@ abstract class LockingServiceModel implements AutoCloseable {
         }
     }
 
+    /**
+     * Attempts to release a single {@link Lock} held by this {@link LockingService}.
+     *
+     * @param lock A {@link Lock} instance held by this {@link LockingService}
+     */
     public void release(Lock lock) {
         if (activeLocks.remove(lock.lockInput().id()) != null) {
             mechanism().lease(lock.lockInput().id());

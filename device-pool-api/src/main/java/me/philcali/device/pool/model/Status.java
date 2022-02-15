@@ -14,7 +14,7 @@ public enum Status {
     SUCCEEDED(true),
     FAILED(true);
 
-    private boolean terminal;
+    private final boolean terminal;
 
     Status(boolean terminal) {
         this.terminal = terminal;

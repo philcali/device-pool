@@ -32,6 +32,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * A {@link ConnectionFactory} backed by an {@link SshClient}. The {@link SshClient} is reused
+ * across created {@link Connection} for this {@link ConnectionFactorySSH} instance. The
+ * default {@link ConnectionFactorySSH} will use a default {@link SshClient}, which is informed
+ * by the <code>$HOME/.ssh</code> configuration. Additional SSH information can be set at
+ * creation time.
+ */
 @ApiModel
 @Value.Immutable
 abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTransferAgentFactory {

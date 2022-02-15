@@ -37,6 +37,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * A {@link Connection} communicating to AWS Simple Systems Manager (SSM).
+ */
 @ApiModel
 @Value.Immutable
 abstract class ConnectionSSMModel implements Connection {

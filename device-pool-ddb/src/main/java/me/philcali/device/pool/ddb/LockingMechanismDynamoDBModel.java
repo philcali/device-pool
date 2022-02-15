@@ -32,6 +32,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
+/**
+ * This {@link LockingMechanism} is backed by a DynamoDB table to act as a
+ * distributed locking store. The {@link LockingMechanism} can then be used
+ * in the {@link me.philcali.device.pool.provision.LockingProvisionService}.
+ * The {@link LockingMechanismDynamoDB} only requires a tableName, but other
+ * parameters can be overridden at creation time.
+ */
 @ApiModel
 @Value.Immutable
 abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
@@ -143,7 +150,7 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         try {
             dynamoDbClient().deleteItem(DeleteItemRequest.builder()
                     .tableName(tableName())
-                    .key(new HashMap<String, AttributeValue>() {{
+                    .key(new HashMap<>() {{
                         put(ID, AttributeValue.builder().s(lockId).build());
                     }})
                     .build());

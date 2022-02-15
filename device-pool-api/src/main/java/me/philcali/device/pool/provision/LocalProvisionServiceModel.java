@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 
+import java.lang.annotation.Documented;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -33,6 +34,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * This concrete {@link ProvisionService} facilities in-memory provisioning, thus called the
+ * {@link LocalProvisionService}. This {@link ProvisionService} cannot be reliably used in
+ * distributed systems unless decorated with the implementation of a {@link LockingProvisionService}.
+ * The provision method is asynchronous, meaning it will never return a complete {@link ProvisionOutput}
+ * for the initial request. The describe method can be called repeatedly.
+ */
 @ApiModel
 @Value.Immutable
 abstract class LocalProvisionServiceModel implements ProvisionService, ReservationService {

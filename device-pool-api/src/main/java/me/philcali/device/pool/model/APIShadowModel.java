@@ -8,6 +8,10 @@ package me.philcali.device.pool.model;
 
 import org.immutables.value.Value;
 
+/**
+ * A specific {@link org.immutables.value.Value.Immutable} helper that overshadows
+ * builder implementations.
+ */
 @Value.Style(
         jdkOnly = true,
         visibility = Value.Style.ImplementationVisibility.PACKAGE,
