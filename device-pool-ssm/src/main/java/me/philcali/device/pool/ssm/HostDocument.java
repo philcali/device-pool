@@ -10,6 +10,9 @@ import me.philcali.device.pool.model.Host;
 
 import java.util.function.Function;
 
+/**
+ * Converts a {@link Host} detail to an SSM RunDocument.
+ */
 @FunctionalInterface
 public interface HostDocument extends Function<Host, String> {
     @Override

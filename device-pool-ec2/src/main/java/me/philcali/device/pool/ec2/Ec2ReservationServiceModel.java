@@ -22,6 +22,12 @@ import software.amazon.awssdk.services.ec2.model.Instance;
 import javax.annotation.Nullable;
 import java.util.function.Function;
 
+/**
+ * A {@link ReservationService} implemented by {@link Ec2ReservationService} using AWS EC2.
+ * The implementation simply pumps EC2 instance reservations as discreet {@link me.philcali.device.pool.Device}
+ * reservation. The {@link Ec2ReservationService} relies on the client to hint at the {@link PlatformOS} that
+ * makes up the reservations.
+ */
 @ApiModel
 @Value.Immutable
 abstract class Ec2ReservationServiceModel implements ReservationService {
@@ -77,7 +83,7 @@ abstract class Ec2ReservationServiceModel implements ReservationService {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         ec2().close();
     }
 }

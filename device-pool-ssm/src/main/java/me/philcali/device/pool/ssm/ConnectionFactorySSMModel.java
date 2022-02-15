@@ -20,9 +20,13 @@ import software.amazon.awssdk.services.ssm.model.GetCommandInvocationResponse;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+/**
+ * A {@link ConnectionFactory} using AWS Simple Systems Manager (SSM) as the data plane implementation.
+ * Any {@link me.philcali.device.pool.Device} capable of handling this {@link Connection} must run an
+ * SSMAgent communicating to SSM service's data plane.
+ */
 @ApiModel
 @Value.Immutable
 abstract class ConnectionFactorySSMModel implements ConnectionFactory {
@@ -68,7 +72,7 @@ abstract class ConnectionFactorySSMModel implements ConnectionFactory {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         ssm().close();
     }
 }
