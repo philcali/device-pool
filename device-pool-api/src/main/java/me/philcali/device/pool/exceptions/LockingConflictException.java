@@ -12,4 +12,8 @@ public class LockingConflictException extends LockingException {
     public LockingConflictException(Throwable ex) {
         super(ex);
     }
+
+    public LockingConflictException(String message) {
+        super(message);
+    }
 }
