@@ -18,27 +18,28 @@ import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
+/**
+ * The {@link Device} that wraps the {@link Process} and {@link Files} to facilitate integration
+ * testing with concrete {@link Device} implementation.
+ */
 @ApiModel
 @Value.Immutable
-abstract class LocalDeviceModel implements Device {
+abstract class LocalDeviceModel implements Device, FileMixin {
     private static final Logger LOGGER = LogManager.getLogger(LocalDevice.class);
     private static final int BUFFER = 8192;
 
-    abstract Path baseDirectory();
+    public abstract Path baseDirectory();
 
     @Override
     public abstract String id();
@@ -127,10 +128,8 @@ abstract class LocalDeviceModel implements Device {
     @Override
     public void close() {
         Device.super.close();
-        try (Stream<Path> stream = Files.walk(baseDirectory())) {
-            stream.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+        try {
+            cleanUp();
         } catch (IOException e) {
             throw new DeviceInteractionException(e);
         }

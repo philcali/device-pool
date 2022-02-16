@@ -16,20 +16,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class LocalDeviceTest {
+class LocalDeviceTest implements FileMixin {
 
     private Device device;
     private Path tempDir;
@@ -42,13 +40,15 @@ class LocalDeviceTest {
         device = LocalDevice.of(tempDir, "host-1");
     }
 
+    @Override
+    public Path baseDirectory() {
+        return testDir;
+    }
+
     @AfterEach
     void tearDown() throws IOException {
         device.close();
-        Files.walk(testDir)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+        cleanUp();
     }
 
     @Test

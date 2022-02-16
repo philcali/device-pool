@@ -16,13 +16,11 @@ import me.philcali.device.pool.model.Reservation;
 import me.philcali.device.pool.model.Status;
 import org.immutables.value.Value;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,16 +28,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
+/**
+ * A local implementation of a {@link DevicePool}. The intention behind this implementation is to
+ * facilitate client code integration without requiring a network, ie unit tests. The entire {@link LocalDevicePool}
+ * is a wrapper around a provision request cache and {@link LocalDevice} creation. The {@link LocalDevice}
+ * implementations are wrappers around the {@link Process} and {@link Files} APIs.
+ */
 @ApiModel
 @Value.Immutable
-abstract class LocalDevicePoolModel implements DevicePool {
+abstract class LocalDevicePoolModel implements DevicePool, FileMixin {
     private final AtomicInteger incrementingId = new AtomicInteger();
     private final Map<String, ProvisionOutput> provisions = new ConcurrentHashMap<>();
 
     @Value.Default
-    Path baseDirectory() {
+    public Path baseDirectory() {
         try {
             return Files.createTempDirectory("local-pool-");
         } catch (IOException e) {
@@ -91,10 +94,9 @@ abstract class LocalDevicePoolModel implements DevicePool {
     @Override
     public void close() {
         DevicePool.super.close();
-        try (Stream<Path> stream = Files.walk(baseDirectory())) {
-            stream.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+        provisions.clear();
+        try {
+            cleanUp();
         } catch (IOException e) {
             throw new ProvisioningException(e);
         }

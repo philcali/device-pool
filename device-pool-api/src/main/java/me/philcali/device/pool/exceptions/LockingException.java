@@ -12,4 +12,8 @@ public class LockingException extends RuntimeException {
     public LockingException(Throwable ex) {
         super(ex);
     }
+
+    public LockingException(String message) {
+        super(message);
+    }
 }
