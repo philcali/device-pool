@@ -1,6 +1,6 @@
 # Example Device Lab Infra
 
-This is a very simple device lab infra created through construct found in [@philcali-cdk/device-lab].
+This is a very simple device lab infra created through construct found in [@philcali-cdk/device-lab][1].
 
 [1]: https://github.com/philcali/philcali-cdk/master/device-lab
 
@@ -17,6 +17,8 @@ mvn -pl device-pool-examples/device-pool-examples-infra -am clean package
 cd device-pool-examples/device-pool-examples-infra
 cdk deploy
 ```
+
+[2]: https://docs.aws.amazon.com/cdk/v2/guide/home.html
 
 Once the deployment ends, it'll output the control plane base URL which you will need to
 exercise the [device-pool-examples][3] or [device-pool-cli][4]

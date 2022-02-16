@@ -12,4 +12,8 @@ public class DeviceInteractionException extends RuntimeException {
     public DeviceInteractionException(Throwable ex) {
         super(ex);
     }
+
+    public DeviceInteractionException(String message) {
+        super(message);
+    }
 }
