@@ -30,7 +30,6 @@
         <maven.shade.version>3.2.4</maven.shade.version>
         <maven.dependency.version>3.1.2</maven.dependency.version>
         <maven.s3.wagon>2.3</maven.s3.wagon>
-        <maven.site.version>3.11.0</maven.site.version>
         <!-- Dependency Versions -->
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.exec.version>3.0.0</maven.exec.version>
@@ -186,11 +185,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>${maven.site.version}</version>
             </plugin>
         </plugins>
     </build>
