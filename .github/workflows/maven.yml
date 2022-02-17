@@ -36,7 +36,8 @@ jobs:
     - name: Build with Maven
       if: ${{ github.ref_name != 'main' }}
       run: |
-        mvn clean compile verify site:site --file pom.xml
+        mvn -B verify --file pom.xml
+        mvn -B site:site --file pom.xml
     - name: Deploy to GitHub Pages
       if: ${{ github.ref_name != 'main' }}
       uses: crazy-max/ghaction-github-pages@v2
