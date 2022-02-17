@@ -30,8 +30,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@link Device} that wraps the {@link Process} and {@link Files} to facilitate integration
- * testing with concrete {@link Device} implementation.
+ * The {@link me.philcali.device.pool.Device} that wraps the {@link Process} and {@link java.nio.file.Files} to facilitate integration
+ * testing with concrete {@link me.philcali.device.pool.Device} implementation.
  */
 @ApiModel
 @Value.Immutable

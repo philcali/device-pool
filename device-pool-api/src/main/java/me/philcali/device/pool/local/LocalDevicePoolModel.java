@@ -30,10 +30,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * A local implementation of a {@link DevicePool}. The intention behind this implementation is to
- * facilitate client code integration without requiring a network, ie unit tests. The entire {@link LocalDevicePool}
- * is a wrapper around a provision request cache and {@link LocalDevice} creation. The {@link LocalDevice}
- * implementations are wrappers around the {@link Process} and {@link Files} APIs.
+ * A local implementation of a {@link me.philcali.device.pool.DevicePool}. The intention behind this implementation is to
+ * facilitate client code integration without requiring a network, ie unit tests. The entire {@link me.philcali.device.pool.local.LocalDevicePool}
+ * is a wrapper around a provision request cache and {@link me.philcali.device.pool.local.LocalDevice} creation. The {@link me.philcali.device.pool.local.LocalDevice}
+ * implementations are wrappers around the {@link Process} and {@link java.nio.file.Files} APIs.
  */
 @ApiModel
 @Value.Immutable

@@ -35,10 +35,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * This concrete {@link ProvisionService} facilities in-memory provisioning, thus called the
- * {@link LocalProvisionService}. This {@link ProvisionService} cannot be reliably used in
- * distributed systems unless decorated with the implementation of a {@link LockingProvisionService}.
- * The provision method is asynchronous, meaning it will never return a complete {@link ProvisionOutput}
+ * This concrete {@link me.philcali.device.pool.provision.ProvisionService} facilities in-memory provisioning, thus called the
+ * {@link me.philcali.device.pool.provision.LocalProvisionService}. This {@link me.philcali.device.pool.provision.ProvisionService} cannot be reliably used in
+ * distributed systems unless decorated with the implementation of a {@link me.philcali.device.pool.provsion.LockingProvisionService}.
+ * The provision method is asynchronous, meaning it will never return a complete {@link me.philcali.device.pool.model.ProvisionOutput}
  * for the initial request. The describe method can be called repeatedly.
  */
 @ApiModel
