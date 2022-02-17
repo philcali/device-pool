@@ -66,6 +66,14 @@
                         </reports>
                     </reportSet>
                 </reportSets>
+                <reportSets>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
