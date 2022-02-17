@@ -36,7 +36,7 @@ jobs:
     - name: Build with Maven
       if: ${{ github.ref_name != 'main' }}
       run: |
-        mvn -B verify --file pom.xml
+        mvn -B verify javadoc:javadoc --file pom.xml
         mvn -B javadoc:aggregate --file pom.xml
     - name: Deploy to GitHub Pages
       if: ${{ github.ref_name != 'main' }}
