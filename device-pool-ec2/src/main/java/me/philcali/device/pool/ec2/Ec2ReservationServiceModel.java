@@ -23,9 +23,9 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
- * A {@link ReservationService} implemented by {@link Ec2ReservationService} using AWS EC2.
+ * A {@link me.philcali.device.pool.reservation.ReservationService} implemented by {@link me.philcali.device.pool.ec2.Ec2ReservationService} using AWS EC2.
  * The implementation simply pumps EC2 instance reservations as discreet {@link me.philcali.device.pool.Device}
- * reservation. The {@link Ec2ReservationService} relies on the client to hint at the {@link PlatformOS} that
+ * reservation. The {@link me.philcali.device.pool.ec2.Ec2ReservationService} relies on the client to hint at the {@link me.philcali.device.pool.model.PlatformOS} that
  * makes up the reservations.
  */
 @ApiModel

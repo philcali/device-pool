@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * The {@link LockingService} wraps the {@link LockingMechanism} for automatic lock extension
+ * The {@link me.philcali.device.pool.lock.LockingService} wraps the {@link me.philcali.device.pool.lock.LockingMechanism} for automatic lock extension
  * for the duration of a longer running process. The component is a convenience that simply
- * tracks all of the {@link LockOutput}s acquired by a client to the {@link LockingMechanism}.
+ * tracks all of the {@link me.philcali.device.pool.model.LockOutput}s acquired by a client to the {@link me.philcali.device.pool.lock.LockingMechanism}.
  * The service is useful to lock control plane resources for whatever reason. The typical use
  * case is:
  * <br>
@@ -104,7 +104,7 @@ abstract class LockingServiceModel implements AutoCloseable {
      * @param amount The amount of {@link java.util.concurrent.TimeUnit} to block
      * @param unit The {@link java.util.concurrent.TimeUnit} value to apply to the wait
      * @return The {@link me.philcali.device.pool.lock.LockingServiceModel.Lock} tracking the {@link me.philcali.device.pool.model.LockInput} and resulting {@link me.philcali.device.pool.model.LockOutput}
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.InterruptedException Thrown when interrupting lock acquisition
      */
     public Lock tryAcquire(LockInput input, long amount, TimeUnit unit) throws InterruptedException {
         return lock(input, future -> future.get(amount, unit));

@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * A {@link ContentTransferAgent} driven by an {@link ScpClient}, which reuses the same
+ * A {@link me.philcali.device.pool.content.ContentTransferAgent} driven by an {@link org.apache.sshd.scp.client.ScpClient}, which reuses the same
  * {@link org.apache.sshd.client.SshClient} that drives {@link me.philcali.device.pool.connection.Connection}
  * information.
  */

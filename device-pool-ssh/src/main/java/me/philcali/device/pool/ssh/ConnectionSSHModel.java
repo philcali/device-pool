@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A {@link Connection} implemented by an {@link org.apache.sshd.client.SshClient}.
+ * A {@link me.philcali.device.pool.connection.Connection} implemented by an {@link org.apache.sshd.client.SshClient}.
  */
 @ApiModel
 @Value.Immutable

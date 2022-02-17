@@ -64,6 +64,9 @@
                         <reports>
                             <report>aggregate</report>
                         </reports>
+                        <configuration>
+                            <excludePackageNames>me.philcali.device.pool.service.module.*</excludePackageNames>
+                        </configuration>
                     </reportSet>
                     <reportSet>
                         <id>default</id>

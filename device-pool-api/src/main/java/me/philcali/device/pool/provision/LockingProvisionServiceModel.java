@@ -19,7 +19,7 @@ import org.immutables.value.Value;
 import java.util.function.Function;
 
 /**
- * A {@link ProvisionService} that blocks on acquiring devices from a single pool. It's possible
+ * A {@link me.philcali.device.pool.provision.ProvisionService} that blocks on acquiring devices from a single pool. It's possible
  * to lock on provision identifiers, {@link me.philcali.device.pool.DevicePool} metadata,
  * {@link me.philcali.device.pool.Device} identifiers, and other interesting information.
  */

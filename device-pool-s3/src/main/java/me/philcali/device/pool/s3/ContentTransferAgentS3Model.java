@@ -37,7 +37,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
- * A {@link ContentTransferAgent} backed by an S3 blob store.
+ * A {@link me.philcali.device.pool.content.ContentTransferAgent} backed by an S3 blob store.
  */
 @ApiModel
 @Value.Immutable
