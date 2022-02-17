@@ -36,7 +36,7 @@ jobs:
     - name: Build with Maven
       if: ${{ github.ref_name != 'main' }}
       run: |
-        mvn verify site:site --file pom.xml
+        mvn clean compile verify site:site --file pom.xml
         mkdir public
         mvn site:stage -DstagingDirectory=$PWD/public --file pom.xml
     - name: Deploy to GitHub Pages
