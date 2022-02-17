@@ -58,9 +58,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.version}</version>
                 <configuration>
-                    <sourceFileIncludes>
-                        <sourceFileInclude>**/*.java</sourceFileInclude>
-                    </sourceFileIncludes>
+                    <sourcepath>src/main/java</sourcepath>
                 </configuration>
                 <reportSets>
                     <reportSet>
