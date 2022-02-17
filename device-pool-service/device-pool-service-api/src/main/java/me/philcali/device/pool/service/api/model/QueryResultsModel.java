@@ -18,11 +18,26 @@ import java.util.Objects;
 @Value.Immutable
 @JsonDeserialize(as = QueryResults.class)
 interface QueryResultsModel<T> {
+    /**
+     * <p>results.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     List<T> results();
 
+    /**
+     * <p>nextToken.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String nextToken();
 
+    /**
+     * <p>isTruncated.</p>
+     *
+     * @return a boolean
+     */
     @Value.Default
     default boolean isTruncated() {
         return Objects.nonNull(nextToken());

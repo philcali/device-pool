@@ -20,6 +20,12 @@ import picocli.CommandLine;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * <p>Provision class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "provision",
         description = "Creates a provision on a pool and demonstrates acquisition"
@@ -41,6 +47,7 @@ public class Provision implements Runnable {
             defaultValue = "1")
     int amount;
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         DevicePool pool = BaseDevicePool.builder()

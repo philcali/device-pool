@@ -21,8 +21,18 @@ import java.util.function.Predicate;
 @ApiModel
 @Value.Immutable
 interface LockInputModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String id();
 
+    /**
+     * <p>holder.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Value.Default
     default String holder() {
         try {
@@ -50,9 +60,19 @@ interface LockInputModel {
         }
     }
 
+    /**
+     * <p>value.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String value();
 
+    /**
+     * <p>ttl.</p>
+     *
+     * @return a long
+     */
     @Value.Default
     default long ttl() {
         return TimeUnit.SECONDS.toSeconds(10);

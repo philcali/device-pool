@@ -45,6 +45,7 @@ class ApplicationBinder extends AbstractBinder {
         this.lockRepo = lockRepo;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void configure() {
         bind(mapper);

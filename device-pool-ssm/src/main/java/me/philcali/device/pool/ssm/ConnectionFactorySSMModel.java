@@ -33,16 +33,31 @@ abstract class ConnectionFactorySSMModel implements ConnectionFactory {
     private static final String WINDOWS_DOCUMENT = "AWS-RunPowerShellScript";
     private static final String LINUX_DOCUMENT = "AWS-RunShellScript";
 
+    /**
+     * <p>ssm.</p>
+     *
+     * @return a {@link software.amazon.awssdk.services.ssm.SsmClient} object
+     */
     @Value.Default
     public SsmClient ssm() {
         return SsmClient.create();
     }
 
+    /**
+     * <p>hostDocument.</p>
+     *
+     * @return a {@link me.philcali.device.pool.ssm.HostDocument} object
+     */
     @Value.Default
     public HostDocument hostDocument() {
         return host -> host.platform().isWindows() ? WINDOWS_DOCUMENT : LINUX_DOCUMENT;
     }
 
+    /**
+     * <p>waiter.</p>
+     *
+     * @return a {@link software.amazon.awssdk.core.waiters.Waiter} object
+     */
     @Value.Default
     public Waiter<GetCommandInvocationResponse> waiter() {
         final Set<CommandInvocationStatus> terminalStatuses = new HashSet<>(Arrays.asList(
@@ -61,6 +76,7 @@ abstract class ConnectionFactorySSMModel implements ConnectionFactory {
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Connection connect(Host host) throws ConnectionException {
         return ConnectionSSM.builder()
@@ -71,6 +87,7 @@ abstract class ConnectionFactorySSMModel implements ConnectionFactory {
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         ssm().close();

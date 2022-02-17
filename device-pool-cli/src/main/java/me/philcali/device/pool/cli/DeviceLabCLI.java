@@ -34,6 +34,12 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * <p>DeviceLabCLI class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "device-lab",
         description = "Device Lab CLI for the control plane",
@@ -64,6 +70,11 @@ public class DeviceLabCLI {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(String[] args) {
         System.exit(new CommandLine(new DeviceLabCLI()).execute(args));
     }
@@ -99,6 +110,12 @@ public class DeviceLabCLI {
         }
     }
 
+    /**
+     * <p>listDevicePools.</p>
+     *
+     * @param nextToken a {@link java.lang.String} object
+     * @param limit a {@link java.lang.Integer} object
+     */
     @CommandLine.Command(
             name = "list-device-pools",
             description = "List device pools"
@@ -110,6 +127,13 @@ public class DeviceLabCLI {
        executeAndPrint(createService().listDevicePools(nextToken, limit));
     }
 
+    /**
+     * <p>listDevices.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param nextToken a {@link java.lang.String} object
+     * @param limit a {@link java.lang.Integer} object
+     */
     @CommandLine.Command(
             name = "list-devices",
             description = "List devices to device pools"
@@ -122,6 +146,13 @@ public class DeviceLabCLI {
         executeAndPrint(createService().listDevices(poolId, nextToken, limit));
     }
 
+    /**
+     * <p>listProvisions.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param nextToken a {@link java.lang.String} object
+     * @param limit a {@link java.lang.Integer} object
+     */
     @CommandLine.Command(
             name = "list-provisions",
             description = "List provision requests to device pools"
@@ -134,6 +165,14 @@ public class DeviceLabCLI {
         executeAndPrint(createService().listProvisions(poolId, nextToken, limit));
     }
 
+    /**
+     * <p>listReservations.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param nextToken a {@link java.lang.String} object
+     * @param limit a {@link java.lang.Integer} object
+     */
     @CommandLine.Command(
             name = "list-reservations",
             description = "List device reservation requests to provisions"
@@ -147,6 +186,11 @@ public class DeviceLabCLI {
         executeAndPrint(createService().listReservations(poolId, provisionId, nextToken, limit));
     }
 
+    /**
+     * <p>getDevicePool.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "get-device-pool",
             description = "Obtains a single device pool metadata"
@@ -157,6 +201,12 @@ public class DeviceLabCLI {
         executeAndPrint(createService().getDevicePool(poolId));
     }
 
+    /**
+     * <p>getDevice.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "get-device",
             description = "Obtains a single device metadata"
@@ -168,6 +218,12 @@ public class DeviceLabCLI {
         executeAndPrint(createService().getDevice(poolId, deviceId));
     }
 
+    /**
+     * <p>getProvision.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param reservationId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "get-provision",
             description = "Obtains a single provision request metadata"
@@ -179,6 +235,13 @@ public class DeviceLabCLI {
         executeAndPrint(createService().getProvision(poolId, reservationId));
     }
 
+    /**
+     * <p>getReservation.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param reservationId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "get-reservation",
             description = "Obtains a single device reservation"
@@ -191,6 +254,17 @@ public class DeviceLabCLI {
         executeAndPrint(createService().getReservation(poolId, provisionId, reservationId));
     }
 
+    /**
+     * <p>createDevicePool.</p>
+     *
+     * @param name a {@link java.lang.String} object
+     * @param description a {@link java.lang.String} object
+     * @param type a {@link java.lang.String} object
+     * @param endpointType a {@link java.lang.String} object
+     * @param endpointUri a {@link java.lang.String} object
+     * @param duration a {@link java.time.Duration} object
+     * @param enabled a boolean
+     */
     @CommandLine.Command(
             name = "create-device-pool",
             description = "Creates a single device pool"
@@ -225,6 +299,15 @@ public class DeviceLabCLI {
                 .build()));
     }
 
+    /**
+     * <p>createDevice.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param publicAddress a {@link java.lang.String} object
+     * @param privateAddress a {@link java.lang.String} object
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "create-device",
             description = "Creates a single device for a device pool"
@@ -244,6 +327,14 @@ public class DeviceLabCLI {
                 .build()));
     }
 
+    /**
+     * <p>createProvision.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param id a {@link java.lang.String} object
+     * @param amount a int
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "create-provision",
             description = "Creates a single provision request"
@@ -261,6 +352,17 @@ public class DeviceLabCLI {
                 .build()));
     }
 
+    /**
+     * <p>updateDevicePool.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param description a {@link java.lang.String} object
+     * @param type a {@link java.lang.String} object
+     * @param endpointType a {@link java.lang.String} object
+     * @param endpointUri a {@link java.lang.String} object
+     * @param duration a {@link java.time.Duration} object
+     * @param enabled a {@link java.lang.Boolean} object
+     */
     @CommandLine.Command(
             name = "update-device-pool",
             description = "Updates a single device pool record"
@@ -297,6 +399,15 @@ public class DeviceLabCLI {
                 .build()));
     }
 
+    /**
+     * <p>updateDevice.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param publicAddress a {@link java.lang.String} object
+     * @param privateAddress a {@link java.lang.String} object
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "update-device",
             description = "Updates a single device metadata record"
@@ -315,6 +426,12 @@ public class DeviceLabCLI {
                 .build()));
     }
 
+    /**
+     * <p>cancelProvision.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "cancel-provision",
             description = "Cancel a single non-terminal provision request"
@@ -326,6 +443,12 @@ public class DeviceLabCLI {
         executeAndPrint(createService().cancelProvision(poolId, provisionId));
     }
 
+    /**
+     * <p>deleteProvision.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "delete-provision",
             description = "Deletes a single terminal provision request"
@@ -337,6 +460,13 @@ public class DeviceLabCLI {
         executeAndPrint(createService().deleteProvision(poolId, provisionId));
     }
 
+    /**
+     * <p>cancelReservation.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param reservationId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "cancel-reservation",
             description = "Cancels a single non-terminal device reservation"
@@ -349,6 +479,14 @@ public class DeviceLabCLI {
         executeAndPrint(createService().cancelReservation(poolId, provisionId, reservationId));
     }
 
+    /**
+     * <p>createDevicePoolLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param holder a {@link java.lang.String} object
+     * @param duration a {@link java.time.Duration} object
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "create-device-pool-lock",
             description = "Creates a lock on a single device pool"
@@ -369,6 +507,15 @@ public class DeviceLabCLI {
         executeAndPrint(createService().createDevicePoolLock(poolId, builder.build()));
     }
 
+    /**
+     * <p>createDeviceLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param holder a {@link java.lang.String} object
+     * @param duration a {@link java.time.Duration} object
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "create-device-lock",
             description = "Creates a lock on a single device"
@@ -390,6 +537,11 @@ public class DeviceLabCLI {
         executeAndPrint(createService().createDeviceLock(poolId, deviceId, builder.build()));
     }
 
+    /**
+     * <p>getDevicePoolLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "get-device-pool-lock",
             description = "Obtains lock metadata on a single pool"
@@ -400,6 +552,12 @@ public class DeviceLabCLI {
         executeAndPrint(createService().getDevicePoolLock(poolId));
     }
 
+    /**
+     * <p>getDeviceLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "get-device-lock",
             description = "Obtains lock metadata on a single device"
@@ -411,6 +569,13 @@ public class DeviceLabCLI {
         executeAndPrint(createService().getDeviceLock(poolId, deviceId));
     }
 
+    /**
+     * <p>extendDevicePoolLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param holder a {@link java.lang.String} object
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "extend-device-pool-lock",
             description = "Extends a lock on a single device pool"
@@ -424,6 +589,14 @@ public class DeviceLabCLI {
         executeAndPrint(createService().extendDevicePoolLock(poolId, builder.build()));
     }
 
+    /**
+     * <p>extendDeviceLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param holder a {@link java.lang.String} object
+     * @param expiresIn a {@link java.time.Instant} object
+     */
     @CommandLine.Command(
             name = "extend-device-lock",
             description = "Extends a lock on a single device"
@@ -440,6 +613,11 @@ public class DeviceLabCLI {
                 .build()));
     }
 
+    /**
+     * <p>releaseDevicePoolLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "release-device-pool-lock",
             description = "Forcibly releases a lock held on a single pool"
@@ -450,6 +628,12 @@ public class DeviceLabCLI {
         executeAndPrint(createService().releaseDevicePoolLock(poolId));
     }
 
+    /**
+     * <p>releaseDeviceLock.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "release-device-lock",
             description = "Forcibly releases a lock held on a single device"
@@ -461,6 +645,11 @@ public class DeviceLabCLI {
         executeAndPrint(createService().releaseDeviceLock(poolId, deviceId));
     }
 
+    /**
+     * <p>deleteDevicePool.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "delete-device-pool",
             description = "Deletes a single device pool and all associated data"
@@ -471,6 +660,12 @@ public class DeviceLabCLI {
         executeAndPrint(createService().deleteDevicePool(poolId));
     }
 
+    /**
+     * <p>deleteDevice.</p>
+     *
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     */
     @CommandLine.Command(
             name = "delete-device",
             description = "Deletes a single device on a device pool"

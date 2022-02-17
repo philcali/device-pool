@@ -16,19 +16,44 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @JsonDeserialize(as = CreateDevicePoolObject.class)
 interface CreateDevicePoolObjectModel {
+    /**
+     * <p>name.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String name();
 
+    /**
+     * <p>description.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String description();
 
+    /**
+     * <p>type.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.DevicePoolType} object
+     */
     @Value.Default
     default DevicePoolType type() {
         return DevicePoolType.MANAGED;
     }
 
+    /**
+     * <p>endpoint.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.DevicePoolEndpoint} object
+     */
     @Nullable
     DevicePoolEndpoint endpoint();
 
+    /**
+     * <p>lockOptions.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.DevicePoolLockOptions} object
+     */
     @Value.Default
     default DevicePoolLockOptions lockOptions() {
         return DevicePoolLockOptions.of(false);

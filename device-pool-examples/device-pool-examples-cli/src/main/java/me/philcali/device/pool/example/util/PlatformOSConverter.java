@@ -9,7 +9,14 @@ package me.philcali.device.pool.example.util;
 import me.philcali.device.pool.model.PlatformOS;
 import picocli.CommandLine;
 
+/**
+ * <p>PlatformOSConverter class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class PlatformOSConverter implements CommandLine.ITypeConverter<PlatformOS> {
+    /** {@inheritDoc} */
     @Override
     public PlatformOS convert(String str) {
         String[] parts = str.split(":");

@@ -48,6 +48,7 @@ abstract class ConnectionSCPModel implements ContentTransferAgent {
                 .toArray(new ScpClient.Option[] { });
     }
 
+    /** {@inheritDoc} */
     @Override
     public void send(CopyInput input) throws ContentTransferException {
         try {
@@ -57,6 +58,7 @@ abstract class ConnectionSCPModel implements ContentTransferAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void receive(CopyInput input) throws ContentTransferException {
         try {
@@ -66,6 +68,7 @@ abstract class ConnectionSCPModel implements ContentTransferAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         LOGGER.debug("Close is called on SCP content agent");

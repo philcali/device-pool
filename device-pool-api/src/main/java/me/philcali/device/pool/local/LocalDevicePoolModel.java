@@ -41,6 +41,11 @@ abstract class LocalDevicePoolModel implements DevicePool, FileMixin {
     private final AtomicInteger incrementingId = new AtomicInteger();
     private final Map<String, ProvisionOutput> provisions = new ConcurrentHashMap<>();
 
+    /**
+     * <p>baseDirectory.</p>
+     *
+     * @return a {@link java.nio.file.Path} object
+     */
     @Value.Default
     public Path baseDirectory() {
         try {
@@ -50,10 +55,16 @@ abstract class LocalDevicePoolModel implements DevicePool, FileMixin {
         }
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link me.philcali.device.pool.local.LocalDevicePool} object
+     */
     public static LocalDevicePool create() {
         return LocalDevicePool.builder().build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         return provisions.computeIfAbsent(input.id(), id -> ProvisionOutput.builder()
@@ -68,12 +79,14 @@ abstract class LocalDevicePoolModel implements DevicePool, FileMixin {
                 .build());
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException {
         return Optional.ofNullable(provisions.get(output.id()))
                 .orElseThrow(() -> new ProvisioningException("Could not find a provision id " + output.id()));
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Device> obtain(ProvisionOutput output) throws ProvisioningException {
         List<Device> devices = new ArrayList<>();
@@ -91,6 +104,7 @@ abstract class LocalDevicePoolModel implements DevicePool, FileMixin {
         return Collections.unmodifiableList(devices);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         DevicePool.super.close();

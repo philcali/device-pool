@@ -18,17 +18,42 @@ import java.time.Instant;
 @Value.Immutable
 @JsonDeserialize(as = UpdateProvisionObject.class)
 interface UpdateProvisionObjectModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String id();
 
+    /**
+     * <p>executionId.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String executionId();
 
+    /**
+     * <p>status.</p>
+     *
+     * @return a {@link me.philcali.device.pool.model.Status} object
+     */
     Status status();
 
+    /**
+     * <p>message.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String message();
 
+    /**
+     * <p>expiresIn.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     @Nullable
     Instant expiresIn();
 }

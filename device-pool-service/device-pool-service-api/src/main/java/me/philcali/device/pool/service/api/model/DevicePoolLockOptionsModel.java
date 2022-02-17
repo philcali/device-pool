@@ -17,8 +17,18 @@ import java.time.Duration;
 @Value.Immutable
 @JsonDeserialize(as = DevicePoolLockOptions.class)
 interface DevicePoolLockOptionsModel {
+    /**
+     * <p>enabled.</p>
+     *
+     * @return a boolean
+     */
     boolean enabled();
 
+    /**
+     * <p>initialDuration.</p>
+     *
+     * @return a {@link java.lang.Long} object
+     */
     @Nullable
     @Value.Default
     @Deprecated
@@ -26,6 +36,11 @@ interface DevicePoolLockOptionsModel {
         return duration();
     }
 
+    /**
+     * <p>duration.</p>
+     *
+     * @return a {@link java.lang.Long} object
+     */
     @Value.Default
     default Long duration() {
         return Duration.ofHours(1).toSeconds();

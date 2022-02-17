@@ -183,6 +183,7 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         final CachedEntry<ProvisionOutput> handle = reservations.computeIfAbsent(input.id(), id -> new CachedEntry<>(
@@ -196,6 +197,7 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         return handle.value;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException {
         CachedEntry<ProvisionOutput> handle = reservations.get(output.id());
@@ -205,6 +207,7 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         return handle.value;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Host exchange(Reservation reservation) throws ReservationException {
         return hosts().stream()
@@ -222,10 +225,22 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
                         (left, right) -> left || right);
     }
 
+    /**
+     * <p>release.</p>
+     *
+     * @param device a {@link me.philcali.device.pool.Device} object
+     * @return a boolean
+     */
     public boolean release(Device device) {
         return releaseHost(device.id());
     }
 
+    /**
+     * <p>release.</p>
+     *
+     * @param output a {@link me.philcali.device.pool.model.ProvisionOutput} object
+     * @return a int
+     */
     public int release(ProvisionOutput output) {
         AtomicInteger released = new AtomicInteger();
         CachedEntry<ProvisionOutput> handle = reservations.remove(output.id());
@@ -242,6 +257,12 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         return released.get();
     }
 
+    /**
+     * <p>releaseAvailable.</p>
+     *
+     * @param when a long
+     * @return a int
+     */
     protected int releaseAvailable(long when) {
         lock.lock();
         try {
@@ -257,6 +278,11 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         }
     }
 
+    /**
+     * <p>extend.</p>
+     *
+     * @param output a {@link me.philcali.device.pool.model.ProvisionOutput} object
+     */
     public void extend(ProvisionOutput output) {
         lock.lock();
         reservations.computeIfPresent(output.id(), (id, cache) -> {
@@ -266,6 +292,7 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         lock.unlock();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         currentRunnable.running = false;

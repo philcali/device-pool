@@ -13,8 +13,22 @@ import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.UpdateDeviceObject;
 
+/**
+ * <p>DeviceRepo interface.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public interface DeviceRepo extends ObjectRepository<DeviceObject, CreateDeviceObject, UpdateDeviceObject> {
 
+    /**
+     * <p>put.</p>
+     *
+     * @param account a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @param device a {@link me.philcali.device.pool.service.api.model.DeviceObject} object
+     * @return a {@link me.philcali.device.pool.service.api.model.DeviceObject} object
+     * @throws me.philcali.device.pool.service.api.exception.ServiceException if any.
+     */
     default DeviceObject put(CompositeKey account, DeviceObject device) throws ServiceException {
         try {
             return update(account, UpdateDeviceObject.builder()

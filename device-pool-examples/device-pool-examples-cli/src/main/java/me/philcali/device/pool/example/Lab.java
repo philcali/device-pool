@@ -13,6 +13,12 @@ import me.philcali.device.pool.service.client.AwsV4SigningInterceptor;
 import me.philcali.device.pool.service.client.DeviceLabService;
 import picocli.CommandLine;
 
+/**
+ * <p>Lab class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "lab",
         description = "Interact with the device-lab control plane",
@@ -33,10 +39,20 @@ public class Lab {
             scope = CommandLine.ScopeType.INHERIT)
     String poolName;
 
+    /**
+     * <p>poolName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     public String poolName() {
         return poolName;
     }
 
+    /**
+     * <p>createService.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.client.DeviceLabService} object
+     */
     public DeviceLabService createService() {
         return DeviceLabService.create((client, builder) -> {
             client.addInterceptor(AwsV4SigningInterceptor.create());

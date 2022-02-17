@@ -13,6 +13,12 @@ import me.philcali.device.pool.service.api.model.CreateReservationObject;
 import me.philcali.device.pool.service.api.model.ReservationObject;
 import me.philcali.device.pool.service.api.model.UpdateReservationObject;
 
+/**
+ * <p>ReservationRepo interface.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public interface ReservationRepo
         extends ObjectRepository<ReservationObject, CreateReservationObject, UpdateReservationObject> {
 }

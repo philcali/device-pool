@@ -66,6 +66,7 @@ abstract class Ec2ReservationServiceModel implements ReservationService {
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Host exchange(final Reservation reservation) throws ReservationException {
         try {
@@ -82,6 +83,7 @@ abstract class Ec2ReservationServiceModel implements ReservationService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         ec2().close();

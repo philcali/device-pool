@@ -29,6 +29,12 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * <p>TableSchemas class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class TableSchemas {
 
     private static <R, B> StaticImmutableTableSchema.Builder<R, B> commonTable(
@@ -73,6 +79,11 @@ public class TableSchemas {
                 .build();
     }
 
+    /**
+     * <p>poolTableSchema.</p>
+     *
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.TableSchema} object
+     */
     public static TableSchema<DevicePoolObject> poolTableSchema() {
         return commonTable(DevicePoolObject.class, DevicePoolObject.Builder.class,
                 DevicePoolObject::key, DevicePoolObject.Builder::key,
@@ -100,6 +111,11 @@ public class TableSchemas {
                 .build();
     }
 
+    /**
+     * <p>provisionTableSchema.</p>
+     *
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.TableSchema} object
+     */
     public static TableSchema<ProvisionObject> provisionTableSchema() {
         return commonTable(ProvisionObject.class, ProvisionObject.Builder.class,
                 ProvisionObject::key, ProvisionObject.Builder::key,
@@ -127,6 +143,11 @@ public class TableSchemas {
                 .build();
     }
 
+    /**
+     * <p>reservationTableSchema.</p>
+     *
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.TableSchema} object
+     */
     public static TableSchema<ReservationObject> reservationTableSchema() {
         return commonTable(ReservationObject.class, ReservationObject.Builder.class,
                 ReservationObject::key, ReservationObject.Builder::key,
@@ -151,6 +172,11 @@ public class TableSchemas {
                 .build();
     }
 
+    /**
+     * <p>deviceSchema.</p>
+     *
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.TableSchema} object
+     */
     public static TableSchema<DeviceObject> deviceSchema() {
         return commonTable(DeviceObject.class, DeviceObject.Builder.class,
                 DeviceObject::key, DeviceObject.Builder::key,
@@ -174,6 +200,11 @@ public class TableSchemas {
                 .build();
     }
 
+    /**
+     * <p>lockSchema.</p>
+     *
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.TableSchema} object
+     */
     public static TableSchema<LockObject> lockSchema() {
         return commonTable(LockObject.class, LockObject.Builder.class,
                 LockObject::key, LockObject.Builder::key,

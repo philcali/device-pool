@@ -15,10 +15,25 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = CreateReservationObject.class)
 interface CreateReservationObjectModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String id();
 
+    /**
+     * <p>deviceId.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String deviceId();
 
+    /**
+     * <p>status.</p>
+     *
+     * @return a {@link me.philcali.device.pool.model.Status} object
+     */
     @Value.Default
     default Status status() {
         return Status.REQUESTED;

@@ -6,6 +6,12 @@
 
 package me.philcali.device.pool.model;
 
+/**
+ * <p>CopyOption class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public enum CopyOption {
     RECURSIVE
 }

@@ -29,21 +29,46 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * <p>Devices class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
 public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject, UpdateDeviceObject> {
     static final String ID = "deviceId";
 
     @Inject
+    /**
+     * <p>Constructor for Devices.</p>
+     *
+     * @param devices a {@link me.philcali.device.pool.service.api.DeviceRepo} object
+     * @param pools a {@link me.philcali.device.pool.service.api.DevicePoolRepo} object
+     */
     public Devices(final DeviceRepo devices, final DevicePoolRepo pools) {
         super(devices, pools);
     }
 
+    /**
+     * <p>locks.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
     @Path("/{" + ID + "}/locks")
     public Class<DeviceLocks> locks() {
         return DeviceLocks.class;
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     @Path("/{" + ID + "}")
     public Response get(
@@ -53,6 +78,15 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
         return getItem(context, deviceId, poolId);
     }
 
+    /**
+     * <p>list.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param limit a int
+     * @param nextToken a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     public Response list(
             @Context SecurityContext context,
@@ -62,6 +96,14 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
         return listItems(context, limit, nextToken, poolId);
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param create a {@link me.philcali.device.pool.service.api.model.CreateDeviceObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(
@@ -71,6 +113,14 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
         return createItem(context, create, poolId);
     }
 
+    /**
+     * <p>delete.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @DELETE
     @Path("/{" + ID + "}")
     public Response delete(
@@ -80,6 +130,15 @@ public class Devices extends RepositoryResource<DeviceObject, CreateDeviceObject
         return deleteItem(context, deviceId, poolId);
     }
 
+    /**
+     * <p>update.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param update a {@link me.philcali.device.pool.service.api.model.UpdateDeviceObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @PUT
     @Path("/{" + ID + "}")
     public Response update(

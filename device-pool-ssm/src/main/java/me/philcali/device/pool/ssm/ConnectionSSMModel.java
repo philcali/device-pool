@@ -70,6 +70,7 @@ abstract class ConnectionSSMModel implements Connection {
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public CommandOutput execute(CommandInput input) throws ConnectionException {
         try {
@@ -105,6 +106,7 @@ abstract class ConnectionSSMModel implements Connection {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         // No-op

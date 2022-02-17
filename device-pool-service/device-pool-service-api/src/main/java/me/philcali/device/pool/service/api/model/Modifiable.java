@@ -10,8 +10,18 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 interface Modifiable {
+    /**
+     * <p>createdAt.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     @Nullable
     Instant createdAt();
 
+    /**
+     * <p>updatedAt.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     Instant updatedAt();
 }

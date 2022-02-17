@@ -17,11 +17,26 @@ import java.util.Objects;
 @Value.Immutable
 @JsonDeserialize(as = WorkflowStateWrapper.class)
 interface WorkflowStateWrapperModel {
+    /**
+     * <p>input.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.model.WorkflowState} object
+     */
     WorkflowState input();
 
+    /**
+     * <p>executionName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String executionName();
 
+    /**
+     * <p>validate.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.model.WorkflowStateWrapperModel} object
+     */
     @Value.Check
     default WorkflowStateWrapperModel validate() {
         if (Objects.isNull(executionName()) || Objects.nonNull(input().executionArn())) {

@@ -25,6 +25,11 @@ abstract class CompositeKeyModel {
 
     abstract String account();
 
+    /**
+     * <p>parentKey.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     */
     public CompositeKey parentKey() {
         if (Objects.isNull(resources()) || resources().isEmpty()) {
             return null;
@@ -38,6 +43,7 @@ abstract class CompositeKeyModel {
     @Nullable
     abstract List<String> resources();
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         final StringJoiner joiner = new StringJoiner(DELIMITER)
@@ -46,6 +52,12 @@ abstract class CompositeKeyModel {
         return joiner.toString();
     }
 
+    /**
+     * <p>fromString.</p>
+     *
+     * @param key a {@link java.lang.String} object
+     * @return a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     */
     public static CompositeKey fromString(final String key) {
         String[] parts = key.split(DELIMITER);
         if (parts.length < 1) {

@@ -29,21 +29,47 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * <p>Provisions class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
 public class Provisions extends RepositoryResource<ProvisionObject, CreateProvisionObject, UpdateProvisionObject> {
     static final String ID = "provisionId";
 
     @Inject
+    /**
+     * <p>Constructor for Provisions.</p>
+     *
+     * @param provisions a {@link me.philcali.device.pool.service.api.ProvisionRepo} object
+     * @param pools a {@link me.philcali.device.pool.service.api.DevicePoolRepo} object
+     */
     public Provisions(ProvisionRepo provisions, DevicePoolRepo pools) {
         super(provisions, pools);
     }
 
+    /**
+     * <p>reservations.</p>
+     *
+     * @return a {@link java.lang.Class} object
+     */
     @Path("/{" + ID + "}/reservations")
     public Class<Reservations> reservations() {
         return Reservations.class;
     }
 
+    /**
+     * <p>list.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param limit a int
+     * @param nextToken a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     public Response list(
             @Context SecurityContext context,
@@ -53,6 +79,14 @@ public class Provisions extends RepositoryResource<ProvisionObject, CreateProvis
         return listItems(context, limit, nextToken, poolId);
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     @Path("/{" + ID + "}")
     public Response get(
@@ -62,6 +96,14 @@ public class Provisions extends RepositoryResource<ProvisionObject, CreateProvis
         return getItem(context, provisionId, poolId);
     }
 
+    /**
+     * <p>delete.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @DELETE
     @Path("/{" + ID + "}")
     public Response delete(
@@ -71,6 +113,14 @@ public class Provisions extends RepositoryResource<ProvisionObject, CreateProvis
         return deleteItem(context, provisionId, poolId);
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param create a {@link me.philcali.device.pool.service.api.model.CreateProvisionObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(
@@ -80,6 +130,14 @@ public class Provisions extends RepositoryResource<ProvisionObject, CreateProvis
         return createItem(context, create, poolId);
     }
 
+    /**
+     * <p>cancel.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @POST
     @Path("/{" + ID + "}")
     @Consumes(MediaType.APPLICATION_JSON)

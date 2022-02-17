@@ -129,11 +129,13 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         };
     }
 
+    /** {@inheritDoc} */
     @Override
     public CompletableFuture<LockOutput> lock(final LockInput input) {
         return CompletableFuture.supplyAsync(internalLock(input), executorService());
     }
 
+    /** {@inheritDoc} */
     @Override
     public LockOutput extend(final LockInput input) {
         try {
@@ -145,6 +147,7 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void lease(final String lockId) throws LockingException {
         try {

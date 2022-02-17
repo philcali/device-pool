@@ -60,6 +60,13 @@ abstract class WorkflowStateModel {
     @Nullable
     abstract ErrorRaw error();
 
+    /**
+     * <p>normalizedError.</p>
+     *
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object
+     * @return a {@link me.philcali.device.pool.service.model.Error} object
+     * @throws com.fasterxml.jackson.core.JsonProcessingException if any.
+     */
     public Error normalizedError(ObjectMapper mapper) throws JsonProcessingException {
         if (Objects.isNull(error())) {
             return null;
@@ -84,15 +91,32 @@ abstract class WorkflowStateModel {
     @Nullable
     abstract DevicePoolLockOptions poolLockOptions();
 
+    /**
+     * <p>fail.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.model.WorkflowState} object
+     */
     @JsonIgnore
     public WorkflowState fail() {
         return fail(errorMessage());
     }
 
+    /**
+     * <p>fail.</p>
+     *
+     * @param error a {@link java.lang.String} object
+     * @return a {@link me.philcali.device.pool.service.model.WorkflowState} object
+     */
     public WorkflowState fail(String error) {
         return update(b -> b.status(Status.FAILED).message(error));
     }
 
+    /**
+     * <p>update.</p>
+     *
+     * @param thunk a {@link java.util.function.Consumer} object
+     * @return a {@link me.philcali.device.pool.service.model.WorkflowState} object
+     */
     public WorkflowState update(Consumer<ProvisionObject.Builder> thunk) {
         ProvisionObject.Builder builder = ProvisionObject.builder().from(provision()).key(key());
         thunk.accept(builder);

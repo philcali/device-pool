@@ -23,6 +23,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * <p>Copy class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "cp",
         description = "Copies files to and from devices"
@@ -71,6 +77,7 @@ public class Copy implements Runnable {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         Path localPath = Paths.get(source);

@@ -13,12 +13,32 @@ import javax.annotation.Nullable;
 @ApiModel
 @Value.Immutable
 interface LockOutputModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String id();
 
+    /**
+     * <p>value.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String value();
 
+    /**
+     * <p>updatedAt.</p>
+     *
+     * @return a long
+     */
     long updatedAt();
 
+    /**
+     * <p>expiresIn.</p>
+     *
+     * @return a long
+     */
     long expiresIn();
 }

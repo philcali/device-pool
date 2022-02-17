@@ -13,8 +13,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * <p>InvalidInputExceptionMapper class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Provider
 public class InvalidInputExceptionMapper implements ExceptionMapper<InvalidInputException> {
+    /** {@inheritDoc} */
     @Override
     public Response toResponse(InvalidInputException e) {
         return Response.status(Response.Status.BAD_REQUEST)

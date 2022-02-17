@@ -28,17 +28,31 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>ProvisionRepoDynamo class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class ProvisionRepoDynamo
         extends AbstractObjectRepo<ProvisionObject, CreateProvisionObject, UpdateProvisionObject>
         implements ProvisionRepo {
+    /** Constant <code>RESOURCE="provision"</code> */
     public static final String RESOURCE = "provision";
 
     @Inject
+    /**
+     * <p>Constructor for ProvisionRepoDynamo.</p>
+     *
+     * @param table a {@link software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable} object
+     * @param marshaller a {@link me.philcali.device.pool.service.data.token.TokenMarshaller} object
+     */
     public ProvisionRepoDynamo(final DynamoDbTable<ProvisionObject> table, final TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected PutItemEnhancedRequest<ProvisionObject> putItemRequest(
             CompositeKey account, CreateProvisionObject create) {
@@ -62,6 +76,7 @@ public class ProvisionRepoDynamo
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected UpdateItemEnhancedRequest<ProvisionObject> updateItemRequest(
             CompositeKey account, UpdateProvisionObject update) {
@@ -87,6 +102,7 @@ public class ProvisionRepoDynamo
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected DeleteItemEnhancedRequest.Builder deleteRequest(Key key) {
         List<String> statusValueKeys = new ArrayList<>();

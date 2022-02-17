@@ -19,6 +19,11 @@ import java.util.Objects;
 @Value.Immutable
 @JsonSerialize(as = DeviceObject.class)
 interface DeviceObjectModel extends Modifiable, UniqueEntity {
+    /**
+     * <p>poolId.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     @Value.Default
     default String poolId() {
@@ -29,6 +34,11 @@ interface DeviceObjectModel extends Modifiable, UniqueEntity {
         return key().resources().get(key().resources().size() - 2);
     }
 
+    /**
+     * <p>poolKey.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     */
     @Nullable
     @Value.Default
     @JsonIgnore
@@ -42,14 +52,34 @@ interface DeviceObjectModel extends Modifiable, UniqueEntity {
                 .build();
     }
 
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String id();
 
+    /**
+     * <p>publicAddress.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String publicAddress();
 
+    /**
+     * <p>privateAddress.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String privateAddress();
 
+    /**
+     * <p>expiresIn.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     @Nullable
     Instant expiresIn();
 }

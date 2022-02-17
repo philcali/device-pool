@@ -12,6 +12,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.inject.Singleton;
 
+/**
+ * <p>DevicePoolsComponent interface.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Component(modules = {
         JacksonModule.class,
         ServiceContainerModule.class,
@@ -19,7 +25,17 @@ import javax.inject.Singleton;
 })
 @Singleton
 public interface DevicePoolsComponent {
+    /**
+     * <p>handler.</p>
+     *
+     * @return a {@link com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler} object
+     */
     JerseyLambdaContainerHandler handler();
 
+    /**
+     * <p>application.</p>
+     *
+     * @return a {@link org.glassfish.jersey.server.ResourceConfig} object
+     */
     ResourceConfig application();
 }

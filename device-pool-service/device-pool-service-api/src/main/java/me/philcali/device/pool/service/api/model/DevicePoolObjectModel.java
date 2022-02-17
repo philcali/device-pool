@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 abstract class DevicePoolObjectModel implements Modifiable, UniqueEntity {
     abstract String name();
 
+    /** {@inheritDoc} */
     @JsonIgnore
     @Override
     public String id() {

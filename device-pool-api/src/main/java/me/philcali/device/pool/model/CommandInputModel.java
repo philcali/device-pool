@@ -29,10 +29,10 @@ interface CommandInputModel {
     byte[] input();
 
     /**
-     * The command line as a {@link String}, to what would represent as an executable
+     * The command line as a {@link java.lang.String}, to what would represent as an executable
      * in shell environments.
      *
-     * @return The command line executable as a {@link String}
+     * @return The command line executable as a {@link java.lang.String}
      */
     String line();
 
@@ -49,7 +49,7 @@ interface CommandInputModel {
      * Informs the data plane agent to time out the execution within this duration.
      * Note: the default is 30 seconds
      *
-     * @return The {@link Duration} of time the command is allowed to run
+     * @return The {@link java.time.Duration} of time the command is allowed to run
      */
     @Value.Default
     default Duration timeout() {

@@ -16,7 +16,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * <p>ListAllMixin interface.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public interface ListAllMixin {
+    /**
+     * <p>listAll.</p>
+     *
+     * @param key a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @param repository a {@link me.philcali.device.pool.service.api.ObjectRepository} object
+     * @param <T> a T class
+     * @return a {@link java.util.List} object
+     */
     default <T> List<T> listAll(CompositeKey key, ObjectRepository<T, ?, ?> repository) {
         List<T> existingObjects = new ArrayList<>();
         QueryResults<T> results = null;

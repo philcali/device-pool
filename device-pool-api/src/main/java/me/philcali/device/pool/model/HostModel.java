@@ -19,18 +19,18 @@ import javax.annotation.Nullable;
 @Value.Immutable
 interface HostModel {
     /**
-     * The operating system and CPU architecture combo for this {@link Host}. This information should be
+     * The operating system and CPU architecture combo for this {@link me.philcali.device.pool.model.Host}. This information should be
      * treated as a "best effort" hint for data plane implementations that need to handle operating systems
      * differently.
      *
-     * @return The {@link PlatformOS} of this {@link Host}
+     * @return The {@link me.philcali.device.pool.model.PlatformOS} of this {@link me.philcali.device.pool.model.Host}
      */
     PlatformOS platform();
 
     /**
      * The host name or address of this {@link me.philcali.device.pool.Device}.
      *
-     * @return A {@link String} representation of a {@link Host}
+     * @return A {@link java.lang.String} representation of a {@link me.philcali.device.pool.model.Host}
      */
     String hostName();
 
@@ -51,7 +51,7 @@ interface HostModel {
      * also known as a "bastion", is a measure of connection security, to block direct SSH connectivity
      * to a {@link me.philcali.device.pool.Device} behind a private network.
      *
-     * @return The {@link String} representation of a proxy jump address
+     * @return The {@link java.lang.String} representation of a proxy jump address
      */
     @Nullable
     String proxyJump();
@@ -59,7 +59,7 @@ interface HostModel {
     /**
      * The underlying {@link me.philcali.device.pool.Device} identifier.
      *
-     * @return A {@link String} representation of a {@link me.philcali.device.pool.Device} identifier
+     * @return A {@link java.lang.String} representation of a {@link me.philcali.device.pool.Device} identifier
      */
     String deviceId();
 }

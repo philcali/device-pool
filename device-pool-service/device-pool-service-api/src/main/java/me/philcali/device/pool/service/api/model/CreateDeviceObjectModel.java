@@ -17,13 +17,33 @@ import java.time.Instant;
 @Value.Immutable
 @JsonDeserialize(as = CreateDeviceObject.class)
 interface CreateDeviceObjectModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String id();
 
+    /**
+     * <p>privateAddress.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String privateAddress();
 
+    /**
+     * <p>publicAddress.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String publicAddress();
 
+    /**
+     * <p>expiresIn.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     @Nullable
     Instant expiresIn();
 }

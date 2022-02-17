@@ -27,14 +27,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * The {@link BaseDevicePool} implements the {@link DevicePool} breaking down the control plane
+ * The {@link me.philcali.device.pool.BaseDevicePool} implements the {@link me.philcali.device.pool.DevicePool} breaking down the control plane
  * implementation into distinct components for flexible injection. Some components might represent
- * both the {@link ReservationService} and {@link ProvisionService} control plane functions, for which
- * they can be set simultaneously via the {@link Builder}. The same is also true with {@link ConnectionFactory}
- * and {@link ContentTransferAgentFactory} for generating {@link Device}. The {@link BaseDevicePool}
+ * both the {@link me.philcali.device.pool.reservation.ReservationService} and {@link me.philcali.device.pool.provision.ProvisionService} control plane functions, for which
+ * they can be set simultaneously via the {@link me.philcali.device.pool.BaseDevicePool.Builder}. The same is also true with {@link me.philcali.device.pool.connection.ConnectionFactory}
+ * and {@link me.philcali.device.pool.content.ContentTransferAgentFactory} for generating {@link me.philcali.device.pool.Device}. The {@link me.philcali.device.pool.BaseDevicePool}
  * implements the <code>obtain</code> method by exchanging complete {@link me.philcali.device.pool.model.Reservation}
- * detail for {@link Host} data path information to be used in generated {@link Connection} and
- * {@link ContentTransferAgent}. The {@link Device} implementation is a {@link BaseDevice}.
+ * detail for {@link me.philcali.device.pool.model.Host} data path information to be used in generated {@link me.philcali.device.pool.connection.Connection} and
+ * {@link me.philcali.device.pool.content.ContentTransferAgent}. The {@link me.philcali.device.pool.Device} implementation is a {@link me.philcali.device.pool.BaseDevice}.
+ *
+ * @author philcali
+ * @version $Id: $Id
  */
 @APIShadowModel
 @Value.Immutable
@@ -59,20 +62,28 @@ public abstract class BaseDevicePool implements DevicePool {
         }
     }
 
+    /**
+     * <p>builder.</p>
+     *
+     * @return a {@link me.philcali.device.pool.BaseDevicePool.Builder} object
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         return provisionService().provision(input);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput provisionOutput) throws ProvisioningException {
         return provisionService().describe(provisionOutput);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Device> obtain(ProvisionOutput output) throws ProvisioningException {
         try {
@@ -96,6 +107,7 @@ public abstract class BaseDevicePool implements DevicePool {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         SafeClosable.safelyClose(provisionService(), reservationService(), transfers(), connections());

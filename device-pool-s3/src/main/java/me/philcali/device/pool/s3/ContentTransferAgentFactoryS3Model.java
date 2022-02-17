@@ -18,6 +18,11 @@ import software.amazon.awssdk.services.s3.S3Client;
 @ApiModel
 @Value.Immutable
 abstract class ContentTransferAgentFactoryS3Model implements ContentTransferAgentFactory {
+    /**
+     * <p>s3.</p>
+     *
+     * @return a {@link software.amazon.awssdk.services.s3.S3Client} object
+     */
     @Value.Default
     public S3Client s3() {
         return S3Client.create();
@@ -30,6 +35,7 @@ abstract class ContentTransferAgentFactoryS3Model implements ContentTransferAgen
         return AWSCLIAgentCommand.create();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ContentTransferAgent connect(String id, Connection connection, Host host) throws ContentTransferException {
         return ContentTransferAgentS3.builder()
@@ -41,6 +47,7 @@ abstract class ContentTransferAgentFactoryS3Model implements ContentTransferAgen
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         s3().close();

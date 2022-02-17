@@ -17,39 +17,42 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * The client side abstraction for creating programmatic {@link Device}s to interact with.
- * Implementations of the {@link DevicePool} primarily consist of control plane functions to
- * obtain {@link Device}s.
+ * The client side abstraction for creating programmatic {@link me.philcali.device.pool.Device}s to interact with.
+ * Implementations of the {@link me.philcali.device.pool.DevicePool} primarily consist of control plane functions to
+ * obtain {@link me.philcali.device.pool.Device}s.
+ *
+ * @author philcali
+ * @version $Id: $Id
  */
 public interface DevicePool extends AutoCloseable {
     /**
-     * Creates a provision request for this {@link DevicePool} implementation. It is
+     * Creates a provision request for this {@link me.philcali.device.pool.DevicePool} implementation. It is
      * important to know that the provisioning process is asynchronous. Some implementations
      * may be able to fulfill the request immediately, and some may inform systems to acquire
      * the necessary resources. This method is considered the entrypoint of the provisioning
      * workflow.
      *
-     * @param input Provision request to this pool in the form of a {@link ProvisionInput}
-     * @return The result of the provision request in the form of a {@link ProvisionOutput}
-     * @throws ProvisioningException Failure to fulfill the provision request
+     * @param input Provision request to this pool in the form of a {@link me.philcali.device.pool.model.ProvisionInput}
+     * @return The result of the provision request in the form of a {@link me.philcali.device.pool.model.ProvisionOutput}
+     * @throws me.philcali.device.pool.exceptions.ProvisioningException Failure to fulfill the provision request
      */
     ProvisionOutput provision(ProvisionInput input) throws ProvisioningException;
 
     /**
-     * Describes the provisioning state of a {@link ProvisionInput}.
+     * Describes the provisioning state of a {@link me.philcali.device.pool.model.ProvisionInput}.
      *
-     * @param output A partial or complete {@link ProvisionOutput} from a provision request
-     * @return The result of the provision request in the form of a {@link ProvisionOutput}
-     * @throws ProvisioningException Failure of describe the provision resource
+     * @param output A partial or complete {@link me.philcali.device.pool.model.ProvisionOutput} from a provision request
+     * @return The result of the provision request in the form of a {@link me.philcali.device.pool.model.ProvisionOutput}
+     * @throws me.philcali.device.pool.exceptions.ProvisioningException Failure of describe the provision resource
      */
     ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException;
 
     /**
-     * Attempts to provide a collection of {@link Device} attached to a provision request.
+     * Attempts to provide a collection of {@link me.philcali.device.pool.Device} attached to a provision request.
      *
-     * @param output The state of a provision in the form of a {@link ProvisionOutput}
-     * @return A {@link List} of {@link Device} entries
-     * @throws ProvisioningException Failure to obtain {@link Device}s for this provision
+     * @param output The state of a provision in the form of a {@link me.philcali.device.pool.model.ProvisionOutput}
+     * @return A {@link java.util.List} of {@link me.philcali.device.pool.Device} entries
+     * @throws me.philcali.device.pool.exceptions.ProvisioningException Failure to obtain {@link me.philcali.device.pool.Device}s for this provision
      */
     List<Device> obtain(ProvisionOutput output) throws ProvisioningException;
 
@@ -61,15 +64,15 @@ public interface DevicePool extends AutoCloseable {
      *     <br>
      *     ProvisionInput input = ProvisionInput.builder().amount(5).build();
      *     <br>
-     *     List&lt;{@link Device}&gt; devices = devicePool.provisionWait(input, 30, TimeUnit.SECONDS);
+     *     List&lt;{@link me.philcali.device.pool.Device}&gt; devices = devicePool.provisionWait(input, 30, TimeUnit.SECONDS);
      *     <br>
      * </code>
      *
-     * @param input The provision request in the form of a {@link ProvisionInput}
-     * @param amount The amount of {@link TimeUnit} in unit
-     * @param unit The {@link TimeUnit} to simplify timeout
-     * @return a {@link List} of {@link Device} objects
-     * @throws ProvisioningException Failure to provision devices in the time allotted among other reasons
+     * @param input The provision request in the form of a {@link me.philcali.device.pool.model.ProvisionInput}
+     * @param amount The amount of {@link java.util.concurrent.TimeUnit} in unit
+     * @param unit The {@link java.util.concurrent.TimeUnit} to simplify timeout
+     * @return a {@link java.util.List} of {@link me.philcali.device.pool.Device} objects
+     * @throws me.philcali.device.pool.exceptions.ProvisioningException Failure to provision devices in the time allotted among other reasons
      */
     default List<Device> provisionWait(ProvisionInput input, long amount, TimeUnit unit) throws ProvisioningException {
         final ProvisionOutput output = provision(input);
@@ -94,6 +97,7 @@ public interface DevicePool extends AutoCloseable {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     default void close() {
         // No-op

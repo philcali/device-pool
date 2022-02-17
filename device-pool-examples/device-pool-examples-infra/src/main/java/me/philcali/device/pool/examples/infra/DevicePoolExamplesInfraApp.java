@@ -9,8 +9,19 @@ package me.philcali.device.pool.examples.infra;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.StackProps;
 
+/**
+ * <p>DevicePoolExamplesInfraApp class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Generated
 public class DevicePoolExamplesInfraApp {
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     */
     public static void main(final String[] args) {
         App app = new App();
 

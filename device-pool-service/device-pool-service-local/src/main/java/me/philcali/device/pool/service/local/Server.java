@@ -15,6 +15,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Objects;
 
+/**
+ * <p>Server class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public final class Server {
     private final HttpServer httpServer;
 
@@ -47,22 +53,46 @@ public final class Server {
         );
     }
 
+    /**
+     * <p>builder.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.local.Server.Builder} object
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * <p>isStarted.</p>
+     *
+     * @return a boolean
+     */
     public boolean isStarted() {
         return httpServer.isStarted();
     }
 
+    /**
+     * <p>start.</p>
+     *
+     * @throws java.io.IOException if any.
+     */
     public void start() throws IOException {
         httpServer.start();
     }
 
+    /**
+     * <p>stop.</p>
+     */
     public void stop() {
         httpServer.shutdownNow();
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects
+     * @throws java.io.IOException if any.
+     */
     public static void main(String[] args) throws IOException {
         String endpoint = "http://localhost:8080";
         Server server = Server.builder()

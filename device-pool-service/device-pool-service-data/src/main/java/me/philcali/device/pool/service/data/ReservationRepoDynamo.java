@@ -23,19 +23,33 @@ import javax.inject.Singleton;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * <p>ReservationRepoDynamo class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class ReservationRepoDynamo
         extends AbstractObjectRepo<ReservationObject, CreateReservationObject, UpdateReservationObject>
         implements ReservationRepo {
+    /** Constant <code>RESOURCE="reservation"</code> */
     public static final String RESOURCE = "reservation";
 
     @Inject
+    /**
+     * <p>Constructor for ReservationRepoDynamo.</p>
+     *
+     * @param table a {@link software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable} object
+     * @param marshaller a {@link me.philcali.device.pool.service.data.token.TokenMarshaller} object
+     */
     public ReservationRepoDynamo(
             final DynamoDbTable<ReservationObject> table,
             final TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected PutItemEnhancedRequest<ReservationObject> putItemRequest(
             CompositeKey account,
@@ -59,6 +73,7 @@ public class ReservationRepoDynamo
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected UpdateItemEnhancedRequest<ReservationObject> updateItemRequest(
             CompositeKey account,

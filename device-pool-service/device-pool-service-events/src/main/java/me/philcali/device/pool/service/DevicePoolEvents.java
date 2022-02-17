@@ -22,14 +22,28 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Function;
 
+/**
+ * <p>DevicePoolEvents class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class DevicePoolEvents {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevicePoolEvents.class);
     private final DevicePoolEventComponent component;
 
+    /**
+     * <p>Constructor for DevicePoolEvents.</p>
+     *
+     * @param component a {@link me.philcali.device.pool.service.module.DevicePoolEventComponent} object
+     */
     public DevicePoolEvents(DevicePoolEventComponent component) {
         this.component = component;
     }
 
+    /**
+     * <p>Constructor for DevicePoolEvents.</p>
+     */
     public DevicePoolEvents() {
         this(DaggerDevicePoolEventComponent.create());
     }
@@ -72,7 +86,7 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
-     * @throws WorkflowExecutionException when invoking the step fails demonstrably
+     * @throws me.philcali.device.pool.service.exception.WorkflowExecutionException when invoking the step fails demonstrably
      */
     public void createReservationStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
@@ -86,7 +100,7 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
-     * @throws WorkflowExecutionException when invoking the step fails demonstrably
+     * @throws me.philcali.device.pool.service.exception.WorkflowExecutionException when invoking the step fails demonstrably
      */
     public void startProvisionStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
@@ -100,7 +114,7 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
-     * @throws WorkflowExecutionException when invoking the step fails demonstrably
+     * @throws me.philcali.device.pool.service.exception.WorkflowExecutionException when invoking the step fails demonstrably
      */
     public void finishProvisionStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
@@ -114,7 +128,7 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
-     * @throws WorkflowExecutionException when invoking the step fails demonstrably
+     * @throws me.philcali.device.pool.service.exception.WorkflowExecutionException when invoking the step fails demonstrably
      */
     public void failProvisionStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {
@@ -128,7 +142,7 @@ public class DevicePoolEvents {
      * @param input Lambda input payload
      * @param output Lambda output payload
      * @param context Lambda function invoke context
-     * @throws WorkflowExecutionException when invoking the step fails demonstrably
+     * @throws me.philcali.device.pool.service.exception.WorkflowExecutionException when invoking the step fails demonstrably
      */
     public void obtainDevicesStep(InputStream input, OutputStream output, Context context)
             throws WorkflowExecutionException {

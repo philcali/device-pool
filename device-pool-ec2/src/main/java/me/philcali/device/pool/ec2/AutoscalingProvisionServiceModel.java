@@ -187,6 +187,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         AutoScalingGroup group = describeGroupOrThrow();
@@ -239,6 +240,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput provisionOutput) throws ProvisioningException {
         try {
@@ -259,6 +261,7 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         autoscaling().close();

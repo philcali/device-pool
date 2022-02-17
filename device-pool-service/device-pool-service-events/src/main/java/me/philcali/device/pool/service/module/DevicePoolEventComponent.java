@@ -17,6 +17,12 @@ import me.philcali.device.pool.service.workflow.StartProvisionStep;
 
 import javax.inject.Singleton;
 
+/**
+ * <p>DevicePoolEventComponent interface.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Component(modules = {
         JacksonModule.class,
         WorkflowModule.class,
@@ -29,17 +35,52 @@ import javax.inject.Singleton;
 })
 @Singleton
 public interface DevicePoolEventComponent {
+    /**
+     * <p>mapper.</p>
+     *
+     * @return a {@link com.fasterxml.jackson.databind.ObjectMapper} object
+     */
     ObjectMapper mapper();
 
+    /**
+     * <p>eventRouter.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.event.DevicePoolEventRouter} object
+     */
     DevicePoolEventRouter eventRouter();
 
+    /**
+     * <p>startProvisionStep.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.workflow.StartProvisionStep} object
+     */
     StartProvisionStep startProvisionStep();
 
+    /**
+     * <p>createReservationStep.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.workflow.CreateReservationStep} object
+     */
     CreateReservationStep createReservationStep();
 
+    /**
+     * <p>failProvisionStep.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.workflow.FailProvisionStep} object
+     */
     FailProvisionStep failProvisionStep();
 
+    /**
+     * <p>finishProvisionStep.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.workflow.FinishProvisionStep} object
+     */
     FinishProvisionStep finishProvisionStep();
 
+    /**
+     * <p>obtainDevicesStep.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.workflow.ObtainDevicesStep} object
+     */
     ObtainDevicesStep obtainDevicesStep();
 }

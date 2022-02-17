@@ -14,20 +14,36 @@ import org.immutables.value.Value;
 @ApiModel
 @Value.Immutable
 abstract class AWSCLIAgentCommandModel implements AgentCommand {
+    /**
+     * <p>pathToBinary.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Value.Default
     public String pathToBinary() {
         return "";
     }
 
+    /**
+     * <p>binary.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Value.Default
     public String binary() {
         return "aws";
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link me.philcali.device.pool.s3.AWSCLIAgentCommand} object
+     */
     public static AWSCLIAgentCommand create() {
         return AWSCLIAgentCommand.builder().build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public CommandInput copy(CopyInput input) {
         return CommandInput.builder()

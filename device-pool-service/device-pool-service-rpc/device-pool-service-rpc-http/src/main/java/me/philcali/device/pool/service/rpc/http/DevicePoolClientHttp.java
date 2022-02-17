@@ -29,6 +29,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+/**
+ * <p>DevicePoolClientHttp class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class DevicePoolClientHttp implements DevicePoolClient {
     private static final Logger LOGGER = LogManager.getLogger(DevicePoolClientHttp.class);
     private final HttpClient client;
@@ -38,6 +44,12 @@ public class DevicePoolClientHttp implements DevicePoolClient {
             500, 502, 503, 504);
 
     @Inject
+    /**
+     * <p>Constructor for DevicePoolClientHttp.</p>
+     *
+     * @param client a HttpClient object
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object
+     */
     public DevicePoolClientHttp(
             final HttpClient client,
             final ObjectMapper mapper) {
@@ -45,6 +57,7 @@ public class DevicePoolClientHttp implements DevicePoolClient {
         this.mapper = mapper;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DevicePoolEndpointType endpointType() {
         return DevicePoolEndpointType.HTTP;
@@ -82,12 +95,14 @@ public class DevicePoolClientHttp implements DevicePoolClient {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public CancelReservationResponse cancelReservation(Context context, CancelReservationRequest request)
             throws RemoteServiceException {
         return invoke(context, request.accountKey(), request, CancelReservationResponse.class);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ObtainDeviceResponse obtainDevice(Context context, ObtainDeviceRequest request)
             throws RemoteServiceException {

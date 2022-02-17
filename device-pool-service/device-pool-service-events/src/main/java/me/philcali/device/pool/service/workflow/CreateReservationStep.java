@@ -33,6 +33,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * <p>CreateReservationStep class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class CreateReservationStep implements WorkflowStep<WorkflowState, WorkflowState> {
     private static final Logger LOGGER = LogManager.getLogger(CreateReservationStep.class);
@@ -41,6 +47,13 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
     private final LockRepo lockRepo;
 
     @Inject
+    /**
+     * <p>Constructor for CreateReservationStep.</p>
+     *
+     * @param reservationRepo a {@link me.philcali.device.pool.service.api.ReservationRepo} object
+     * @param deviceRepo a {@link me.philcali.device.pool.service.api.DeviceRepo} object
+     * @param deviceLockRepo a {@link me.philcali.device.pool.service.api.LockRepo} object
+     */
     public CreateReservationStep(
             final ReservationRepo reservationRepo,
             final DeviceRepo deviceRepo,
@@ -62,6 +75,7 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
                 ));
     }
 
+    /** {@inheritDoc} */
     @Override
     public WorkflowState execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         List<DeviceObject> devices = listAll(input.provision().poolKey(), deviceRepo);

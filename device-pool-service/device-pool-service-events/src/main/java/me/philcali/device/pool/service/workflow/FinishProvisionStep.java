@@ -25,6 +25,12 @@ import javax.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * <p>FinishProvisionStep class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class FinishProvisionStep implements WorkflowStep<WorkflowState, WorkflowState> {
     private static final Logger LOGGER = LogManager.getLogger(FinishProvisionStep.class);
@@ -32,6 +38,12 @@ public class FinishProvisionStep implements WorkflowStep<WorkflowState, Workflow
     private final ReservationRepo reservationRepo;
 
     @Inject
+    /**
+     * <p>Constructor for FinishProvisionStep.</p>
+     *
+     * @param provisionRepo a {@link me.philcali.device.pool.service.api.ProvisionRepo} object
+     * @param reservationRepo a {@link me.philcali.device.pool.service.api.ReservationRepo} object
+     */
     public FinishProvisionStep(
             final ProvisionRepo provisionRepo,
             final ReservationRepo reservationRepo) {
@@ -39,6 +51,7 @@ public class FinishProvisionStep implements WorkflowStep<WorkflowState, Workflow
         this.reservationRepo = reservationRepo;
     }
 
+    /** {@inheritDoc} */
     @Override
     public WorkflowState execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         UpdateProvisionObject.Builder update = UpdateProvisionObject.builder()

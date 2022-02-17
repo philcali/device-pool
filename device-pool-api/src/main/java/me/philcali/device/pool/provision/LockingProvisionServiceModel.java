@@ -37,6 +37,7 @@ abstract class LockingProvisionServiceModel implements ProvisionService {
         return input -> LockInput.of(input.id());
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         try (LockingService.Lock lock = lockingService().tryAcquire(lockingFunction().apply(input))) {
@@ -48,11 +49,13 @@ abstract class LockingProvisionServiceModel implements ProvisionService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput provisionOutput) throws ProvisioningException {
         return provisionService().describe(provisionOutput);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         provisionService().close();

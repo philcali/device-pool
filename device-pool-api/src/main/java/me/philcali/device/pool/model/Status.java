@@ -6,6 +6,12 @@
 
 package me.philcali.device.pool.model;
 
+/**
+ * <p>Status class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public enum Status {
     REQUESTED(false),
     PROVISIONING(false),
@@ -20,6 +26,11 @@ public enum Status {
         this.terminal = terminal;
     }
 
+    /**
+     * <p>isTerminal.</p>
+     *
+     * @return a boolean
+     */
     public boolean isTerminal() {
         return terminal;
     }
