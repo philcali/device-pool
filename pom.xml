@@ -65,8 +65,6 @@
                             <report>aggregate</report>
                         </reports>
                     </reportSet>
-                </reportSets>
-                <reportSets>
                     <reportSet>
                         <id>default</id>
                         <reports>
