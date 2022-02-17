@@ -38,7 +38,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * A {@link Connection} communicating to AWS Simple Systems Manager (SSM).
+ * A {@link me.philcali.device.pool.model.connection.Connection} communicating to AWS Simple Systems Manager (SSM).
  */
 @ApiModel
 @Value.Immutable

@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A {@link ConnectionFactory} using AWS Simple Systems Manager (SSM) as the data plane implementation.
- * Any {@link me.philcali.device.pool.Device} capable of handling this {@link Connection} must run an
+ * A {@link me.philcali.device.pool.connection.ConnectionFactory} using AWS Simple Systems Manager (SSM) as the data plane implementation.
+ * Any {@link me.philcali.device.pool.Device} capable of handling this {@link me.philcali.device.pool.connection.Connection} must run an
  * SSMAgent communicating to SSM service's data plane.
  */
 @ApiModel
