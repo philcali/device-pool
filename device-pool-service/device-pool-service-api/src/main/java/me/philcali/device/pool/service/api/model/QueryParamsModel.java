@@ -14,8 +14,18 @@ import javax.annotation.Nullable;
 @ApiModel
 @Value.Immutable
 interface QueryParamsModel {
+    /**
+     * <p>limit.</p>
+     *
+     * @return a int
+     */
     int limit();
 
+    /**
+     * <p>nextToken.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String nextToken();
 }

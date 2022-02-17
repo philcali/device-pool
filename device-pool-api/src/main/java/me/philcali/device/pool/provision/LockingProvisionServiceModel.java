@@ -19,7 +19,7 @@ import org.immutables.value.Value;
 import java.util.function.Function;
 
 /**
- * A {@link ProvisionService} that blocks on acquiring devices from a single pool. It's possible
+ * A {@link me.philcali.device.pool.provision.ProvisionService} that blocks on acquiring devices from a single pool. It's possible
  * to lock on provision identifiers, {@link me.philcali.device.pool.DevicePool} metadata,
  * {@link me.philcali.device.pool.Device} identifiers, and other interesting information.
  */
@@ -37,6 +37,7 @@ abstract class LockingProvisionServiceModel implements ProvisionService {
         return input -> LockInput.of(input.id());
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         try (LockingService.Lock lock = lockingService().tryAcquire(lockingFunction().apply(input))) {
@@ -48,11 +49,13 @@ abstract class LockingProvisionServiceModel implements ProvisionService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput provisionOutput) throws ProvisioningException {
         return provisionService().describe(provisionOutput);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         provisionService().close();

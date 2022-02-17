@@ -16,6 +16,12 @@ import dagger.Provides;
 
 import javax.inject.Singleton;
 
+/**
+ * <p>JacksonModule class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Module
 public class JacksonModule {
     @Provides

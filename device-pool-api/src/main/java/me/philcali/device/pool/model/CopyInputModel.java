@@ -23,7 +23,7 @@ interface CopyInputModel {
      * {@link me.philcali.device.pool.Device}, then this value represents the file location on the
      * {@link me.philcali.device.pool.Device}.
      *
-     * @return The path representing the {@link CopyInput} source
+     * @return The path representing the {@link me.philcali.device.pool.model.CopyInput} source
      */
     String source();
 
@@ -33,15 +33,15 @@ interface CopyInputModel {
      * If "copying from" a {@link me.philcali.device.pool.Device}, then the destination represents a file location
      * in the local environment.
      *
-     * @return The path representing the {@link CopyInput} destination
+     * @return The path representing the {@link me.philcali.device.pool.model.CopyInput} destination
      */
     String destination();
 
     /**
-     * Optional flags for how a copy command should work. For example, {@link CopyOption} can be provided
+     * Optional flags for how a copy command should work. For example, {@link me.philcali.device.pool.model.CopyOption} can be provided
      * for copying directories recursively to and from {@link me.philcali.device.pool.Device}s.
      *
-     * @return The distinct {@link Set} of {@link CopyOption} for this {@link CopyInput}
+     * @return The distinct {@link java.util.Set} of {@link me.philcali.device.pool.model.CopyOption} for this {@link me.philcali.device.pool.model.CopyInput}
      */
     @Value.Default
     default Set<CopyOption> options() {

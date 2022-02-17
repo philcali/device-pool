@@ -13,9 +13,16 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.security.Principal;
 
+/**
+ * <p>LocalAuthProvider class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Provider
 @PreMatching
 public class LocalAuthProvider implements ContainerRequestFilter {
+    /** {@inheritDoc} */
     @Override
     public void filter(ContainerRequestContext request) {
         request.setSecurityContext(new SecurityContext() {

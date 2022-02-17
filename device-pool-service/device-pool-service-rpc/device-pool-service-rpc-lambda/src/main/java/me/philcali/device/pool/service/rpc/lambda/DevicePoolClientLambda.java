@@ -30,12 +30,24 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Base64;
 
+/**
+ * <p>DevicePoolClientLambda class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class DevicePoolClientLambda implements DevicePoolClient {
     private static final Logger LOGGER = LogManager.getLogger(DevicePoolClientLambda.class);
     private final LambdaClient lambda;
     private final ObjectMapper mapper;
 
     @Inject
+    /**
+     * <p>Constructor for DevicePoolClientLambda.</p>
+     *
+     * @param lambda a {@link software.amazon.awssdk.services.lambda.LambdaClient} object
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object
+     */
     public DevicePoolClientLambda(
             final LambdaClient lambda,
             final ObjectMapper mapper) {
@@ -43,6 +55,7 @@ public class DevicePoolClientLambda implements DevicePoolClient {
         this.mapper = mapper;
     }
 
+    /** {@inheritDoc} */
     @Override
     public DevicePoolEndpointType endpointType() {
         return DevicePoolEndpointType.LAMBDA;
@@ -81,12 +94,14 @@ public class DevicePoolClientLambda implements DevicePoolClient {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public CancelReservationResponse cancelReservation(Context context, CancelReservationRequest request)
             throws RemoteServiceException {
         return invoke(context, request.accountKey(), request, CancelReservationResponse.class);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ObtainDeviceResponse obtainDevice(Context context, ObtainDeviceRequest request)
             throws RemoteServiceException {

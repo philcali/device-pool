@@ -18,11 +18,26 @@ import java.util.List;
 @Value.Immutable
 @JsonDeserialize(as = Error.class)
 interface ErrorModel {
+    /**
+     * <p>errorMessage.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String errorMessage();
 
+    /**
+     * <p>errorType.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String errorType();
 
+    /**
+     * <p>stackTrace.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     @Value.Default
     default List<String> stackTrace() {
         return Collections.emptyList();

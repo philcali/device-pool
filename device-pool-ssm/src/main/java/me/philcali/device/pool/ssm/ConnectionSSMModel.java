@@ -38,7 +38,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * A {@link Connection} communicating to AWS Simple Systems Manager (SSM).
+ * A {@link me.philcali.device.pool.connection.Connection} communicating to AWS Simple Systems Manager (SSM).
  */
 @ApiModel
 @Value.Immutable
@@ -70,6 +70,7 @@ abstract class ConnectionSSMModel implements Connection {
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public CommandOutput execute(CommandInput input) throws ConnectionException {
         try {
@@ -105,6 +106,7 @@ abstract class ConnectionSSMModel implements Connection {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         // No-op

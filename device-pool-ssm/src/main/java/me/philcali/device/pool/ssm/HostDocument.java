@@ -11,10 +11,14 @@ import me.philcali.device.pool.model.Host;
 import java.util.function.Function;
 
 /**
- * Converts a {@link Host} detail to an SSM RunDocument.
+ * Converts a {@link me.philcali.device.pool.model.Host} detail to an SSM RunDocument.
+ *
+ * @author philcali
+ * @version $Id: $Id
  */
 @FunctionalInterface
 public interface HostDocument extends Function<Host, String> {
+    /** {@inheritDoc} */
     @Override
     String apply(Host host);
 }

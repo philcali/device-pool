@@ -19,15 +19,27 @@ import me.philcali.device.pool.service.model.WorkflowState;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * <p>StartProvisionStep class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class StartProvisionStep implements WorkflowStep<WorkflowState, WorkflowState> {
     private final ProvisionRepo provisionRepo;
 
     @Inject
+    /**
+     * <p>Constructor for StartProvisionStep.</p>
+     *
+     * @param provisionRepo a {@link me.philcali.device.pool.service.api.ProvisionRepo} object
+     */
     public StartProvisionStep(final ProvisionRepo provisionRepo) {
         this.provisionRepo = provisionRepo;
     }
 
+    /** {@inheritDoc} */
     @Override
     public WorkflowState execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         try {

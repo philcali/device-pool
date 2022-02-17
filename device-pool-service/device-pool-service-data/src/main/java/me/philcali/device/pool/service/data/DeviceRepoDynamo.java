@@ -23,19 +23,33 @@ import javax.inject.Singleton;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * <p>DeviceRepoDynamo class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class DeviceRepoDynamo
         extends AbstractObjectRepo<DeviceObject, CreateDeviceObject, UpdateDeviceObject>
         implements DeviceRepo {
+    /** Constant <code>RESOURCE="device"</code> */
     public static final String RESOURCE = "device";
 
     @Inject
+    /**
+     * <p>Constructor for DeviceRepoDynamo.</p>
+     *
+     * @param table a {@link software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable} object
+     * @param marshaller a {@link me.philcali.device.pool.service.data.token.TokenMarshaller} object
+     */
     public DeviceRepoDynamo(
             final DynamoDbTable<DeviceObject> table,
             final TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected PutItemEnhancedRequest<DeviceObject> putItemRequest(CompositeKey account, CreateDeviceObject create) {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
@@ -59,6 +73,7 @@ public class DeviceRepoDynamo
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected UpdateItemEnhancedRequest<DeviceObject> updateItemRequest(
             CompositeKey account, UpdateDeviceObject update) {

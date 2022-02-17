@@ -40,9 +40,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * A {@link ReservationService} and {@link ProvisionService} that uses the {@link DeviceLabService}
- * client. The control plane is a remote device lab control plane. A single {@link DeviceLabProvisionService}
- * is tied to a homogenous device pool and expects a {@link PlatformOS} hint.
+ * A {@link me.philcali.device.pool.reservation.ReservationService} and {@link me.philcali.device.pool.provision.ProvisionService} that uses the {@link me.philcali.device.pool.service.client.DeviceLabService}
+ * client. The control plane is a remote device lab control plane. A single {@link me.philcali.device.pool.client.DeviceLabProvisionService}
+ * is tied to a homogenous device pool and expects a {@link me.philcali.device.pool.model.PlatformOS} hint.
  */
 @ApiModel
 @Value.Immutable
@@ -116,6 +116,7 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
         return builder.build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput describe(ProvisionOutput output) throws ProvisioningException {
         Call<ProvisionObject> result = deviceLabService().getProvision(poolId(), output.id());
@@ -126,6 +127,7 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
         return convert(provisionObject);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ProvisionOutput provision(ProvisionInput input) throws ProvisioningException {
         Call<ProvisionObject> response = deviceLabService().createProvision(poolId(), CreateProvisionObject.builder()
@@ -142,6 +144,7 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Host exchange(Reservation reservation) throws ReservationException {
         Call<DeviceObject> result = deviceLabService().getDevice(poolId(), reservation.deviceId());
@@ -149,6 +152,7 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
         return hostConvert().andThen(Host.Builder::build).apply(device);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         inflightProvisions.forEach(provisionId -> {

@@ -36,7 +36,9 @@ import java.util.function.Consumer;
 
 abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractObjectRepo.class);
+    /** Constant <code>PK="PK"</code> */
     protected static final String PK = "PK";
+    /** Constant <code>SK="SK"</code> */
     protected static final String SK = "SK";
     private final String resourceName;
     private final DynamoDbTable<T> table;
@@ -51,14 +53,27 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
         this.table = table;
     }
 
+    /**
+     * <p>toPartitionKey.</p>
+     *
+     * @param account a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @return a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     */
     protected CompositeKey toPartitionKey(CompositeKey account) {
         return CompositeKey.builder().from(account).addResources(resourceName).build();
     }
 
+    /**
+     * <p>toPartitionValue.</p>
+     *
+     * @param account a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @return a {@link java.lang.String} object
+     */
     protected  String toPartitionValue(CompositeKey account) {
         return toPartitionKey(account).toString();
     }
 
+    /** {@inheritDoc} */
     @Override
     public T get(CompositeKey account, String id) throws NotFoundException, ServiceException {
         try {
@@ -73,10 +88,17 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
         }
     }
 
+    /**
+     * <p>deleteRequest.</p>
+     *
+     * @param key a {@link software.amazon.awssdk.enhanced.dynamodb.Key} object
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest.Builder} object
+     */
     protected DeleteItemEnhancedRequest.Builder deleteRequest(Key key) {
         return DeleteItemEnhancedRequest.builder().key(key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void delete(CompositeKey account, String id) throws ServiceException {
         try {
@@ -94,6 +116,7 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public QueryResults<T> list(CompositeKey account, QueryParams params) throws ServiceException {
         CompositeKey owner = toPartitionKey(account);
@@ -119,8 +142,16 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
         }
     }
 
+    /**
+     * <p>putItemRequest.</p>
+     *
+     * @param account a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @param create a C object
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest} object
+     */
     protected abstract PutItemEnhancedRequest<T> putItemRequest(CompositeKey account, C create);
 
+    /** {@inheritDoc} */
     @Override
     public T create(CompositeKey account, C create) throws ConflictException, ServiceException {
         PutItemEnhancedRequest<T> putItem = putItemRequest(account, create);
@@ -139,8 +170,16 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
         }
     }
 
+    /**
+     * <p>updateItemRequest.</p>
+     *
+     * @param account a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @param update a U object
+     * @return a {@link software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest} object
+     */
     protected abstract UpdateItemEnhancedRequest<T> updateItemRequest(CompositeKey account, U update);
 
+    /** {@inheritDoc} */
     @Override
     public T update(CompositeKey account, U update) throws NotFoundException, ServiceException {
         UpdateItemEnhancedRequest<T> request = updateItemRequest(account, update);

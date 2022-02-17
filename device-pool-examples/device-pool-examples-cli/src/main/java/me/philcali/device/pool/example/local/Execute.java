@@ -17,6 +17,12 @@ import picocli.CommandLine;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * <p>Execute class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "exec",
         description = "Runs an arbitrary command on the devices"
@@ -28,6 +34,7 @@ public class Execute implements Runnable {
     @CommandLine.Parameters(index = "0", description = "Command to run", paramLabel = "COMMANDS")
     String command;
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         DevicePool pool = local.createPool();

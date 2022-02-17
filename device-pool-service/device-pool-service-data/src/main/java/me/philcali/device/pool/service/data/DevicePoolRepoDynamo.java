@@ -27,19 +27,33 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * <p>DevicePoolRepoDynamo class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class DevicePoolRepoDynamo
         extends AbstractObjectRepo<DevicePoolObject, CreateDevicePoolObject, UpdateDevicePoolObject>
         implements DevicePoolRepo {
+    /** Constant <code>RESOURCE="pool"</code> */
     public static final String RESOURCE = "pool";
 
     @Inject
+    /**
+     * <p>Constructor for DevicePoolRepoDynamo.</p>
+     *
+     * @param table a {@link software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable} object
+     * @param marshaller a {@link me.philcali.device.pool.service.data.token.TokenMarshaller} object
+     */
     public DevicePoolRepoDynamo(
             DynamoDbTable<DevicePoolObject> table,
             TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected PutItemEnhancedRequest<DevicePoolObject> putItemRequest(
             CompositeKey account, CreateDevicePoolObject create) {
@@ -68,6 +82,7 @@ public class DevicePoolRepoDynamo
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected UpdateItemEnhancedRequest<DevicePoolObject> updateItemRequest(
             CompositeKey account, UpdateDevicePoolObject update) {

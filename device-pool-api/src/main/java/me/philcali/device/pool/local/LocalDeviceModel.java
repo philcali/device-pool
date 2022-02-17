@@ -30,8 +30,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@link Device} that wraps the {@link Process} and {@link Files} to facilitate integration
- * testing with concrete {@link Device} implementation.
+ * The {@link me.philcali.device.pool.Device} that wraps the {@link Process} and {@link java.nio.file.Files} to facilitate integration
+ * testing with concrete {@link me.philcali.device.pool.Device} implementation.
  */
 @ApiModel
 @Value.Immutable
@@ -39,8 +39,14 @@ abstract class LocalDeviceModel implements Device, FileMixin {
     private static final Logger LOGGER = LogManager.getLogger(LocalDevice.class);
     private static final int BUFFER = 8192;
 
+    /**
+     * <p>baseDirectory.</p>
+     *
+     * @return a {@link java.nio.file.Path} object
+     */
     public abstract Path baseDirectory();
 
+    /** {@inheritDoc} */
     @Override
     public abstract String id();
 
@@ -73,6 +79,7 @@ abstract class LocalDeviceModel implements Device, FileMixin {
         return output.toByteArray();
     }
 
+    /** {@inheritDoc} */
     @Override
     public CommandOutput execute(CommandInput input) throws DeviceInteractionException {
         ProcessBuilder builder = new ProcessBuilder().directory(baseDirectory().toFile());
@@ -101,6 +108,7 @@ abstract class LocalDeviceModel implements Device, FileMixin {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void copyTo(CopyInput input) throws DeviceInteractionException {
         try {
@@ -113,6 +121,7 @@ abstract class LocalDeviceModel implements Device, FileMixin {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void copyFrom(CopyInput input) throws DeviceInteractionException {
         try {
@@ -125,6 +134,7 @@ abstract class LocalDeviceModel implements Device, FileMixin {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         Device.super.close();

@@ -11,5 +11,11 @@ import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.UpdateProvisionObject;
 
+/**
+ * <p>ProvisionRepo interface.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public interface ProvisionRepo extends ObjectRepository<ProvisionObject, CreateProvisionObject, UpdateProvisionObject> {
 }

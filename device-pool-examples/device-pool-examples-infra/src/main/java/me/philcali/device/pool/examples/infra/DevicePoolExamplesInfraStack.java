@@ -16,11 +16,30 @@ import software.constructs.Construct;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 
+/**
+ * <p>DevicePoolExamplesInfraStack class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class DevicePoolExamplesInfraStack extends Stack {
+    /**
+     * <p>Constructor for DevicePoolExamplesInfraStack.</p>
+     *
+     * @param scope a {@link software.constructs.Construct} object
+     * @param id a {@link java.lang.String} object
+     */
     public DevicePoolExamplesInfraStack(final Construct scope, final String id) {
         this(scope, id, null);
     }
 
+    /**
+     * <p>Constructor for DevicePoolExamplesInfraStack.</p>
+     *
+     * @param scope a {@link software.constructs.Construct} object
+     * @param id a {@link java.lang.String} object
+     * @param props a {@link software.amazon.awscdk.StackProps} object
+     */
     public DevicePoolExamplesInfraStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 

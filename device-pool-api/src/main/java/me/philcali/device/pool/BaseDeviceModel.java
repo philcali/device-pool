@@ -34,11 +34,13 @@ abstract class BaseDeviceModel implements Device {
 
     abstract ContentTransferAgent contentTransfer();
 
+    /** {@inheritDoc} */
     @Override
     public String id() {
         return host().deviceId();
     }
 
+    /** {@inheritDoc} */
     @Override
     public CommandOutput execute(final CommandInput input) throws DeviceInteractionException {
         try {
@@ -48,6 +50,7 @@ abstract class BaseDeviceModel implements Device {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void copyTo(final CopyInput input) throws DeviceInteractionException {
         try {
@@ -57,6 +60,7 @@ abstract class BaseDeviceModel implements Device {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void copyFrom(final CopyInput input) throws DeviceInteractionException {
         try {
@@ -66,6 +70,7 @@ abstract class BaseDeviceModel implements Device {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         SafeClosable.safelyClose(contentTransfer(), connection());

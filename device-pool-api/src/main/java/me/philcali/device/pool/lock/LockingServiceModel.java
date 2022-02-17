@@ -27,25 +27,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * The {@link LockingService} wraps the {@link LockingMechanism} for automatic lock extension
+ * The {@link me.philcali.device.pool.lock.LockingService} wraps the {@link me.philcali.device.pool.lock.LockingMechanism} for automatic lock extension
  * for the duration of a longer running process. The component is a convenience that simply
- * tracks all of the {@link LockOutput}s acquired by a client to the {@link LockingMechanism}.
+ * tracks all of the {@link me.philcali.device.pool.model.LockOutput}s acquired by a client to the {@link me.philcali.device.pool.lock.LockingMechanism}.
  * The service is useful to lock control plane resources for whatever reason. The typical use
  * case is:
  * <br>
- * <code>
+ * <pre>
  *     LockingService locker = LockingService.of(lockingMechanism);
- *     <br>
  *     try (LockingService.Lock lock = locker.tryAcquire(LockInput.of(id)) {
- *         <br>
  *         // Do something with held resource
- *         <br>
  *     }
- * </code>
+ * </pre>
  */
 @ApiModel
 @Value.Immutable
 abstract class LockingServiceModel implements AutoCloseable {
+    /** Constant <code>LOGGER</code> */
     protected static final Logger LOGGER = LogManager.getLogger(LockingService.class);
     protected final Map<String, Lock> activeLocks = new ConcurrentHashMap<>();
     protected ScheduledFuture<Void> extensionSchedule;
@@ -102,22 +100,22 @@ abstract class LockingServiceModel implements AutoCloseable {
     /**
      * Tries to acquire a lock within a set duration.
      *
-     * @param input Information to hold the lock in the form of a {@link LockInput}
-     * @param amount The amount of {@link TimeUnit} to block
-     * @param unit The {@link TimeUnit} value to apply to the wait
-     * @return The {@link Lock} tracking the {@link LockInput} and resulting {@link LockOutput}
-     * @throws InterruptedException
+     * @param input Information to hold the lock in the form of a {@link me.philcali.device.pool.model.LockInput}
+     * @param amount The amount of {@link java.util.concurrent.TimeUnit} to block
+     * @param unit The {@link java.util.concurrent.TimeUnit} value to apply to the wait
+     * @return The {@link me.philcali.device.pool.lock.LockingServiceModel.Lock} tracking the {@link me.philcali.device.pool.model.LockInput} and resulting {@link me.philcali.device.pool.model.LockOutput}
+     * @throws java.lang.InterruptedException Thrown when interrupting lock acquisition
      */
     public Lock tryAcquire(LockInput input, long amount, TimeUnit unit) throws InterruptedException {
         return lock(input, future -> future.get(amount, unit));
     }
 
     /**
-     * Tries to acquire a lock in the form of a {@link LockInput}, indefinitely.
+     * Tries to acquire a lock in the form of a {@link me.philcali.device.pool.model.LockInput}, indefinitely.
      *
-     * @param input Information to hold the lock in the form of a {@link LockInput}
-     * @return The {@link Lock} tracking the {@link LockInput} and resulting {@link LockOutput}
-     * @throws InterruptedException Thrown if the thread is interrupted waiting to acquire a lock
+     * @param input Information to hold the lock in the form of a {@link me.philcali.device.pool.model.LockInput}
+     * @return The {@link me.philcali.device.pool.lock.LockingServiceModel.Lock} tracking the {@link me.philcali.device.pool.model.LockInput} and resulting {@link me.philcali.device.pool.model.LockOutput}
+     * @throws java.lang.InterruptedException Thrown if the thread is interrupted waiting to acquire a lock
      */
     public Lock tryAcquire(LockInput input) throws InterruptedException {
         return lock(input, CompletableFuture::get);
@@ -182,7 +180,7 @@ abstract class LockingServiceModel implements AutoCloseable {
     }
 
     /**
-     * Attempts to clear all actively held locks from this {@link LockingService} instance.
+     * Attempts to clear all actively held locks from this {@link me.philcali.device.pool.lock.LockingService} instance.
      */
     public void clearLocks() {
         for (Map.Entry<String, Lock> stringLockEntry : activeLocks.entrySet()) {
@@ -192,9 +190,9 @@ abstract class LockingServiceModel implements AutoCloseable {
     }
 
     /**
-     * Attempts to release a single {@link Lock} held by this {@link LockingService}.
+     * Attempts to release a single {@link me.philcali.device.pool.lock.LockingServiceModel.Lock} held by this {@link me.philcali.device.pool.lock.LockingService}.
      *
-     * @param lock A {@link Lock} instance held by this {@link LockingService}
+     * @param lock A {@link me.philcali.device.pool.lock.LockingServiceModel.Lock} instance held by this {@link me.philcali.device.pool.lock.LockingService}
      */
     public void release(Lock lock) {
         if (activeLocks.remove(lock.lockInput().id()) != null) {
@@ -202,6 +200,7 @@ abstract class LockingServiceModel implements AutoCloseable {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         if (manageActiveLocks()) {

@@ -29,6 +29,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * <p>Reservations class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
 public class Reservations
@@ -36,6 +42,13 @@ public class Reservations
     static final String ID = "reservationId";
 
     @Inject
+    /**
+     * <p>Constructor for Reservations.</p>
+     *
+     * @param repository a {@link me.philcali.device.pool.service.api.ReservationRepo} object
+     * @param pools a {@link me.philcali.device.pool.service.api.DevicePoolRepo} object
+     * @param provisions a {@link me.philcali.device.pool.service.api.ProvisionRepo} object
+     */
     public Reservations(
             ReservationRepo repository,
             DevicePoolRepo pools,
@@ -43,6 +56,16 @@ public class Reservations
         super(repository, pools, provisions);
     }
 
+    /**
+     * <p>list.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param limit a int
+     * @param nextToken a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     public Response list(
             @Context SecurityContext context,
@@ -53,6 +76,15 @@ public class Reservations
         return listItems(context, limit, nextToken, poolId, provisionId);
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param reservationId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     @Path("/{" + ID + "}")
     public Response get(
@@ -63,6 +95,15 @@ public class Reservations
         return getItem(context, reservationId, poolId, provisionId);
     }
 
+    /**
+     * <p>delete.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param reservationId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @DELETE
     @Path("/{" + ID + "}")
     public Response delete(
@@ -73,6 +114,15 @@ public class Reservations
         return deleteItem(context, reservationId, poolId, provisionId);
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param create a {@link me.philcali.device.pool.service.api.model.CreateReservationObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(
@@ -83,6 +133,16 @@ public class Reservations
         return createItem(context, create, poolId, provisionId);
     }
 
+    /**
+     * <p>update.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
+     * @param reservationId a {@link java.lang.String} object
+     * @param update a {@link me.philcali.device.pool.service.api.model.UpdateReservationObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @PUT
     @Path("/{" + ID + "}")
     @Consumes(MediaType.APPLICATION_JSON)

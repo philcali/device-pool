@@ -33,10 +33,10 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 /**
- * This {@link LockingMechanism} is backed by a DynamoDB table to act as a
- * distributed locking store. The {@link LockingMechanism} can then be used
+ * This {@link me.philcali.device.pool.lock.LockingMechanism} is backed by a DynamoDB table to act as a
+ * distributed locking store. The {@link me.philcali.device.pool.lock.LockingMechanism} can then be used
  * in the {@link me.philcali.device.pool.provision.LockingProvisionService}.
- * The {@link LockingMechanismDynamoDB} only requires a tableName, but other
+ * The {@link me.philcali.device.pool.ddb.LockingMechanismDynamoDB} only requires a tableName, but other
  * parameters can be overridden at creation time.
  */
 @ApiModel
@@ -129,11 +129,13 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         };
     }
 
+    /** {@inheritDoc} */
     @Override
     public CompletableFuture<LockOutput> lock(final LockInput input) {
         return CompletableFuture.supplyAsync(internalLock(input), executorService());
     }
 
+    /** {@inheritDoc} */
     @Override
     public LockOutput extend(final LockInput input) {
         try {
@@ -145,6 +147,7 @@ abstract class LockingMechanismDynamoDBModel implements LockingMechanism {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void lease(final String lockId) throws LockingException {
         try {

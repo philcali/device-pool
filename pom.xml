@@ -48,6 +48,7 @@
         <ddb.local.version>1.16.0</ddb.local.version>
         <aws.sdk.version>2.16.52</aws.sdk.version>
         <picocli.version>4.6.2</picocli.version>
+        <sitePath>file:/site</sitePath>
     </properties>
 
     <reporting>
@@ -56,6 +57,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.version}</version>
+                <reportSets>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <inherited>false</inherited>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                        <configuration>
+                            <excludePackageNames>me.philcali.device.pool.service.module.*</excludePackageNames>
+                        </configuration>
+                    </reportSet>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -195,6 +214,10 @@
     </dependencyManagement>
 
     <distributionManagement>
+        <site>
+            <id>philcali.me</id>
+            <url>${sitePath}</url>
+        </site>
         <snapshotRepository>
             <id>me.philcali.artifacts.snapshot</id>
             <url>s3://philcali-artifact-repo/maven/snapshot</url>

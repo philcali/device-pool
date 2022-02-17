@@ -17,13 +17,28 @@ import java.time.Instant;
 @Value.Immutable
 @JsonDeserialize(as = CreateProvisionObject.class)
 interface CreateProvisionObjectModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String id();
 
+    /**
+     * <p>amount.</p>
+     *
+     * @return a int
+     */
     @Value.Default
     default int amount() {
         return 1;
     }
 
+    /**
+     * <p>expiresIn.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     @Nullable
     Instant expiresIn();
 }

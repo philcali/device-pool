@@ -19,6 +19,11 @@ import java.util.Objects;
 @Value.Immutable
 @JsonSerialize(as = ReservationObject.class)
 abstract class ReservationObjectModel implements Modifiable, UniqueEntity {
+    /**
+     * <p>provisionKey.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     */
     @Nullable
     @JsonIgnore
     @Value.Default
@@ -32,6 +37,11 @@ abstract class ReservationObjectModel implements Modifiable, UniqueEntity {
                 .build();
     }
 
+    /**
+     * <p>provisionId.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     @JsonIgnore
     @Value.Default

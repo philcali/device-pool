@@ -6,6 +6,12 @@
 
 package me.philcali.device.pool.service.api.model;
 
+/**
+ * <p>DevicePoolEndpointType class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public enum DevicePoolEndpointType {
     HTTP, LAMBDA
 }

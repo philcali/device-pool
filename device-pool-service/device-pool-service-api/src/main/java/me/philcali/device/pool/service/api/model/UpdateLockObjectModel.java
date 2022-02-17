@@ -17,8 +17,18 @@ import java.time.Instant;
 @Value.Immutable
 @JsonDeserialize(as = UpdateLockObject.class)
 interface UpdateLockObjectModel {
+    /**
+     * <p>holder.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String holder();
 
+    /**
+     * <p>expiresIn.</p>
+     *
+     * @return a {@link java.time.Instant} object
+     */
     @Nullable
     Instant expiresIn();
 }

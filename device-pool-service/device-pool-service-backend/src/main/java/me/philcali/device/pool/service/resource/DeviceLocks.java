@@ -28,10 +28,23 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+/**
+ * <p>DeviceLocks class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
 public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject, UpdateLockObject> {
     @Inject
+    /**
+     * <p>Constructor for DeviceLocks.</p>
+     *
+     * @param lockRepo a {@link me.philcali.device.pool.service.api.LockRepo} object
+     * @param poolRepo a {@link me.philcali.device.pool.service.api.DevicePoolRepo} object
+     * @param deviceRepo a {@link me.philcali.device.pool.service.api.DeviceRepo} object
+     */
     public DeviceLocks(
             final LockRepo lockRepo,
             final DevicePoolRepo poolRepo,
@@ -39,6 +52,14 @@ public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject
         super(lockRepo, poolRepo, deviceRepo);
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @GET
     public Response get(
             @Context SecurityContext context,
@@ -47,6 +68,15 @@ public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject
         return getItem(context, LockRepo.SINGLETON, poolId, deviceId);
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param create a {@link me.philcali.device.pool.service.api.model.CreateLockObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(
@@ -57,6 +87,15 @@ public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject
         return createItem(context, create, poolId, deviceId);
     }
 
+    /**
+     * <p>extend.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @param update a {@link me.philcali.device.pool.service.api.model.UpdateLockObject} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response extend(
@@ -67,6 +106,14 @@ public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject
         return updateItem(context, update, poolId, deviceId);
     }
 
+    /**
+     * <p>delete.</p>
+     *
+     * @param context a {@link javax.ws.rs.core.SecurityContext} object
+     * @param poolId a {@link java.lang.String} object
+     * @param deviceId a {@link java.lang.String} object
+     * @return a {@link javax.ws.rs.core.Response} object
+     */
     @DELETE
     public Response delete(
             @Context SecurityContext context,

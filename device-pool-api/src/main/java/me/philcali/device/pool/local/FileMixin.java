@@ -16,8 +16,18 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 
 interface FileMixin {
+    /**
+     * <p>baseDirectory.</p>
+     *
+     * @return a {@link java.nio.file.Path} object
+     */
     Path baseDirectory();
 
+    /**
+     * <p>cleanUp.</p>
+     *
+     * @throws java.io.IOException if any.
+     */
     default void cleanUp() throws IOException {
         try (Stream<Path> stream = Files.walk(baseDirectory())) {
             stream.sorted(Comparator.reverseOrder())

@@ -15,7 +15,17 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(as = ClientContext.class)
 interface ClientContextModel {
+    /**
+     * <p>accountKey.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     */
     CompositeKey accountKey();
 
+    /**
+     * <p>operationName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     String operationName();
 }

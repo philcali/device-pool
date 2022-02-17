@@ -21,6 +21,12 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * <p>Init class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "init",
         description = "Sets up a managed device pool with devices"
@@ -47,6 +53,7 @@ public class Init implements Runnable {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         DeviceLabService service = deviceLab.createService();

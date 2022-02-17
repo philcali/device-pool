@@ -6,6 +6,12 @@
 
 package me.philcali.device.pool.service.api.model;
 
+/**
+ * <p>DevicePoolType class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public enum DevicePoolType {
     MANAGED, UNMANAGED
 }

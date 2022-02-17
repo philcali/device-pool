@@ -16,18 +16,43 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @JsonDeserialize(as = UpdateDevicePoolObject.class)
 interface UpdateDevicePoolObjectModel {
+    /**
+     * <p>name.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String name();
 
+    /**
+     * <p>description.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String description();
 
+    /**
+     * <p>type.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.DevicePoolType} object
+     */
     @Nullable
     DevicePoolType type();
 
+    /**
+     * <p>endpoint.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.DevicePoolEndpoint} object
+     */
     @Nullable
     DevicePoolEndpoint endpoint();
 
+    /**
+     * <p>lockOptions.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.api.model.DevicePoolLockOptions} object
+     */
     @Nullable
     DevicePoolLockOptions lockOptions();
 }

@@ -18,10 +18,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A {@link LockingMechanism} that is entirely local and in-memory. It wraps a
- * {@link ConcurrentHashMap} for held locks. The purpose of this {@link LockingMechanism}
+ * A {@link me.philcali.device.pool.lock.LockingMechanism} that is entirely local and in-memory. It wraps a
+ * {@link java.util.concurrent.ConcurrentHashMap} for held locks. The purpose of this {@link me.philcali.device.pool.lock.LockingMechanism}
  * is to facilitate integration for using the mechanism in lock decorations like the
- * {@link LockingService} or {@link me.philcali.device.pool.provision.LockingProvisionService}
+ * {@link me.philcali.device.pool.lock.LockingService} or {@link me.philcali.device.pool.provision.LockingProvisionService}
+ *
+ * @author philcali
+ * @version $Id: $Id
  */
 public class LocalLockingMechanism implements LockingMechanism {
     private final Map<String, CacheValue> activeLocks = new ConcurrentHashMap<>();
@@ -31,6 +34,7 @@ public class LocalLockingMechanism implements LockingMechanism {
         LockOutput lock;
     }
 
+    /** {@inheritDoc} */
     @Override
     public CompletableFuture<LockOutput> lock(LockInput input) {
         return CompletableFuture.supplyAsync(() -> {
@@ -44,11 +48,13 @@ public class LocalLockingMechanism implements LockingMechanism {
         });
     }
 
+    /** {@inheritDoc} */
     @Override
     public void lease(String lockId) throws LockingException {
         activeLocks.remove(lockId);
     }
 
+    /** {@inheritDoc} */
     @Override
     public LockOutput extend(LockInput input) throws LockingException {
         return activeLocks.compute(input.id(), (id, cache) -> {

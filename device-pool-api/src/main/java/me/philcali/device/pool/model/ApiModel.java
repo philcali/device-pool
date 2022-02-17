@@ -11,6 +11,9 @@ import org.immutables.value.Value;
 /**
  * An {@link org.immutables.value.Value.Immutable} helper to facilitate consistent
  * code generation across the libraries.
+ *
+ * @author philcali
+ * @version $Id: $Id
  */
 @Value.Style(
         jdkOnly = true,

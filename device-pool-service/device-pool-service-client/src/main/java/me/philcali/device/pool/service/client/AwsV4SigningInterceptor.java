@@ -28,12 +28,25 @@ import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 
 import java.io.IOException;
 
+/**
+ * <p>AwsV4SigningInterceptor class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class AwsV4SigningInterceptor implements Interceptor {
     private static final String SERVICE_NAME = "execute-api";
     private final AwsCredentialsProvider credentialsProvider;
     private final AwsRegionProvider regionProvider;
     private final Aws4Signer signer;
 
+    /**
+     * <p>Constructor for AwsV4SigningInterceptor.</p>
+     *
+     * @param credentialsProvider a {@link software.amazon.awssdk.auth.credentials.AwsCredentialsProvider} object
+     * @param regionProvider a {@link software.amazon.awssdk.regions.providers.AwsRegionProvider} object
+     * @param signer a {@link software.amazon.awssdk.auth.signer.Aws4Signer} object
+     */
     public AwsV4SigningInterceptor(
             final AwsCredentialsProvider credentialsProvider,
             final AwsRegionProvider regionProvider,
@@ -43,6 +56,11 @@ public class AwsV4SigningInterceptor implements Interceptor {
         this.signer = signer;
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link me.philcali.device.pool.service.client.AwsV4SigningInterceptor} object
+     */
     public static AwsV4SigningInterceptor create() {
         return new AwsV4SigningInterceptor(
                 DefaultCredentialsProvider.create(),
@@ -50,6 +68,7 @@ public class AwsV4SigningInterceptor implements Interceptor {
                 Aws4Signer.create());
     }
 
+    /** {@inheritDoc} */
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();

@@ -6,9 +6,20 @@
 
 package me.philcali.device.pool.exceptions;
 
+/**
+ * <p>ContentTransferException class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class ContentTransferException extends RuntimeException {
     private static final long serialVersionUID = 7149765931329187911L;
 
+    /**
+     * <p>Constructor for ContentTransferException.</p>
+     *
+     * @param ex a {@link java.lang.Throwable} object
+     */
     public ContentTransferException(Throwable ex) {
         super(ex);
     }

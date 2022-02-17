@@ -11,8 +11,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * <p>CatchAllExceptionMapper class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Provider
 public class CatchAllExceptionMapper implements ExceptionMapper<RuntimeException> {
+    /** {@inheritDoc} */
     @Override
     public Response toResponse(RuntimeException error) {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

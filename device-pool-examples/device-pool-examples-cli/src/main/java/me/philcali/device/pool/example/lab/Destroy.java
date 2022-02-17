@@ -14,6 +14,12 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * <p>Destroy class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "destroy",
         description = "Destroys a device pool through the control plane"
@@ -22,6 +28,7 @@ public class Destroy implements Runnable {
     @CommandLine.ParentCommand
     Lab deviceLab;
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         DeviceLabService service = deviceLab.createService();

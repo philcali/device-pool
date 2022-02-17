@@ -23,6 +23,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 
+/**
+ * <p>FailProvisionStep class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class FailProvisionStep implements WorkflowStep<WorkflowState, WorkflowState> {
     private static final Logger LOGGER = LogManager.getLogger(FailProvisionStep.class);
@@ -30,6 +36,12 @@ public class FailProvisionStep implements WorkflowStep<WorkflowState, WorkflowSt
     private final ObjectMapper mapper;
 
     @Inject
+    /**
+     * <p>Constructor for FailProvisionStep.</p>
+     *
+     * @param provisionRepo a {@link me.philcali.device.pool.service.api.ProvisionRepo} object
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object
+     */
     public FailProvisionStep(
             final ProvisionRepo provisionRepo,
             final ObjectMapper mapper) {
@@ -37,6 +49,7 @@ public class FailProvisionStep implements WorkflowStep<WorkflowState, WorkflowSt
         this.mapper = mapper;
     }
 
+    /** {@inheritDoc} */
     @Override
     public WorkflowState execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         try {

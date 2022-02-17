@@ -11,6 +11,9 @@ import org.immutables.value.Value;
 /**
  * A specific {@link org.immutables.value.Value.Immutable} helper that overshadows
  * builder implementations.
+ *
+ * @author philcali
+ * @version $Id: $Id
  */
 @Value.Style(
         jdkOnly = true,

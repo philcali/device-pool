@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A {@link Connection} implemented by an {@link org.apache.sshd.client.SshClient}.
+ * A {@link me.philcali.device.pool.connection.Connection} implemented by an {@link org.apache.sshd.client.SshClient}.
  */
 @ApiModel
 @Value.Immutable
@@ -34,6 +34,7 @@ abstract class ConnectionSSHModel implements Connection {
 
     abstract ClientSession clientSession();
 
+    /** {@inheritDoc} */
     @Override
     public CommandOutput execute(final CommandInput input) throws ConnectionException {
         final StringBuilder builder = new StringBuilder(input.line());
@@ -64,6 +65,7 @@ abstract class ConnectionSSHModel implements Connection {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         clientSession().close();

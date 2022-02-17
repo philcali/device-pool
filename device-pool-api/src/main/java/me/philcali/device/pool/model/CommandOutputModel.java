@@ -36,9 +36,9 @@ interface CommandOutputModel {
     byte[] stderr();
 
     /**
-     * If present, the original {@link CommandInput} associated to this execution output.
+     * If present, the original {@link me.philcali.device.pool.model.CommandInput} associated to this execution output.
      *
-     * @return The original {@link CommandInput} belonging to this output
+     * @return The original {@link me.philcali.device.pool.model.CommandInput} belonging to this output
      */
     @Nullable
     CommandInput originalInput();
@@ -51,11 +51,11 @@ interface CommandOutputModel {
     int exitCode();
 
     /**
-     * Convenience method to attempt to get output, but throws if the {@link CommandOutput} contains
+     * Convenience method to attempt to get output, but throws if the {@link me.philcali.device.pool.model.CommandOutput} contains
      * error and error exit code.
      *
-     * @return The byte array from stdout or thrown {@link ConnectionException} on error
-     * @throws ConnectionException Thrown if the {@link CommandOutput} represents an error
+     * @return The byte array from stdout or thrown {@link me.philcali.device.pool.exceptions.ConnectionException} on error
+     * @throws me.philcali.device.pool.exceptions.ConnectionException Thrown if the {@link me.philcali.device.pool.model.CommandOutput} represents an error
      */
     default byte[] toByteArray() throws ConnectionException {
         if (exitCode() != 0) {
@@ -68,10 +68,10 @@ interface CommandOutputModel {
     }
 
     /**
-     * Convenience method to return stdout as a UTF-8 encoded {@link String}.
+     * Convenience method to return stdout as a UTF-8 encoded {@link java.lang.String}.
      *
-     * @return The stdout as {@link String}
-     * @throws ConnectionException Thrown if the {@link CommandOutput} represents an error
+     * @return The stdout as {@link java.lang.String}
+     * @throws me.philcali.device.pool.exceptions.ConnectionException Thrown if the {@link me.philcali.device.pool.model.CommandOutput} represents an error
      */
     default String toUTF8String() throws ConnectionException {
         return new String(toByteArray(), StandardCharsets.UTF_8);

@@ -33,6 +33,12 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * <p>ObtainDevicesStep class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowState> {
     private static final Logger LOGGER = LogManager.getLogger(ObtainDevicesStep.class);
@@ -41,6 +47,13 @@ public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowSt
     private final DevicePoolClientFactory clientFactory;
 
     @Inject
+    /**
+     * <p>Constructor for ObtainDevicesStep.</p>
+     *
+     * @param deviceRepo a {@link me.philcali.device.pool.service.api.DeviceRepo} object
+     * @param reservationRepo a {@link me.philcali.device.pool.service.api.ReservationRepo} object
+     * @param clientFactory a {@link me.philcali.device.pool.service.rpc.DevicePoolClientFactory} object
+     */
     public ObtainDevicesStep(
             final DeviceRepo deviceRepo,
             final ReservationRepo reservationRepo,
@@ -50,6 +63,7 @@ public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowSt
         this.clientFactory = clientFactory;
     }
 
+    /** {@inheritDoc} */
     @Override
     public WorkflowState execute(WorkflowState input) throws WorkflowExecutionException, RetryableException {
         if (Objects.isNull(input.endpoint())) {

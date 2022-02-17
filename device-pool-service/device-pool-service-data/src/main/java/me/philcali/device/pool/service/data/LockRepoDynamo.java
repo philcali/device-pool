@@ -23,18 +23,32 @@ import javax.inject.Singleton;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * <p>LockRepoDynamo class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Singleton
 public class LockRepoDynamo
         extends AbstractObjectRepo<LockObject, CreateLockObject, UpdateLockObject>
         implements LockRepo {
     private static final String SINGLETON = "singleton";
+    /** Constant <code>RESOURCE="lock"</code> */
     public static final String RESOURCE = "lock";
 
     @Inject
+    /**
+     * <p>Constructor for LockRepoDynamo.</p>
+     *
+     * @param table a {@link software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable} object
+     * @param marshaller a {@link me.philcali.device.pool.service.data.token.TokenMarshaller} object
+     */
     public LockRepoDynamo(final DynamoDbTable<LockObject> table, final TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected PutItemEnhancedRequest<LockObject> putItemRequest(
             CompositeKey account,
@@ -58,6 +72,7 @@ public class LockRepoDynamo
                 .build();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected UpdateItemEnhancedRequest<LockObject> updateItemRequest(
             CompositeKey account,

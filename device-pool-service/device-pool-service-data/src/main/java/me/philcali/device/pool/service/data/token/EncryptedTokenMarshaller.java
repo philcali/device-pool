@@ -39,6 +39,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * <p>EncryptedTokenMarshaller class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 public class EncryptedTokenMarshaller implements TokenMarshaller {
     private static final Logger LOGGER = LoggerFactory.getLogger(EncryptedTokenMarshaller.class);
     private static final int BITS = 128;
@@ -48,11 +54,17 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
     private final ObjectMapper mapper;
     private final SecureRandom random;
 
+    /**
+     * <p>Constructor for EncryptedTokenMarshaller.</p>
+     *
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object
+     */
     public EncryptedTokenMarshaller(final ObjectMapper mapper) {
         this.mapper = mapper;
         this.random = new SecureRandom();
     }
 
+    /** {@inheritDoc} */
     @Nullable
     @Override
     public String marshall(CompositeKey owner, @Nullable Map<String, AttributeValue> lastKey)
@@ -85,6 +97,7 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         }
     }
 
+    /** {@inheritDoc} */
     @Nullable
     @Override
     public Map<String, AttributeValue> unmarshall(CompositeKey owner, @Nullable String token)
@@ -120,12 +133,33 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         }
     }
 
+    /**
+     * <p>generateSecret.</p>
+     *
+     * @param owner a {@link me.philcali.device.pool.service.api.model.CompositeKey} object
+     * @return a {@link javax.crypto.SecretKey} object
+     * @throws java.security.spec.InvalidKeySpecException if any.
+     * @throws java.security.NoSuchAlgorithmException if any.
+     */
     protected SecretKey generateSecret(CompositeKey owner) throws InvalidKeySpecException, NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] encodedBytes = digest.digest(owner.toString().getBytes(StandardCharsets.UTF_8));
         return new SecretKeySpec(encodedBytes, KEY_SPEC);
     }
 
+    /**
+     * <p>encrypt.</p>
+     *
+     * @param input an array of {@link byte} objects
+     * @param secret a {@link javax.crypto.SecretKey} object
+     * @return a {@link java.lang.String} object
+     * @throws javax.crypto.NoSuchPaddingException if any.
+     * @throws java.security.NoSuchAlgorithmException if any.
+     * @throws java.security.InvalidKeyException if any.
+     * @throws javax.crypto.BadPaddingException if any.
+     * @throws javax.crypto.IllegalBlockSizeException if any.
+     * @throws java.security.InvalidAlgorithmParameterException if any.
+     */
     protected String encrypt(byte[] input, SecretKey secret)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         byte[] iv = new byte[GCM_IV_LENGTH];
@@ -140,6 +174,19 @@ public class EncryptedTokenMarshaller implements TokenMarshaller {
         return Base64.getEncoder().encodeToString(byteBuffer.array());
     }
 
+    /**
+     * <p>decrypt.</p>
+     *
+     * @param cipherText a {@link java.lang.String} object
+     * @param secret a {@link javax.crypto.SecretKey} object
+     * @return an array of {@link byte} objects
+     * @throws javax.crypto.NoSuchPaddingException if any.
+     * @throws java.security.NoSuchAlgorithmException if any.
+     * @throws java.security.InvalidKeyException if any.
+     * @throws javax.crypto.BadPaddingException if any.
+     * @throws javax.crypto.IllegalBlockSizeException if any.
+     * @throws java.security.InvalidAlgorithmParameterException if any.
+     */
     protected byte[] decrypt(String cipherText, SecretKey secret)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException {
         byte[] decodedBytes = Base64.getDecoder().decode(cipherText);

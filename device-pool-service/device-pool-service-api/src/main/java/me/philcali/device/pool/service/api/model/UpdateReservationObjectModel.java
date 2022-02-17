@@ -17,12 +17,27 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @JsonDeserialize(as = UpdateReservationObject.class)
 interface UpdateReservationObjectModel {
+    /**
+     * <p>id.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String id();
 
+    /**
+     * <p>status.</p>
+     *
+     * @return a {@link me.philcali.device.pool.model.Status} object
+     */
     @Nullable
     Status status();
 
+    /**
+     * <p>message.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Nullable
     String message();
 }

@@ -33,15 +33,20 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * A {@link ConnectionFactory} backed by an {@link SshClient}. The {@link SshClient} is reused
- * across created {@link Connection} for this {@link ConnectionFactorySSH} instance. The
- * default {@link ConnectionFactorySSH} will use a default {@link SshClient}, which is informed
+ * A {@link me.philcali.device.pool.connection.ConnectionFactory} backed by an {@link org.apache.sshd.client.SshClient}. The {@link org.apache.sshd.client.SshClient} is reused
+ * across created {@link me.philcali.device.pool.connection.Connection} for this {@link me.philcali.device.pool.ssh.ConnectionFactorySSH} instance. The
+ * default {@link me.philcali.device.pool.ssh.ConnectionFactorySSH} will use a default {@link org.apache.sshd.client.SshClient}, which is informed
  * by the <code>$HOME/.ssh</code> configuration. Additional SSH information can be set at
  * creation time.
  */
 @ApiModel
 @Value.Immutable
 abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTransferAgentFactory {
+    /**
+     * <p>client.</p>
+     *
+     * @return a {@link org.apache.sshd.client.SshClient} object
+     */
     @Value.Default
     public SshClient client() {
         return SshClient.setUpDefaultClient();
@@ -50,16 +55,31 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
     @Nullable
     abstract List<KeyPair> publicKeys();
 
+    /**
+     * <p>connectionTimeout.</p>
+     *
+     * @return a {@link java.time.Duration} object
+     */
     @Value.Default
     public Duration connectionTimeout() {
         return Duration.ofSeconds(5L);
     }
 
+    /**
+     * <p>authTimeout.</p>
+     *
+     * @return a {@link java.time.Duration} object
+     */
     @Value.Default
     public Duration authTimeout() {
         return Duration.ofSeconds(5L);
     }
 
+    /**
+     * <p>userName.</p>
+     *
+     * @return a {@link java.lang.String} object
+     */
     @Value.Default
     public String userName() {
         return System.getProperty("user.name");
@@ -76,6 +96,11 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
     @Nullable
     abstract SocketAddress localAddress();
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link me.philcali.device.pool.ssh.ConnectionFactorySSH} object
+     */
     public static ConnectionFactorySSH create() {
         return ConnectionFactorySSH.builder().build();
     }
@@ -104,6 +129,7 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
         return session;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Connection connect(final Host host) throws ConnectionException {
         try {
@@ -113,6 +139,7 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public ContentTransferAgent connect(String id, Connection connection, Host host) throws ContentTransferException {
         try {
@@ -134,6 +161,7 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() throws Exception {
         client().close();

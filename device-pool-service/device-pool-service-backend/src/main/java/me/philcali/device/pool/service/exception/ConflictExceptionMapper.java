@@ -13,8 +13,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * <p>ConflictExceptionMapper class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Provider
 public class ConflictExceptionMapper implements ExceptionMapper<ConflictException> {
+    /** {@inheritDoc} */
     @Override
     public Response toResponse(ConflictException e) {
         return Response.status(Response.Status.CONFLICT)

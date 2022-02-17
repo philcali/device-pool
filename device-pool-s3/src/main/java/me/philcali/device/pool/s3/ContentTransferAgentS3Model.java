@@ -37,7 +37,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
- * A {@link ContentTransferAgent} backed by an S3 blob store.
+ * A {@link me.philcali.device.pool.content.ContentTransferAgent} backed by an S3 blob store.
  */
 @ApiModel
 @Value.Immutable
@@ -58,6 +58,7 @@ abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
         return String.format("%s/%s/%s", prefix(), commandId, file.getFileName());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void send(CopyInput input) throws ContentTransferException {
         Path contentPath = Paths.get(input.source());
@@ -97,6 +98,7 @@ abstract class ContentTransferAgentS3Model implements ContentTransferAgent {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void receive(CopyInput input) throws ContentTransferException {
         final Path targetFile = Paths.get(input.destination());

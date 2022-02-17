@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * <p>Ec2 class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "ec2",
         description = "Demonstrates autoscaling and ec2 device pools"
@@ -44,6 +50,7 @@ public class Ec2 implements Runnable {
     @CommandLine.Option(names = {"-i", "--identity"})
     KeyPair pemFile;
 
+    /** {@inheritDoc} */
     @Override
     public void run() {
         List<KeyPair> publicKeys = new ArrayList<>();

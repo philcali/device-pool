@@ -35,13 +35,24 @@ jobs:
       uses: actions/setup-node@v2.5.1
     - name: Build with Maven
       if: ${{ github.ref_name != 'main' }}
-      run: mvn -B verify --file pom.xml
+      run: |
+        mvn -B verify --file pom.xml
     - name: Deploy with Maven
       if: ${{ github.ref_name == 'main' || github.ref_type == 'tag' }}
-      run: mvn -B deploy --file pom.xml
+      run: |
+        mvn -B deploy --file pom.xml
+        mvn -B javadoc:aggregate --file pom.xml
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ARTIFACT_WRITER_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ARTIFACT_WRITER_SECRET_KEY }}
         AWS_REGION: us-east-1
+    - name: Deploy to GitHub Pages
+      if: ${{ github.ref_type == 'tag' }}
+      uses: crazy-max/ghaction-github-pages@v2
+      with:
+        target_branch: gh-pages
+        build_dir: target/site/apidocs
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Codecov
       uses: codecov/codecov-action@v2.1.0

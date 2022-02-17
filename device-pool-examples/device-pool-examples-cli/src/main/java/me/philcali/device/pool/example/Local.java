@@ -22,6 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * <p>Local class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @CommandLine.Command(
         name = "local",
         description = "An example app that uses a local static pool to provision",
@@ -52,10 +58,20 @@ public class Local {
             description = "IP addresses of the hosts representing this pool")
     String[] hostNames;
 
+    /**
+     * <p>hostNames.</p>
+     *
+     * @return a {@link java.util.List} object
+     */
     public List<String> hostNames() {
         return Arrays.asList(hostNames);
     }
 
+    /**
+     * <p>createPool.</p>
+     *
+     * @return a {@link me.philcali.device.pool.DevicePool} object
+     */
     public DevicePool createPool() {
         SshClient sshClient = SshClient.setUpDefaultClient();
         if (Objects.nonNull(password)) {

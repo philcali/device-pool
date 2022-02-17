@@ -1,7 +1,9 @@
 target
 .idea
 *.iml
+*.swp
 build
 .gradle
+public
 native-libs
 dependency-reduced-pom.xml

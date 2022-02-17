@@ -24,12 +24,24 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+/**
+ * <p>DynamoDBModule class.</p>
+ *
+ * @author philcali
+ * @version $Id: $Id
+ */
 @Module
 public class DynamoDBModule {
     private static final String TABLE_NAME = "TABLE_NAME";
     private final DynamoDbClient dynamoDbClient;
     private final String tableName;
 
+    /**
+     * <p>Constructor for DynamoDBModule.</p>
+     *
+     * @param dynamoDbClient a {@link software.amazon.awssdk.services.dynamodb.DynamoDbClient} object
+     * @param tableName a {@link java.lang.String} object
+     */
     public DynamoDBModule(DynamoDbClient dynamoDbClient, String tableName) {
         this.dynamoDbClient = dynamoDbClient;
         this.tableName = tableName;
