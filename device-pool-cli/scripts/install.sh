@@ -1,4 +1,9 @@
 #! /bin/bash
+#
+# Copyright (c) 2022 Philip Cali
+# Released under Apache-2.0 License
+#     (https://www.apache.org/licenses/LICENSE-2.0)
+#
 
 EXEC_NAME="device-lab"
 ARTIFACTS_DIR="$HOME/bin/artifacts"
@@ -19,6 +24,9 @@ echo "Installing $EXEC_NAME in $DEVICE_LAB_BIN"
 curl https://raw.githubusercontent.com/philcali/device-pool/main/device-pool-cli/scripts/device-lab > $DEVICE_LAB_BIN
 chmod +x $DEVICE_LAB_BIN
 
-echo "Initiate by running $EXEC_NAME"
+echo "Initiate by running $HOME/bin/$EXEC_NAME"
 echo "device-lab help"
 echo "Done"
+echo "#########################"
+
+$HOME/bin/device-lab help
