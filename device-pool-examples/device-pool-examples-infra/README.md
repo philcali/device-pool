@@ -2,7 +2,7 @@
 
 This is a very simple device lab infra created through construct found in [@philcali-cdk/device-lab][1].
 
-[1]: https://github.com/philcali/philcali-cdk/master/device-lab
+[1]: https://github.com/philcali/philcali-cdk/tree/master/device-lab
 
 ## Initial Setup
 

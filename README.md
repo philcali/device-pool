@@ -7,7 +7,51 @@
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/philcali/device-pool.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/philcali/device-pool/context:java)
 
 This collection of software provides an end-to-end solution for provisioning, obtaining,
-and interacting with devices from a device pool.
+and interacting with devices from a device pool for any form of automated device interaction, but
+especially geared towards quality assurance automation. Here's a basic example:
+
+```java
+DevicePool devicePool = DevicePool.create();
+List<Device> devices = devicePool.provisionAndWait(5, 1, TimeUnit.MINUTES);
+// Execute a command on the device
+devices.forEach(device -> {
+    CommandOutput output = device.execute(CommandInput.of("echo Hello World"));
+    System.out.println(device.id() + ": " + output.toUTF8String());
+});
+```
+
+Interested in more examples? Head over to [the examples](device-pool-examples).
+
+## Installation Instructions
+
+All snapshots and releases are delivered to `artifacts.philcali.me`
+presently. Until the libraries exist in Maven centrl,
+you must inform your build tool to use the
+repository like below:
+
+```xml
+<repositories>
+    <repository>
+        <url>https://artifacts.philcali.me/maven/release</url>
+        <id>philcali-maven-releases</id>
+    </repository>
+</repositories>
+```
+
+Then the following in your dependency closure.
+
+```xml
+<dependency>
+    <groupId>me.philcali</groupId>
+    <artifactId>device-pool-api</artifactId>
+    <version>${philcali.device.version}</version>
+</dependency>
+```
+
+Where `${philcali.device.version}` matches the git tag
+matching the release. Interested in customizing the client library?
+Pull in [the client side modules](#client-side-modules) as
+necessary.
 
 ## What is a Device Pool?
 
@@ -46,7 +90,12 @@ a `Base` derivative of the aforementioned primitives, with a couple of new exten
 
 These mid-level abstractions are more useful, and facilitates other useful decorations
 explained later. Many of the surrounding modules then implement these to allow flexible
-provisioning, reservations, and interacting with devices. The modules are then:
+provisioning, reservations, and interacting with devices.
+
+## Client Side Modules
+
+A client library developing against a `DevicePool` and `Device` can
+use any of the following modules as necessary.
 
 - `device-pool-ec2`: provisioning on EC2 using autoscaling as the provisioning force.
 - `device-pool-s3`: content transfer over S3 (files to and from).
@@ -54,9 +103,8 @@ provisioning, reservations, and interacting with devices. The modules are then:
 - `device-pool-ssh`: execute commands over SSH and SCP files transfer.
 - `device-pool-ddb`: provides a distributed lock to be used for locking devices or pools.
 - `device-pool-client`: provides an abstraction over a customized `DeviceLab` control-plane.
-- `device-pool-cli`: tooling to interact a managed or custom `DeviceLab`
 
-## What is the DeviceLab control-plane?
+## What is the DeviceLab control plane?
 
 The largest part of the code-base can be found in the children modules of `device-pool-service`.
 The `DeviceLab` abstracts the `DevicePool` resource which instructs the service how provisioning
@@ -73,6 +121,12 @@ take a peek at the [infrastructure example][3] within this repo.
 
 [2]: https://github.com/philcali/philcali-cdk/tree/master/device-lab
 [3]: device-pool-examples/device-pool-examples-infra/README.md
+
+## Examples
+
+Interested in spinning up some cheap infrastructure or
+see more ways to provision and communicate to devices? Head
+over to [the examples](device-pool-examples).
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool?ref=badge_large)
