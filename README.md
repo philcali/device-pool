@@ -12,7 +12,7 @@ especially geared towards quality assurance automation. Here's a basic example:
 
 ```java
 DevicePool devicePool = DevicePool.create();
-List<Device> devices = devicePool.provisionAndWait(5, 1, TimeUnit.MINUTES);
+List<Device> devices = devicePool.provisionSync(5, 1, TimeUnit.MINUTES);
 // Execute a command on the device
 devices.forEach(device -> {
     CommandOutput output = device.execute(CommandInput.of("echo Hello World"));
@@ -25,7 +25,7 @@ Interested in more examples? Head over to [the examples](device-pool-examples).
 ## Installation Instructions
 
 All snapshots and releases are delivered to `artifacts.philcali.me`
-presently. Until the libraries exist in Maven centrl,
+presently. Until the libraries exist in Maven central,
 you must inform your build tool to use the
 repository like below:
 
@@ -58,8 +58,8 @@ necessary.
 A `DevicePool` is an abstraction that represents a category, collection,
 or catalog for a particular type of device. The key action on
 a `DevicePool` is to provision a `Device`. What does that even mean?
-In API terms, the `DevicePool` is the control-plane entrypoint for
-device resources, and the `Device` resource is the data-plane.
+In API terms, the `DevicePool` is the control plane entrypoint for
+device resources, and the `Device` resource is the data plane.
 
 In the IoT world, the device pool (aka device labs), are commonly used
 for quality assurance purposes. Where possible, pools can represent
@@ -102,11 +102,11 @@ use any of the following modules as necessary.
 - `device-pool-ssm`: execute commands over SSM `RunDocument`s.
 - `device-pool-ssh`: execute commands over SSH and SCP files transfer.
 - `device-pool-ddb`: provides a distributed lock to be used for locking devices or pools.
-- `device-pool-client`: provides an abstraction over a customized `DeviceLab` control-plane.
+- `device-pool-client`: provides an abstraction over a customized `DeviceLab` control plane.
 
 ## What is the DeviceLab control plane?
 
-The largest part of the code-base can be found in the children modules of `device-pool-service`.
+The largest part of the code base can be found in the children modules of `device-pool-service`.
 The `DeviceLab` abstracts the `DevicePool` resource which instructs the service how provisioning
 is performed, namely through the `MANAGED` and `UNMANAGED` types.
 

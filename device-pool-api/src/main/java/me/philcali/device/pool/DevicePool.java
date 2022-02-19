@@ -56,17 +56,52 @@ public interface DevicePool extends AutoCloseable {
      */
     List<Device> obtain(ProvisionOutput output) throws ProvisioningException;
 
+    static DevicePool create(ClassLoader loader) {
+        return null;
+    }
+
+    static DevicePool create() {
+        return create(ClassLoader.getSystemClassLoader());
+    }
+
+    /**
+     * Convenience method for wrapping client side provision workflow in an async future.
+     * The future will loop forever, but can be bounded by client control. Note:
+     * <br>
+     * <pre>
+     * var future = devicePool.provisionAsync(ProvisionInput.create());
+     * try {
+     *     var devices = future.get(5. TimeUnit.MINUTES);
+     * } catch (TimeoutException | ExecutionException e) {
+     *     e.printStackTrace();
+     * }
+     * </pre>
+     *
+     * @param input the {@link me.philcali.device.pool.model.ProvisionInput} request
+     * @return a {@link java.util.concurrent.CompletableFuture} of {@link me.philcali.device.pool.Device}s
+     */
+    default CompletableFuture<List<Device>> provisionAsync(ProvisionInput input) {
+        return CompletableFuture.supplyAsync(() -> {
+            ProvisionOutput output = provision(input);
+            do {
+                output = describe(output);
+            } while (!output.status().isTerminal());
+            if (output.succeeded()) {
+                return obtain(output);
+            }
+            throw new ProvisioningException("Provision " + output.id() + " failed");
+        });
+    }
+
     /**
      * Convenience method to block on any provision request. This method handles the polling of
      * a provision request. Example:
      * <br>
-     * <code>
-     *     <br>
+     * <pre>
      *     ProvisionInput input = ProvisionInput.builder().amount(5).build();
+     *     List&lt;{@link me.philcali.device.pool.Device}&gt; devices = devicePool.provisionSync(input, 30, TimeUnit.SECONDS);
      *     <br>
-     *     List&lt;{@link me.philcali.device.pool.Device}&gt; devices = devicePool.provisionWait(input, 30, TimeUnit.SECONDS);
-     *     <br>
-     * </code>
+     * </pre>
      *
      * @param input The provision request in the form of a {@link me.philcali.device.pool.model.ProvisionInput}
      * @param amount The amount of {@link java.util.concurrent.TimeUnit} in unit
@@ -74,24 +109,11 @@ public interface DevicePool extends AutoCloseable {
      * @return a {@link java.util.List} of {@link me.philcali.device.pool.Device} objects
      * @throws me.philcali.device.pool.exceptions.ProvisioningException Failure to provision devices in the time allotted among other reasons
      */
-    default List<Device> provisionWait(ProvisionInput input, long amount, TimeUnit unit) throws ProvisioningException {
-        final ProvisionOutput output = provision(input);
-        final CompletableFuture<ProvisionOutput> finalized = CompletableFuture.supplyAsync(() -> {
-            for (;;) {
-                final ProvisionOutput updated = describe(output);
-                if (updated.status().isTerminal()) {
-                    return updated;
-                }
-            }
-        });
+    default List<Device> provisionSync(ProvisionInput input, long amount, TimeUnit unit) throws ProvisioningException {
         try {
-            final ProvisionOutput updated = finalized.get(amount, unit);
-            if (!updated.succeeded()) {
-                throw new ProvisioningException("Provision " + output.id() + " failed");
-            }
-            return obtain(updated);
+            return provisionAsync(input).get(amount, unit);
         } catch (TimeoutException | InterruptedException e) {
-            throw new ProvisioningException("Provision " + output.id() + " never terminated in time");
+            throw new ProvisioningException("Provision " + input.id() + " never terminated in time");
         } catch (ExecutionException e) {
             throw new ProvisioningException(e.getCause());
         }

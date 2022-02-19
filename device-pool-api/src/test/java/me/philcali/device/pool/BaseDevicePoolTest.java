@@ -112,7 +112,7 @@ class BaseDevicePoolTest {
         when(connections.connect(eq(expectedHost))).thenReturn(connection);
         when(transfers.connect(eq(input.id()), eq(connection), eq(expectedHost))).thenReturn(transfer);
 
-        List<Device> devices = pool.provisionWait(input, 10, TimeUnit.SECONDS);
+        List<Device> devices = pool.provisionSync(input, 10, TimeUnit.SECONDS);
 
         Device expectedDevice = BaseDevice.builder()
                 .host(expectedHost)
@@ -146,7 +146,7 @@ class BaseDevicePoolTest {
                         .build())
                 .build());
 
-        assertThrows(ProvisioningException.class, () -> pool.provisionWait(input, 10, TimeUnit.SECONDS));
+        assertThrows(ProvisioningException.class, () -> pool.provisionSync(input, 10, TimeUnit.SECONDS));
     }
 
     @Test
@@ -167,7 +167,7 @@ class BaseDevicePoolTest {
         when(provisionService.provision(eq(input))).thenReturn(stuckOutput);
         when(provisionService.describe(eq(stuckOutput))).thenReturn(stuckOutput);
 
-        assertThrows(ProvisioningException.class, () -> pool.provisionWait(input, 10, TimeUnit.MILLISECONDS));
+        assertThrows(ProvisioningException.class, () -> pool.provisionSync(input, 10, TimeUnit.MILLISECONDS));
     }
 
     @Test

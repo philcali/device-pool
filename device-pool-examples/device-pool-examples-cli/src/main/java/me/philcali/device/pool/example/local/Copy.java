@@ -85,7 +85,7 @@ public class Copy implements Runnable {
             throw new IllegalArgumentException("file " + source + " does not exist");
         }
         DevicePool pool = local.createPool();
-        List<Device> devices = pool.provisionWait(ProvisionInput.builder()
+        List<Device> devices = pool.provisionSync(ProvisionInput.builder()
                 .id("test-send")
                 .amount(local.hostNames().size())
                 .build(), 10, TimeUnit.SECONDS);

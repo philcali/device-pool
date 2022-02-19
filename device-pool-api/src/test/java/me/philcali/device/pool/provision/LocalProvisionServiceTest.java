@@ -84,7 +84,7 @@ class LocalProvisionServiceTest {
                 .id("first-test")
                 .amount(20)
                 .build();
-        List<Device> devices = devicePool.provisionWait(input, 10, TimeUnit.SECONDS);
+        List<Device> devices = devicePool.provisionSync(input, 10, TimeUnit.SECONDS);
         assertEquals(20, devices.size());
 
         ProvisionInput anotherSet = ProvisionInput.builder()
@@ -97,8 +97,8 @@ class LocalProvisionServiceTest {
                 .build();
         service.extend(ProvisionOutput.of(input.id()));
 
-        assertThrows(ProvisioningException.class, () -> devicePool.provisionWait(anotherSet, 100, TimeUnit.MILLISECONDS));
-        assertThrows(ProvisioningException.class, () -> devicePool.provisionWait(thirdSet, 100, TimeUnit.MILLISECONDS));
+        assertThrows(ProvisioningException.class, () -> devicePool.provisionSync(anotherSet, 100, TimeUnit.MILLISECONDS));
+        assertThrows(ProvisioningException.class, () -> devicePool.provisionSync(thirdSet, 100, TimeUnit.MILLISECONDS));
         // Force removal
         service.release(ProvisionOutput.of(anotherSet.id()));
         // Skips this one
@@ -117,7 +117,7 @@ class LocalProvisionServiceTest {
         });
         long startTime = System.currentTimeMillis();
         timebomb.start();
-        List<Device> secondSet = devicePool.provisionWait(anotherSet, 10, TimeUnit.SECONDS);
+        List<Device> secondSet = devicePool.provisionSync(anotherSet, 10, TimeUnit.SECONDS);
         // Timebomb enacted, provisioning unlocked
         assertTrue(System.currentTimeMillis() - startTime >= waitTime);
         assertTrue(devices.containsAll(secondSet));
