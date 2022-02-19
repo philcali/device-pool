@@ -1,5 +1,15 @@
 # Device Lab CLI
 
+Script control plane interaction with this CLI tool. The `endpoint` is a required parameter.
+
+## Installation
+
+```shell
+curl https://raw.githubusercontent.com/philcali/device-pool/main/device-pool-cli/scripts/install.sh | sh
+```
+
+## Usage
+
 ```shell
 Usage: device-lab [-v] --endpoint=<endpoint> [COMMAND]
 Device Lab CLI for the control plane
