@@ -38,7 +38,7 @@ public abstract class Ec2ReservationService implements ReservationService {
         return Ec2Client.create();
     }
 
-    abstract PlatformOS platformOS();
+    abstract PlatformOS platform();
 
     @Nullable
     abstract String proxyJump();
@@ -50,7 +50,7 @@ public abstract class Ec2ReservationService implements ReservationService {
 
     @Value.Default
     Function<Instance, PlatformOS> hostPlatform() {
-        return instance -> platformOS();
+        return instance -> platform();
     }
 
     @Value.Default
@@ -63,7 +63,7 @@ public abstract class Ec2ReservationService implements ReservationService {
     }
 
     public static Ec2ReservationService of(PlatformOS platformOS) {
-        return builder().platformOS(platformOS).build();
+        return builder().platform(platformOS).build();
     }
 
     public static final class Builder
@@ -80,7 +80,7 @@ public abstract class Ec2ReservationService implements ReservationService {
                                 .ifPresent(usePrivate -> hostAddress(Instance::privateIpAddress));
                         return entry.get("platform")
                                 .map(PlatformOS::fromString)
-                                .map(this::platformOS)
+                                .map(this::platform)
                                 .map(ImmutableEc2ReservationService.Builder::build);
                     })
                     .orElseThrow(() -> new ReservationException("The ec2 reservation requires a platform property"));
