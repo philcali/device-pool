@@ -6,6 +6,8 @@
 
 package me.philcali.device.pool.ssh;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.content.ContentTransferAgent;
 import me.philcali.device.pool.exceptions.ConnectionException;
@@ -26,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -180,5 +183,22 @@ class ConnectionFactorySSHTest {
     void GIVEN_factory_is_created_WHEN_factory_is_closed_THEN_ssh_client_is_closed() throws Exception {
         factory.close();
         verify(sshClient).close();
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_used_THEN_factory_is_created() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
+        ConnectionFactorySSH factorySSH = ConnectionFactorySSH.builder().from(factory).fromConfig(config);
+        assertEquals("ec2-user", factorySSH.userName());
+        assertEquals(Duration.ofMillis(5000), factorySSH.authTimeout());
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_default_THEN_default_is_used() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("devices/pool.properties"));
+        properties.clear();
+        DevicePoolConfig config = DevicePoolConfigProperties.load(properties);
+        assertEquals(factory, ConnectionFactorySSH.builder().from(factory).fromConfig(config));
     }
 }

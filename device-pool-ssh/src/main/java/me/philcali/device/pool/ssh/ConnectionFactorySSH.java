@@ -125,7 +125,7 @@ public abstract class ConnectionFactorySSH implements ConnectionFactory, Content
                                 .ifPresent(timeout -> authTimeout(timeout).connectionTimeout(timeout));
                         return build();
                     })
-                    .orElseGet(ConnectionFactorySSH::create);
+                    .orElseGet(this::build);
         }
     }
 

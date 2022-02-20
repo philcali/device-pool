@@ -71,13 +71,10 @@ public abstract class ConnectionFactorySSM implements ConnectionFactory {
         public ConnectionFactorySSM fromConfig(DevicePoolConfig config) {
             return config.namespace("connection.ssm")
                     .map(entry -> {
-                        entry.get("region").map(Region::of).map(region -> SsmClient.builder()
-                                .region(region)
-                                .build())
-                                .ifPresent(this::ssm);
+                        entry.get("document").ifPresent(document -> hostDocument(host -> document));
                         return build();
                     })
-                    .orElseGet(ConnectionFactorySSM::create);
+                    .orElseGet(this::build);
         }
     }
 

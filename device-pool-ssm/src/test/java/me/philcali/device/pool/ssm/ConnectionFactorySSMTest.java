@@ -6,6 +6,8 @@
 
 package me.philcali.device.pool.ssm;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
@@ -15,6 +17,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.ssm.SsmClient;
+
+import java.io.IOException;
+import java.util.Properties;
 
 import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -83,4 +88,19 @@ class ConnectionFactorySSMTest {
         assertEquals(windowsConnection, windows);
     }
 
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_provided_THEN_created_with_config() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
+        ConnectionFactorySSM factorySSM = ConnectionFactorySSM.builder().ssm(ssm).fromConfig(config);
+        assertEquals("RunMyShellCommand", factorySSM.hostDocument().apply(null));
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_empty_THEN_create_default() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("devices/pool.properties"));
+        properties.clear();
+        DevicePoolConfig config = DevicePoolConfigProperties.load(properties);
+        assertEquals(factory, ConnectionFactorySSM.builder().ssm(ssm).waiter(factory.waiter()).fromConfig(config));
+    }
 }
