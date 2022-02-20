@@ -7,10 +7,13 @@
 package me.philcali.device.pool.provision;
 
 import me.philcali.device.pool.Device;
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.exceptions.ReservationException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
+import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
 import me.philcali.device.pool.model.Reservation;
@@ -20,9 +23,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 
-import java.lang.annotation.Documented;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,9 +44,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * The provision method is asynchronous, meaning it will never return a complete {@link me.philcali.device.pool.model.ProvisionOutput}
  * for the initial request. The describe method can be called repeatedly.
  */
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class LocalProvisionServiceModel implements ProvisionService, ReservationService {
+public abstract class LocalProvisionService implements ProvisionService, ReservationService {
     private static final Logger LOGGER = LogManager.getLogger(LocalProvisionService.class);
     private final Map<String, CachedEntry<ProvisionOutput>> reservations = new ConcurrentHashMap<>();
     private final BlockingQueue<LocalProvisionEntry> activeProvisions = new LinkedBlockingQueue<>();
@@ -78,8 +81,48 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         });
     }
 
+    /**
+     * Convenience method for constructing a fluent builder.
+     *
+     * @return {@link me.philcali.device.pool.provision.LocalProvisionService.Builder}
+     */
+    public static Builder builder() {
+        return new LocalProvisionService.Builder();
+    }
+
+    public static final class Builder
+            extends ImmutableLocalProvisionService.Builder
+            implements ConfigBuilder<LocalProvisionService> {
+
+        @Override
+        public LocalProvisionService fromConfig(DevicePoolConfig config) {
+            return config.namespace("provision.local").flatMap(entry -> {
+                entry.get("timeout").map(Long::parseLong).ifPresent(this::provisionTimeout);
+                entry.get("expires").map(Boolean::parseBoolean).ifPresent(this::expireProvisions);
+                return Optional.ofNullable(entry.properties().get("hosts")).map(hosts -> {
+                    hosts.properties().keySet().forEach(hostId -> {
+                        DevicePoolConfig.DevicePoolConfigEntry hostEntry = hosts.properties().get(hostId);
+                        addHosts(Host.builder()
+                                .deviceId(hostEntry.get("id").orElse(hostId))
+                                .port(hostEntry.get("port").map(Integer::parseInt).orElse(22))
+                                .proxyJump(hostEntry.get("proxy").orElse(null))
+                                .hostName(hostEntry.get("address")
+                                        .orElseThrow(() -> new ProvisioningException("Host entry "
+                                                + hostId + " does not have an endpoint")))
+                                .platform(hostEntry.get("platform")
+                                        .map(PlatformOS::fromString)
+                                        .orElseThrow(() -> new ProvisioningException("Host entry "
+                                                + hostId + " does not have a platform")))
+                                .build());
+                    });
+                    return build();
+                });
+            }).orElseThrow(() -> new ProvisioningException("Please configure device.pool.provision.local with hosts"));
+        }
+    }
+
     @Value.Check
-    LocalProvisionServiceModel validate() {
+    LocalProvisionService validate() {
         if (hosts().isEmpty()) {
             throw new IllegalArgumentException("hosts must contain at least one entry");
         }
@@ -123,7 +166,7 @@ abstract class LocalProvisionServiceModel implements ProvisionService, Reservati
         public void run() {
             while (running) {
                 try {
-                    int amount = LocalProvisionServiceModel.this.releaseAvailable(System.currentTimeMillis());
+                    int amount = LocalProvisionService.this.releaseAvailable(System.currentTimeMillis());
                     LOGGER.info("Reaped {} devices", amount);
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {

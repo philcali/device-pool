@@ -19,11 +19,11 @@ public class PlatformOSConverter implements CommandLine.ITypeConverter<PlatformO
     /** {@inheritDoc} */
     @Override
     public PlatformOS convert(String str) {
-        String[] parts = str.split(":");
-        if (parts.length < 2) {
+        try {
+            return PlatformOS.fromString(str);
+        } catch (IllegalArgumentException e) {
             throw new CommandLine.TypeConversionException(
                     "platform / os should be in the form of 'os:arch', but was " + str);
         }
-        return PlatformOS.of(parts[0], parts[1]);
     }
 }

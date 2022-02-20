@@ -6,8 +6,10 @@
 
 package me.philcali.device.pool.ec2;
 
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.exceptions.ReservationException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.Reservation;
@@ -28,9 +30,9 @@ import java.util.function.Function;
  * reservation. The {@link me.philcali.device.pool.ec2.Ec2ReservationService} relies on the client to hint at the {@link me.philcali.device.pool.model.PlatformOS} that
  * makes up the reservations.
  */
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class Ec2ReservationServiceModel implements ReservationService {
+public abstract class Ec2ReservationService implements ReservationService {
     @Value.Default
     Ec2Client ec2() {
         return Ec2Client.create();
@@ -54,6 +56,35 @@ abstract class Ec2ReservationServiceModel implements ReservationService {
     @Value.Default
     Function<Instance, String> hostAddress() {
         return Instance::publicIpAddress;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static Ec2ReservationService of(PlatformOS platformOS) {
+        return builder().platformOS(platformOS).build();
+    }
+
+    public static final class Builder
+            extends ImmutableEc2ReservationService.Builder
+            implements ConfigBuilder<Ec2ReservationService> {
+        @Override
+        public Ec2ReservationService fromConfig(DevicePoolConfig config) {
+            return config.namespace("reservation.ec2")
+                    .flatMap(entry -> {
+                        entry.get("port").map(Integer::parseInt).ifPresent(this::port);
+                        entry.get("proxy").ifPresent(this::proxyJump);
+                        entry.get("usePrivateAddress")
+                                .filter(Boolean::parseBoolean)
+                                .ifPresent(usePrivate -> hostAddress(Instance::privateIpAddress));
+                        return entry.get("platform")
+                                .map(PlatformOS::fromString)
+                                .map(this::platformOS)
+                                .map(ImmutableEc2ReservationService.Builder::build);
+                    })
+                    .orElseThrow(() -> new ReservationException("The ec2 reservation requires a platform property"));
+        }
     }
 
     private Host convertHost(Instance instance) {

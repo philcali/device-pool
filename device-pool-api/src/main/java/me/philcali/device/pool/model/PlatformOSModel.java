@@ -10,27 +10,40 @@ import org.immutables.value.Value;
 
 @ApiModel
 @Value.Immutable
-interface PlatformOSModel {
+abstract class PlatformOSModel {
     /**
      * <p>os.</p>
      *
      * @return a {@link java.lang.String} object
      */
-    String os();
+    abstract String os();
 
     /**
      * <p>arch.</p>
      *
      * @return a {@link java.lang.String} object
      */
-    String arch();
+    abstract String arch();
+
+    public static PlatformOS fromString(String platform) {
+        String[] parts = platform.split(":");
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("PlatformOS format is 'os:arch' but " + platform + " was provided");
+        }
+        return PlatformOS.of(parts[0], parts[1]);
+    }
+
+    @Override
+    public String toString() {
+        return os() + ":" + arch();
+    }
 
     /**
      * <p>isWindows.</p>
      *
      * @return a boolean
      */
-    default boolean isWindows() {
+    public boolean isWindows() {
         return os().equalsIgnoreCase("windows");
     }
 }

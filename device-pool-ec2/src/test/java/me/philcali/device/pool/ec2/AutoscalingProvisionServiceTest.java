@@ -6,6 +6,9 @@
 
 package me.philcali.device.pool.ec2;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
 import me.philcali.device.pool.model.Reservation;
@@ -29,12 +32,15 @@ import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.InstanceState;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -252,5 +258,27 @@ class AutoscalingProvisionServiceTest {
                 .build();
 
         assertEquals(expectedOutput, updated);
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_config_is_used_THEN_service_is_created() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
+        AutoscalingProvisionService service = AutoscalingProvisionService.builder()
+                .autoscaling(autoscaling)
+                .ec2(ec2)
+                .fromConfig(config);
+        assertEquals("GroupName", service.autoscalingGroupName());
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_config_is_missing_THEN_service_fails_to_create() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("devices/pool.properties"));
+        properties.remove("device.pool.provision.autoscaling.group");
+        DevicePoolConfig config = DevicePoolConfigProperties.load(properties);
+        assertThrows(ProvisioningException.class, () -> AutoscalingProvisionService.builder()
+                .autoscaling(autoscaling)
+                .ec2(ec2)
+                .fromConfig(config));
     }
 }

@@ -38,7 +38,7 @@ public class Execute implements Runnable {
     @Override
     public void run() {
         DevicePool pool = local.createPool();
-        List<Device> devices = pool.provisionWait(ProvisionInput.builder()
+        List<Device> devices = pool.provisionSync(ProvisionInput.builder()
                 .amount(local.hostNames().size())
                 .id("test-input")
                 .build(), 10, TimeUnit.SECONDS);

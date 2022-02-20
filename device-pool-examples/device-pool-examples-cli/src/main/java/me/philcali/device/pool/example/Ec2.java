@@ -64,7 +64,7 @@ public class Ec2 implements Runnable {
                         .addAllPublicKeys(publicKeys)
                         .build())
                 .build();
-        List<Device> devices = pool.provisionWait(ProvisionInput.builder()
+        List<Device> devices = pool.provisionSync(ProvisionInput.builder()
                 .id("test-ec2")
                 .build(), 30, TimeUnit.SECONDS);
         for (Device device : devices) {

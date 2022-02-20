@@ -58,7 +58,7 @@ public class Provision implements Runnable {
                         .build())
                 .connectionAndContentFactory(ConnectionFactorySSH.create())
                 .build();
-        List<Device> devices = pool.provisionWait(ProvisionInput.builder()
+        List<Device> devices = pool.provisionSync(ProvisionInput.builder()
                 .amount(amount)
                 .build(), 5, TimeUnit.MINUTES);
         for (Device device : devices) {

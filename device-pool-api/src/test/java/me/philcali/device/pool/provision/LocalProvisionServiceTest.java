@@ -9,6 +9,8 @@ package me.philcali.device.pool.provision;
 import me.philcali.device.pool.BaseDevicePool;
 import me.philcali.device.pool.Device;
 import me.philcali.device.pool.DevicePool;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.content.ContentTransferAgent;
@@ -24,8 +26,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +88,7 @@ class LocalProvisionServiceTest {
                 .id("first-test")
                 .amount(20)
                 .build();
-        List<Device> devices = devicePool.provisionWait(input, 10, TimeUnit.SECONDS);
+        List<Device> devices = devicePool.provisionSync(input, 10, TimeUnit.SECONDS);
         assertEquals(20, devices.size());
 
         ProvisionInput anotherSet = ProvisionInput.builder()
@@ -97,8 +101,8 @@ class LocalProvisionServiceTest {
                 .build();
         service.extend(ProvisionOutput.of(input.id()));
 
-        assertThrows(ProvisioningException.class, () -> devicePool.provisionWait(anotherSet, 100, TimeUnit.MILLISECONDS));
-        assertThrows(ProvisioningException.class, () -> devicePool.provisionWait(thirdSet, 100, TimeUnit.MILLISECONDS));
+        assertThrows(ProvisioningException.class, () -> devicePool.provisionSync(anotherSet, 100, TimeUnit.MILLISECONDS));
+        assertThrows(ProvisioningException.class, () -> devicePool.provisionSync(thirdSet, 100, TimeUnit.MILLISECONDS));
         // Force removal
         service.release(ProvisionOutput.of(anotherSet.id()));
         // Skips this one
@@ -117,7 +121,7 @@ class LocalProvisionServiceTest {
         });
         long startTime = System.currentTimeMillis();
         timebomb.start();
-        List<Device> secondSet = devicePool.provisionWait(anotherSet, 10, TimeUnit.SECONDS);
+        List<Device> secondSet = devicePool.provisionSync(anotherSet, 10, TimeUnit.SECONDS);
         // Timebomb enacted, provisioning unlocked
         assertTrue(System.currentTimeMillis() - startTime >= waitTime);
         assertTrue(devices.containsAll(secondSet));
@@ -148,5 +152,47 @@ class LocalProvisionServiceTest {
         anotherOne.close();
         TimeUnit.SECONDS.sleep(1);
         newOne.shutdownNow();
+    }
+
+    @Test
+    void GIVEN_no_local_service_WHEN_local_service_is_built_from_config_THEN_pool_is_configured() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader().getResourceAsStream("test/local.properties"));
+
+        LocalProvisionService newService = LocalProvisionService.builder().fromConfig(config);
+
+        Set<Host> expoectedHosts = Set.of(
+                Host.builder()
+                        .deviceId("host-0")
+                        .hostName("127.0.0.1")
+                        .port(8022)
+                        .platform(PlatformOS.of("unix", "amd64"))
+                        .build(),
+                Host.builder()
+                        .deviceId("host2")
+                        .hostName("192.168.1.202")
+                        .platform(PlatformOS.of("windows", "armv8"))
+                        .build()
+        );
+
+        assertTrue(newService.expireProvisions());
+        assertEquals(expoectedHosts, newService.hosts());
+    }
+
+    @Test
+    void GIVEN_no_local_service_WHEN_local_service_is_built_from_defaults_THEN_pool_is_configured() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader().getResourceAsStream("test/default.local.properties"));
+
+        LocalProvisionService newService = LocalProvisionService.builder().fromConfig(config);
+
+        assertTrue(newService.expireProvisions());
+        assertEquals(TimeUnit.HOURS.toMillis(1), newService.provisionTimeout());
+        assertEquals(1, newService.hosts().size());
+    }
+
+    @Test
+    void GIVEN_no_local_service_WHEN_local_service_is_built_from_defaults_THEN_exception_is_thrown() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader().getResourceAsStream("test/default.local2.properties"));
+
+        assertThrows(ProvisioningException.class, () -> LocalProvisionService.builder().fromConfig(config));
     }
 }

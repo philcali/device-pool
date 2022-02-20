@@ -12,14 +12,23 @@ import java.util.UUID;
 
 @ApiModel
 @Value.Immutable
-interface ProvisionInputModel {
+abstract class ProvisionInputModel {
+    /**
+     * Factory method for create a default {@link me.philcali.device.pool.model.ProvisionInput}.
+     *
+     * @return A default {@link me.philcali.device.pool.model.ProvisionInput}
+     */
+    public static ProvisionInput create() {
+        return ProvisionInput.builder().build();
+    }
+
     /**
      * <p>id.</p>
      *
      * @return a {@link java.lang.String} object
      */
     @Value.Default
-    default String id() {
+    String id() {
         return UUID.randomUUID().toString();
     }
 
@@ -29,7 +38,7 @@ interface ProvisionInputModel {
      * @return a int
      */
     @Value.Default
-    default int amount() {
+    int amount() {
         return 1;
     }
 }

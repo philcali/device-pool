@@ -23,4 +23,8 @@ public class ContentTransferException extends RuntimeException {
     public ContentTransferException(Throwable ex) {
         super(ex);
     }
+
+    public ContentTransferException(String message) {
+        super(message);
+    }
 }

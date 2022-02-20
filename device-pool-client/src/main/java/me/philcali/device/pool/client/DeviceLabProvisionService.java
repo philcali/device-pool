@@ -7,9 +7,11 @@
 package me.philcali.device.pool.client;
 
 import me.philcali.device.pool.client.exception.DeviceLabServiceException;
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.exceptions.ReservationException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
@@ -44,9 +46,9 @@ import java.util.stream.Collectors;
  * client. The control plane is a remote device lab control plane. A single {@link me.philcali.device.pool.client.DeviceLabProvisionService}
  * is tied to a homogenous device pool and expects a {@link me.philcali.device.pool.model.PlatformOS} hint.
  */
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class DeviceLabProvisionServiceModel implements ProvisionService, ReservationService {
+public abstract class DeviceLabProvisionService implements ProvisionService, ReservationService {
     private static final Logger LOGGER = LogManager.getLogger(DeviceLabProvisionService.class);
     private final Set<String> inflightProvisions = ConcurrentHashMap.newKeySet();
 
@@ -66,6 +68,33 @@ abstract class DeviceLabProvisionServiceModel implements ProvisionService, Reser
     }
 
     abstract String poolId();
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder
+            extends ImmutableDeviceLabProvisionService.Builder
+            implements ConfigBuilder<DeviceLabProvisionService> {
+        @Override
+        public DeviceLabProvisionService fromConfig(DevicePoolConfig config) {
+            return config.namespace("provision.lab")
+                    .flatMap(entry -> {
+                        entry.get("endpoint").ifPresent(endpoint -> {
+                            deviceLabService(DeviceLabService.create((client, builder) -> {
+                                builder.baseUrl(endpoint);
+                            }));
+                        });
+                        poolId(entry.get("poolId")
+                                .orElseThrow(() -> new ProvisioningException("A poolId property is required")));
+                        return entry.get("platform")
+                                .map(PlatformOS::fromString)
+                                .map(this::platform)
+                                .map(ImmutableDeviceLabProvisionService.Builder::build);
+                    })
+                    .orElseThrow(() -> new ProvisioningException("Could not create a device lab provision"));
+        }
+    }
 
     <T> T safelyCall(
             Call<T> result,

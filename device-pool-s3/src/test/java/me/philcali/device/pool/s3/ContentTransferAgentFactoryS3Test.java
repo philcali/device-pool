@@ -6,9 +6,12 @@
 
 package me.philcali.device.pool.s3;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.content.ContentTransferAgent;
 import me.philcali.device.pool.content.ContentTransferAgentFactory;
+import me.philcali.device.pool.exceptions.ContentTransferException;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +21,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.s3.S3Client;
 
+import java.io.IOException;
+import java.util.Properties;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -61,5 +68,23 @@ class ContentTransferAgentFactoryS3Test {
 
         factory.close();
         verify(s3).close();
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_used_THEN_factory_is_created() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
+        ContentTransferAgentFactoryS3 factoryS3 = ContentTransferAgentFactoryS3.builder().s3(s3).fromConfig(config);
+        assertEquals("mybucket", factoryS3.bucketName());
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_missing_THEN_exception_is_thrown() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("devices/pool.properties"));
+        properties.clear();
+        DevicePoolConfig config = DevicePoolConfigProperties.load(properties);
+        assertThrows(ContentTransferException.class, () -> ContentTransferAgentFactoryS3.builder()
+                .s3(s3)
+                .fromConfig(config));
     }
 }

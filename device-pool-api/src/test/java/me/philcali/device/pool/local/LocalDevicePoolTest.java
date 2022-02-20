@@ -43,7 +43,7 @@ class LocalDevicePoolTest {
                 .amount(5)
                 .id(UUID.randomUUID().toString())
                 .build();
-        List<Device> devices = pool.provisionWait(input, 10, TimeUnit.SECONDS);
+        List<Device> devices = pool.provisionSync(input, 10, TimeUnit.SECONDS);
         List<String> hosts = Arrays.asList("host-1", "host-2", "host-3", "host-4", "host-5");
         assertEquals(5, devices.size());
         assertEquals(hosts, devices.stream().map(Device::id).collect(Collectors.toList()));
