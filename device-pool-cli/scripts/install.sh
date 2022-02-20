@@ -10,7 +10,8 @@ ARTIFACTS_DIR="$HOME/bin/artifacts"
 DEVICE_LAB_BIN="$HOME/bin/$EXEC_NAME"
 MAVEN_REPO="https://artifacts.philcali.me/maven"
 # Fix for release
-ARTIFACTS_URL="$MAVEN_REPO/snapshot/me/philcali/device-pool-cli/1.0-SNAPSHOT/device-pool-cli-1.0-20220218.221758-11.jar"
+ARTIFACT_VERSION="1.0.0"
+ARTIFACTS_URL="$MAVEN_REPO/release/me/philcali/device-pool-cli/$ARTIFACT_VERSION/device-pool-cli-$ARTIFACT_VERSION.jar"
 
 if [ ! -f $ARTIFACTS_DIR ]; then
   echo "Creating $ARTIFACTS_DIR for device-lab"
