@@ -6,8 +6,10 @@
 
 package me.philcali.device.pool.ec2;
 
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.exceptions.ProvisioningException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
 import me.philcali.device.pool.model.Reservation;
@@ -51,9 +53,9 @@ import java.util.stream.Collectors;
  * provisioning process. The provision method will wait until the amount requested in
  * the {@link me.philcali.device.pool.model.ProvisionInput} is fulfilled.
  */
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class AutoscalingProvisionServiceModel implements ProvisionService {
+public abstract class AutoscalingProvisionService implements ProvisionService {
     private static final Logger LOGGER = LogManager.getLogger(AutoscalingProvisionService.class);
     private static final int RUNNING = 16;
     private static final int PENDING = 0;
@@ -78,6 +80,27 @@ abstract class AutoscalingProvisionServiceModel implements ProvisionService {
                 .backoffStrategy(FixedDelayBackoffStrategy.create(Duration.ofSeconds(2)))
                 .maxAttempts(15)
                 .build();
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static AutoscalingProvisionService of(String autoscalingGroup) {
+        return builder().autoscalingGroupName(autoscalingGroup).build();
+    }
+
+    public static final class Builder
+            extends ImmutableAutoscalingProvisionService.Builder
+            implements ConfigBuilder<AutoscalingProvisionService> {
+        @Override
+        public AutoscalingProvisionService fromConfig(DevicePoolConfig config) {
+            return config.namespace("provision.autoscaling")
+                    .flatMap(entry -> entry.get("group")
+                            .map(this::autoscalingGroupName)
+                            .map(ImmutableAutoscalingProvisionService.Builder::build))
+                    .orElseThrow(() -> new ProvisioningException("The autoscaling provision requires a group property"));
+        }
     }
 
     private AutoScalingGroup describeGroupOrThrow() {

@@ -6,14 +6,17 @@
 
 package me.philcali.device.pool.ssm;
 
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.exceptions.ConnectionException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import org.immutables.value.Value;
 import software.amazon.awssdk.core.waiters.Waiter;
 import software.amazon.awssdk.core.waiters.WaiterAcceptor;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.CommandInvocationStatus;
 import software.amazon.awssdk.services.ssm.model.GetCommandInvocationResponse;
@@ -27,9 +30,9 @@ import java.util.Set;
  * Any {@link me.philcali.device.pool.Device} capable of handling this {@link me.philcali.device.pool.connection.Connection} must run an
  * SSMAgent communicating to SSM service's data plane.
  */
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class ConnectionFactorySSMModel implements ConnectionFactory {
+public abstract class ConnectionFactorySSM implements ConnectionFactory {
     private static final String WINDOWS_DOCUMENT = "AWS-RunPowerShellScript";
     private static final String LINUX_DOCUMENT = "AWS-RunShellScript";
 
@@ -51,6 +54,31 @@ abstract class ConnectionFactorySSMModel implements ConnectionFactory {
     @Value.Default
     public HostDocument hostDocument() {
         return host -> host.platform().isWindows() ? WINDOWS_DOCUMENT : LINUX_DOCUMENT;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static ConnectionFactorySSM create() {
+        return ConnectionFactorySSM.builder().build();
+    }
+
+    public static final class Builder
+            extends ImmutableConnectionFactorySSM.Builder
+            implements ConfigBuilder<ConnectionFactorySSM> {
+        @Override
+        public ConnectionFactorySSM fromConfig(DevicePoolConfig config) {
+            return config.namespace("connection.ssm")
+                    .map(entry -> {
+                        entry.get("region").map(Region::of).map(region -> SsmClient.builder()
+                                .region(region)
+                                .build())
+                                .ifPresent(this::ssm);
+                        return build();
+                    })
+                    .orElseGet(ConnectionFactorySSM::create);
+        }
     }
 
     /**

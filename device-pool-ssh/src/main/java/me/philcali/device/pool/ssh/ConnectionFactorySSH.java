@@ -6,13 +6,15 @@
 
 package me.philcali.device.pool.ssh;
 
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.content.ContentTransferAgent;
 import me.philcali.device.pool.content.ContentTransferAgentFactory;
 import me.philcali.device.pool.exceptions.ConnectionException;
 import me.philcali.device.pool.exceptions.ContentTransferException;
-import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.config.hosts.HostConfigEntry;
@@ -39,9 +41,9 @@ import java.util.function.Function;
  * by the <code>$HOME/.ssh</code> configuration. Additional SSH information can be set at
  * creation time.
  */
-@ApiModel
+@APIShadowModel
 @Value.Immutable
-abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTransferAgentFactory {
+public abstract class ConnectionFactorySSH implements ConnectionFactory, ContentTransferAgentFactory {
     /**
      * <p>client.</p>
      *
@@ -103,6 +105,28 @@ abstract class ConnectionFactorySSHModel implements ConnectionFactory, ContentTr
      */
     public static ConnectionFactorySSH create() {
         return ConnectionFactorySSH.builder().build();
+    }
+
+    public static ConnectionFactorySSH.Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder
+            extends ImmutableConnectionFactorySSH.Builder
+            implements ConfigBuilder<ConnectionFactorySSH> {
+        @Override
+        public ConnectionFactorySSH fromConfig(DevicePoolConfig config) {
+            return config.namespace("connection.ssh")
+                    .map(entry -> {
+                        entry.get("user").ifPresent(this::userName);
+                        entry.get("timeout")
+                                .map(Long::parseLong)
+                                .map(Duration::ofMillis)
+                                .ifPresent(timeout -> authTimeout(timeout).connectionTimeout(timeout));
+                        return build();
+                    })
+                    .orElseGet(ConnectionFactorySSH::create);
+        }
     }
 
     private SshClient forcedStartClient() {

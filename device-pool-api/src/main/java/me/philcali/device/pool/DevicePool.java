@@ -6,15 +6,31 @@
 
 package me.philcali.device.pool;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.connection.ConnectionFactory;
+import me.philcali.device.pool.content.ContentTransferAgentFactory;
 import me.philcali.device.pool.exceptions.ProvisioningException;
+import me.philcali.device.pool.local.LocalDevicePool;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
+import me.philcali.device.pool.provision.ProvisionService;
+import me.philcali.device.pool.reservation.ReservationService;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 /**
  * The client side abstraction for creating programmatic {@link me.philcali.device.pool.Device}s to interact with.
@@ -56,8 +72,60 @@ public interface DevicePool extends AutoCloseable {
      */
     List<Device> obtain(ProvisionOutput output) throws ProvisioningException;
 
+    static DevicePool create(InputStream inputStream) {
+        try {
+            DevicePoolConfig config = DevicePoolConfigProperties.load(inputStream);
+            if (config.poolClassName().equals(LocalDevicePool.class.getName())) {
+                return LocalDevicePool.create();
+            } else if (config.poolClassName().equals(BaseDevicePool.class.getName())) {
+                BaseDevicePool.Builder builder = BaseDevicePool.builder();
+                Map<String, Consumer> functions = new LinkedHashMap<>() {{
+                    put("provision", provision -> builder.provisionService((ProvisionService) provision));
+                    put("reservation", reservation -> builder.reservationService((ReservationService) reservation));
+                    put("connection", connection -> builder.connections((ConnectionFactory) connection));
+                    put("transfer", transfer -> builder.transfers((ContentTransferAgentFactory) transfer));
+                }};
+                Map<String, String> linkedFunctions = Map.of(
+                        "provision", "reservation",
+                        "reservation", "provision",
+                        "connection", "transfer",
+                        "transfer", "connection"
+                );
+                Set<Object> createdComponents = new HashSet<>();
+                for (Map.Entry<String, Consumer> entry : functions.entrySet()) {
+                    String className = config.get(entry.getKey())
+                            .orElseGet(() -> config.get(linkedFunctions.get(entry.getKey()))
+                                    .orElseThrow(() -> new ProvisioningException("Entry for device.pool."
+                                            + entry.getKey() + " does not exist.")));
+                    Class<?> componentClass = Class.forName(className);
+                    Object component = createdComponents.stream()
+                            .filter(c -> componentClass.isAssignableFrom(c.getClass()))
+                            .findFirst()
+                            .orElse(null);
+                    if (component == null) {
+                        Class<?> builderClass = Class.forName(className + "$Builder");
+                        Method method = builderClass.getDeclaredMethod("fromConfig", DevicePoolConfig.class);
+                        component = method.invoke(builderClass.getConstructor().newInstance(), config);
+                        createdComponents.add(component);
+                    }
+                    entry.getValue().accept(component);
+                }
+                return builder.build();
+            }
+            throw new ProvisioningException("Could not create a default " + DevicePool.class.getSimpleName());
+        } catch (IOException
+                | NullPointerException
+                | ClassNotFoundException
+                | NoSuchMethodException
+                | InvocationTargetException
+                | IllegalAccessException
+                | InstantiationException ie) {
+            throw new ProvisioningException(ie);
+        }
+    }
+
     static DevicePool create(ClassLoader loader) {
-        return null;
+        return create(loader.getResourceAsStream("devices/pool.properties"));
     }
 
     static DevicePool create() {
