@@ -72,6 +72,29 @@ public interface DevicePool extends AutoCloseable {
      */
     List<Device> obtain(ProvisionOutput output) throws ProvisioningException;
 
+    /**
+     * Attempts to create a {@link me.philcali.device.pool.DevicePool} from an input stream, pointing at a properties
+     * file. An application might provide a <code>devices/pool.properties</code> file on the classpath. The contents of
+     * the file for building a valid {@link me.philcali.device.pool.BaseDevicePool} might look like:
+     * <br>
+     * <pre>
+     * device.pool.class=me.philcali.device.pool.BaseDevicePool
+     * device.pool.provision=me.philcali.device.pool.provision.LocalProvisionService
+     * device.pool.provision.local.hosts.host1.address=myhost.example.com
+     * device.pool.provision.local.hosts.host1.platform=unix:armv7
+     * device.pool.connection=me.philcali.device.pool.ssh.ConnectionFactorySSH
+     * device.pool.connection.ssh.user=ec2-user
+     * </pre>
+     * <br>
+     * Then the following code would work:
+     * <br>
+     * <pre>
+     *     DevicePool pool = DevicePool.create();
+     *     List&lt;Device&gt; devices = pool.provisionSync(ProvisionInput.create(), 5, TimeUnit.SECONDS);
+     * </pre>
+     *  @param inputStream
+     * @return
+     */
     static DevicePool create(InputStream inputStream) {
         try {
             DevicePoolConfig config = DevicePoolConfigProperties.load(inputStream);
