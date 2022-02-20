@@ -81,36 +81,40 @@ abstract class DevicePoolConfigPropertiesModel implements DevicePoolConfig {
         }
     }
 
+    public static DevicePoolConfigProperties load(Properties properties) {
+        DevicePoolConfigProperties.Builder builder = DevicePoolConfigProperties.builder();
+        builder.poolClassName(properties.getProperty(DEVICE_CLASS_NAME, DEFAULT_POOL_CLASS));
+        PriorityQueue<String> propNames = new PriorityQueue<>(properties.stringPropertyNames());
+        SortedMap<String, DevicePoolConfigEntryProperties> children = new TreeMap<>();
+        while (!propNames.isEmpty()) {
+            String propName = propNames.poll();
+            if (propName.equals(DEVICE_CLASS_NAME)) {
+                continue;
+            }
+            String[] parts = propName.split("\\.");
+            if (parts.length >= 3) {
+                Map<String, DevicePoolConfigEntryProperties> current = children;
+                for (int i = 2; i < parts.length; i++) {
+                    current = current.computeIfAbsent(parts[i],
+                            key -> new DevicePoolConfigEntryProperties(key, propName, properties)).children();
+                }
+            } else {
+                LOGGER.info("Found prop {}, but skipping", propName);
+            }
+        }
+        builder.properties(Collections.unmodifiableSortedMap(children));
+        return builder.build();
+    }
+
     public static DevicePoolConfigProperties load(InputStream stream) throws IOException {
         Objects.requireNonNull(stream, "Failed to load properties; stream provided is null");
-        DevicePoolConfigProperties.Builder builder = DevicePoolConfigProperties.builder();
         try (InputStreamReader inputStreamReader = new InputStreamReader(stream, StandardCharsets.UTF_8);
              Reader bufferedReader = new BufferedReader(inputStreamReader)) {
 
             Properties properties = new Properties();
             properties.load(bufferedReader);
-            builder.poolClassName(properties.getProperty(DEVICE_CLASS_NAME, DEFAULT_POOL_CLASS));
-            PriorityQueue<String> propNames = new PriorityQueue<>(properties.stringPropertyNames());
-            SortedMap<String, DevicePoolConfigEntryProperties> children = new TreeMap<>();
-            while (!propNames.isEmpty()) {
-                String propName = propNames.poll();
-                if (propName.equals(DEVICE_CLASS_NAME)) {
-                    continue;
-                }
-                String[] parts = propName.split("\\.");
-                if (parts.length >= 3) {
-                    Map<String, DevicePoolConfigEntryProperties> current = children;
-                    for (int i = 2; i < parts.length; i++) {
-                        current = current.computeIfAbsent(parts[i],
-                                key -> new DevicePoolConfigEntryProperties(key, propName, properties)).children();
-                    }
-                } else {
-                    LOGGER.info("Found prop {}, but skipping", propName);
-                }
-            }
-            builder.properties(Collections.unmodifiableSortedMap(children));
+            return load(properties);
         }
-        return builder.build();
     }
 
     public static DevicePoolConfigProperties load(ClassLoader loader) throws IOException {

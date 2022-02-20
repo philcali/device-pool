@@ -85,12 +85,14 @@ public abstract class DeviceLabProvisionService implements ProvisionService, Res
                                 builder.baseUrl(endpoint);
                             }));
                         });
+                        poolId(entry.get("poolId")
+                                .orElseThrow(() -> new ProvisioningException("A poolId property is required")));
                         return entry.get("platform")
                                 .map(PlatformOS::fromString)
                                 .map(this::platform)
                                 .map(ImmutableDeviceLabProvisionService.Builder::build);
                     })
-                    .orElseThrow(() -> new ProvisioningException(""));
+                    .orElseThrow(() -> new ProvisioningException("Could not create a device lab provision"));
         }
     }
 

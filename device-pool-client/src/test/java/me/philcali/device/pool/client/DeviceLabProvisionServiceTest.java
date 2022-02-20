@@ -6,6 +6,9 @@
 
 package me.philcali.device.pool.client;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
@@ -33,6 +36,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
@@ -187,5 +191,25 @@ class DeviceLabProvisionServiceTest {
                 .build();
 
         assertEquals(expectedHost, host);
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_create_from_config_THEN_service_is_created() throws IOException {
+        DevicePoolConfig config =DevicePoolConfigProperties.load(getClass().getClassLoader());
+        DeviceLabProvisionService service = DeviceLabProvisionService.builder().fromConfig(config);
+        assertEquals("example", service.poolId());
+        assertEquals(PlatformOS.of("unix", "armv7"), service.platform());
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_create_from_config_but_missing_pool_THEN_service_fails() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader().getResourceAsStream("devices/pool2.properties"));
+        assertThrows(ProvisioningException.class, () -> DeviceLabProvisionService.builder().fromConfig(config));
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_create_from_config_but_missing_platform_THEN_service_fails() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader().getResourceAsStream("devices/pool3.properties"));
+        assertThrows(ProvisioningException.class, () -> DeviceLabProvisionService.builder().fromConfig(config));
     }
 }

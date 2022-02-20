@@ -6,6 +6,9 @@
 
 package me.philcali.device.pool.ec2;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.exceptions.ReservationException;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
@@ -21,6 +24,9 @@ import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Ec2Exception;
 import software.amazon.awssdk.services.ec2.model.Instance;
+
+import java.io.IOException;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,5 +94,25 @@ class Ec2ReservationServiceTest {
         when(ec2.describeInstances(eq(describeInstancesRequest))).thenThrow(Ec2Exception.class);
 
         assertThrows(ReservationException.class, () -> service.exchange(reservation));
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_config_is_used_THEN_service_is_created() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
+        Ec2ReservationService service = Ec2ReservationService.builder().ec2(ec2).fromConfig(config);
+        assertEquals(PlatformOS.of("unix", "armv7"), service.platformOS());
+        assertEquals(8022, service.port());
+        assertEquals("proxy-jump.example.com", service.proxyJump());
+    }
+
+    @Test
+    void GIVEN_no_service_WHEN_config_is_missing_THEN_service_fails_to_create() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("devices/pool.properties"));
+        properties.remove("device.pool.reservation.ec2.platform");
+        DevicePoolConfig config = DevicePoolConfigProperties.load(properties);
+        assertThrows(ReservationException.class, () -> Ec2ReservationService.builder()
+                .ec2(ec2)
+                .fromConfig(config));
     }
 }
