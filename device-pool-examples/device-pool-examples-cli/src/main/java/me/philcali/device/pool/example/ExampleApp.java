@@ -16,7 +16,7 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(
         name = "device-pool-examples",
-        version = "1.0-SNAPSHOT",
+        version = "1.0.0",
         description = "Local app containing examples to show case device pools.",
         subcommands = { Ec2.class, Lab.class, Local.class }
 )
