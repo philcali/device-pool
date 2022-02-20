@@ -7,12 +7,12 @@ on:
   push:
     branches:
       - main
+      - release
     tags:
       - v**
   pull_request:
     branches:
       - main
-      - release
 
 jobs:
   build:
@@ -34,7 +34,7 @@ jobs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v2.5.1
     - name: Build with Maven
-      if: ${{ github.ref_name != 'main' }}
+      if: ${{ github.ref_name != 'main' && github.ref_type != 'tag' }}
       run: |
         mvn -B verify --file pom.xml
     - name: Deploy with Maven

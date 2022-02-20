@@ -42,6 +42,7 @@ import java.util.Optional;
  */
 @CommandLine.Command(
         name = "device-lab",
+        version = "1.0.1-SNAPSHOT",
         description = "Device Lab CLI for the control plane",
         subcommands = {CommandLine.HelpCommand.class}
 )
@@ -58,6 +59,13 @@ public class DeviceLabCLI {
             description = "Verbose flag to output wire details"
     )
     boolean verbose;
+
+    @CommandLine.Option(
+            names = {"-V", "--version"},
+            description = "Displays the version of device-lab",
+            versionHelp = true
+    )
+    boolean version;
 
     final ObjectMapper mapper;
 
