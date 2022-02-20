@@ -8,7 +8,6 @@ package me.philcali.device.pool.ec2;
 
 import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
-import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.exceptions.ReservationException;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
@@ -47,7 +46,7 @@ class Ec2ReservationServiceTest {
         service = Ec2ReservationService.builder()
                 .ec2(ec2)
                 .proxyJump("proxy-host.amazon.com")
-                .platformOS(PlatformOS.of("Linux", "aarch64"))
+                .platform(PlatformOS.of("Linux", "aarch64"))
                 .build();
 
         reservation = Reservation.builder()
@@ -73,7 +72,7 @@ class Ec2ReservationServiceTest {
         Host expectedHost = Host.builder()
                 .port(22)
                 .hostName("10.0.6.1")
-                .platform(service.platformOS())
+                .platform(service.platform())
                 .proxyJump(service.proxyJump())
                 .deviceId(reservation.deviceId())
                 .build();
@@ -100,7 +99,7 @@ class Ec2ReservationServiceTest {
     void GIVEN_no_service_WHEN_config_is_used_THEN_service_is_created() throws IOException {
         DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
         Ec2ReservationService service = Ec2ReservationService.builder().ec2(ec2).fromConfig(config);
-        assertEquals(PlatformOS.of("unix", "armv7"), service.platformOS());
+        assertEquals(PlatformOS.of("unix", "armv7"), service.platform());
         assertEquals(8022, service.port());
         assertEquals("proxy-jump.example.com", service.proxyJump());
     }
