@@ -72,7 +72,7 @@ physical or virtual. Physical or virtual? Indeed, where virtual
 computers can be leased on many of the cloud provisioning systems
 on demand (elastically) or physical if a lab is owned on-premise.
 
-## What is in this code-base?
+## What is in this code base?
 
 The best way to understand and unwrap the layers in this project
 is to start from the `device-pool-api` module. The contract is defined
@@ -119,8 +119,12 @@ other advanced extension points.
 Interested in setting up your own control plane? Super easy. Check out the infrastructure [setup instructions][2] or
 take a peek at the [infrastructure example][3] within this repo.
 
+[![Architecture][4]][4]
+
 [2]: https://github.com/philcali/philcali-cdk/tree/master/device-lab
 [3]: device-pool-examples/device-pool-examples-infra/README.md
+[4]: images/DevicePool-DeviceLab.png
+
 
 ## Examples
 
