@@ -57,6 +57,9 @@ public abstract class ConnectionFactorySSH implements ConnectionFactory, Content
     @Nullable
     abstract List<KeyPair> publicKeys();
 
+    @Nullable
+    abstract List<String> passwords();
+
     /**
      * <p>connectionTimeout.</p>
      *
@@ -134,6 +137,7 @@ public abstract class ConnectionFactorySSH implements ConnectionFactory, Content
             synchronized (client()) {
                 if (!client().isStarted()) {
                     Optional.ofNullable(publicKeys()).ifPresent(keys -> keys.forEach(client()::addPublicKeyIdentity));
+                    Optional.ofNullable(passwords()).ifPresent(pass -> pass.forEach(client()::addPasswordIdentity));
                     client().start();
                 }
             }

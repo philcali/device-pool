@@ -11,6 +11,10 @@
 
     <artifactId>device-pool-examples-cli</artifactId>
 
+    <properties>
+        <eddsa.version>0.3.0</eddsa.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -64,6 +68,12 @@
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>device-pool-client</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.i2p.crypto/eddsa -->
+        <dependency>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+            <version>${eddsa.version}</version>
         </dependency>
     </dependencies>
 
