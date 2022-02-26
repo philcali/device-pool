@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @APIShadowModel
 @Value.Immutable
-abstract class ContentTransferAgentFactoryS3 implements ContentTransferAgentFactory {
+public abstract class ContentTransferAgentFactoryS3 implements ContentTransferAgentFactory {
     /**
      * <p>s3.</p>
      *
