@@ -7,7 +7,7 @@
     <groupId>me.philcali</groupId>
     <artifactId>device-pool</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <modules>
         <module>device-pool-api</module>
