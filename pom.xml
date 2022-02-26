@@ -40,14 +40,14 @@
         <findbugs.version>3.0.2</findbugs.version>
         <junit.version>5.8.2</junit.version>
         <mockito.version>4.3.1</mockito.version>
-        <sshd.version>2.7.0</sshd.version>
+        <sshd.version>2.8.0</sshd.version>
         <log4j.version>2.17.0</log4j.version>
         <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
         <jacoco.version>0.8.7</jacoco.version>
         <enforcer.version>3.0.0-M2</enforcer.version>
         <ddb.local.version>1.16.0</ddb.local.version>
         <aws.sdk.version>2.16.52</aws.sdk.version>
-        <picocli.version>4.6.2</picocli.version>
+        <picocli.version>4.6.3</picocli.version>
         <sitePath>file:/site</sitePath>
     </properties>
 

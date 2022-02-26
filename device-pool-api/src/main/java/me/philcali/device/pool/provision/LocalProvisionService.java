@@ -167,7 +167,7 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
             while (running) {
                 try {
                     int amount = LocalProvisionService.this.releaseAvailable(System.currentTimeMillis());
-                    LOGGER.info("Reaped {} devices", amount);
+                    LOGGER.debug("Reaped {} devices", amount);
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                     LOGGER.info("Reaper is shutting down.");
@@ -292,7 +292,7 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
                     .map(Reservation::deviceId)
                     .filter(this::releaseHost)
                     .forEach(hostId -> {
-                        LOGGER.info("Release host {}", hostId);
+                        LOGGER.debug("Release host {}", hostId);
                         released.incrementAndGet();
                     });
             LOGGER.info("Released provision with id: {}", output.id());

@@ -16,7 +16,6 @@ import me.philcali.device.pool.model.Host;
 import org.immutables.value.Value;
 import software.amazon.awssdk.core.waiters.Waiter;
 import software.amazon.awssdk.core.waiters.WaiterAcceptor;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.CommandInvocationStatus;
 import software.amazon.awssdk.services.ssm.model.GetCommandInvocationResponse;

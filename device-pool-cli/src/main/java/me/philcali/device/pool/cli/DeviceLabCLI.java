@@ -44,19 +44,21 @@ import java.util.Optional;
         name = "device-lab",
         version = "1.0.1-SNAPSHOT",
         description = "Device Lab CLI for the control plane",
-        subcommands = {CommandLine.HelpCommand.class}
+        subcommands = {CommandLine.HelpCommand.class, Devices.class}
 )
 public class DeviceLabCLI {
     @CommandLine.Option(
             names = "--endpoint",
             description = "Endpoint override",
-            required = true
+            required = true,
+            scope = CommandLine.ScopeType.INHERIT
     )
     String endpoint;
 
     @CommandLine.Option(
             names = {"-v", "--verbose"},
-            description = "Verbose flag to output wire details"
+            description = "Verbose flag to output wire details",
+            scope = CommandLine.ScopeType.INHERIT
     )
     boolean verbose;
 
@@ -87,34 +89,45 @@ public class DeviceLabCLI {
         System.exit(new CommandLine(new DeviceLabCLI()).execute(args));
     }
 
-    private DeviceLabService createService() {
+    protected DeviceLabService createService() {
         return DeviceLabService.create((client, builder) -> {
            client.addInterceptor(AwsV4SigningInterceptor.create());
            builder.baseUrl(endpoint);
         });
     }
 
-    private void executeAndPrint(Call<?> call) {
+    protected <T> T execute(Call<T> call) {
+        if (verbose) {
+            System.out.println("Request URL: " + call.request().url().uri());
+            System.out.println("Request Method: " + call.request().method());
+        }
         try {
-            if (verbose) {
-                System.out.println("Request URL: " + call.request().url().uri());
-                System.out.println("Request Method: " + call.request().method());
-            }
-            Response<?> response = call.execute();
+            Response<T> response = call.execute();
             if (verbose) {
                 System.out.println("Response Status: " + response.code());
                 System.out.println("Response Headers: ");
                 System.out.println(response.headers());
             }
             if (Objects.nonNull(response.errorBody())) {
-                System.err.println(response.errorBody().string());
-            } else if (Objects.isNull(response.body())) {
-                System.out.println("OK");
-            } else {
-                mapper.writeValue(System.out, response.body());
+                throw new RuntimeException(response.errorBody().string());
             }
+            return response.body();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected void executeAndPrint(Call<?> call) {
+        Object result = execute(call);
+        if (Objects.isNull(result)) {
+            System.out.println("OK");
+        } else {
+            try {
+                mapper.writeValue(System.out, result);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

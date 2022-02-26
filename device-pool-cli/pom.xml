@@ -11,6 +11,10 @@
 
     <artifactId>device-pool-cli</artifactId>
 
+    <properties>
+        <eddsa.version>0.3.0</eddsa.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -62,8 +66,34 @@
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-ssh</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-s3</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-ssm</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-client</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
             <artifactId>device-pool-service-client</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.i2p.crypto/eddsa -->
+        <dependency>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+            <version>${eddsa.version}</version>
         </dependency>
     </dependencies>
 

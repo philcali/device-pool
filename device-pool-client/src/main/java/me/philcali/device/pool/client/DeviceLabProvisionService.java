@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,12 +60,20 @@ public abstract class DeviceLabProvisionService implements ProvisionService, Res
 
     abstract PlatformOS platform();
 
+    @Deprecated
     @Value.Default
     Function<DeviceObject, Host.Builder> hostConvert() {
-        return device -> Host.builder()
-                .deviceId(device.id())
-                .platform(platform())
-                .hostName(device.publicAddress());
+        return device -> host().apply(device, Host.builder());
+    }
+
+    @Value.Default
+    BiFunction<DeviceObject, Host.Builder, Host.Builder> host() {
+        return (device, builder) -> builder.hostName(device.publicAddress());
+    }
+
+    @Value.Default
+    int port() {
+        return 22;
     }
 
     abstract String poolId();
@@ -178,7 +187,10 @@ public abstract class DeviceLabProvisionService implements ProvisionService, Res
     public Host exchange(Reservation reservation) throws ReservationException {
         Call<DeviceObject> result = deviceLabService().getDevice(poolId(), reservation.deviceId());
         DeviceObject device = safelyCall(result, ReservationException::new, false);
-        return hostConvert().andThen(Host.Builder::build).apply(device);
+        return host().andThen(Host.Builder::build).apply(device, Host.builder()
+                .deviceId(device.id())
+                .platform(platform())
+                .port(port()));
     }
 
     /** {@inheritDoc} */
