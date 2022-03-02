@@ -9,6 +9,8 @@ package me.philcali.device.pool.ssm;
 import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
 import me.philcali.device.pool.exceptions.ProvisioningException;
+import me.philcali.device.pool.exceptions.ReservationException;
+import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.model.ProvisionInput;
 import me.philcali.device.pool.model.ProvisionOutput;
@@ -28,6 +30,7 @@ import software.amazon.awssdk.services.ssm.model.PlatformType;
 import software.amazon.awssdk.services.ssm.paginators.DescribeInstanceInformationIterable;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -162,6 +165,38 @@ class ProvisionServiceSSMTest {
             return output;
         }).get(5, TimeUnit.SECONDS);
         assertEquals(Status.FAILED, another.status());
+    }
+
+    @Test
+    void GIVEN_provision_service_WHEN_exchanging_reservation_THEN_ssm_instance_is_used() {
+        DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
+                .instanceInformationList(
+                        instance -> instance.instanceId("abc-123").platformType(PlatformType.LINUX).ipAddress("127.0.0.1")
+                )
+                .build();
+        doReturn(response).when(ssm).describeInstanceInformation(eq(DescribeInstanceInformationRequest.builder()
+                .filters(
+                        filter -> filter.key("InstanceIds").values("abc-123")
+                )
+                .build()));
+        Host expected = Host.builder()
+                .deviceId("abc-123")
+                .port(22)
+                .platform(PlatformOS.of("Linux", "armv6"))
+                .hostName("127.0.0.1")
+                .build();
+        assertEquals(expected, provisionService.exchange(Reservation.of("abc-123", Status.SUCCEEDED)));
+
+        doReturn(DescribeInstanceInformationResponse.builder()
+                .instanceInformationList(Collections.EMPTY_LIST)
+                .build())
+                .when(ssm).describeInstanceInformation(eq(DescribeInstanceInformationRequest.builder()
+                .filters(
+                        filter -> filter.key("InstanceIds").values("non-exist")
+                )
+                .build()));
+
+        assertThrows(ReservationException.class, () -> provisionService.exchange(Reservation.of("non-exist", Status.SUCCEEDED)));
     }
 
     @Test
