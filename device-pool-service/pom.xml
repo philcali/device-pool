@@ -32,5 +32,7 @@
         <module>device-pool-service-contract</module>
         -->
         <module>device-pool-service-client</module>
+        <module>device-pool-service-unmanaged</module>
+        <module>device-pool-service-module</module>
     </modules>
 </project>
