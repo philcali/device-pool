@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class ObtainDevicesSSM implements RequestStreamHandler {
+    private static final String OPERATION_NAME = "operationName";
     private final UnmanagedComponent component;
 
     public ObtainDevicesSSM(UnmanagedComponent component) {
@@ -28,7 +29,7 @@ public class ObtainDevicesSSM implements RequestStreamHandler {
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        String operationName = context.getClientContext().getCustom().get("operationName");
+        String operationName = context.getClientContext().getCustom().get(OPERATION_NAME);
         component.handler().accept(operationName, inputStream, outputStream);
     }
 }

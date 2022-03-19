@@ -10,6 +10,7 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.StringKey;
+import me.philcali.device.pool.service.unmanaged.Configuration;
 import me.philcali.device.pool.service.unmanaged.operation.ObtainDeviceFunction;
 import me.philcali.device.pool.service.unmanaged.operation.OperationFunction;
 
@@ -17,6 +18,12 @@ import javax.inject.Singleton;
 
 @Module
 class OperationModule {
+    @Provides
+    @Singleton
+    static Configuration providesConfiguration() {
+        return Configuration.create();
+    }
+
     @Provides
     @Singleton
     @IntoMap

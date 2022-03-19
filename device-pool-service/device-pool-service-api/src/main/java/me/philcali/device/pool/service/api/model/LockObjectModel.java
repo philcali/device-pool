@@ -21,5 +21,8 @@ abstract class LockObjectModel implements UniqueEntity, Modifiable {
     abstract String holder();
 
     @Nullable
+    abstract String value();
+
+    @Nullable
     abstract Instant expiresIn();
 }

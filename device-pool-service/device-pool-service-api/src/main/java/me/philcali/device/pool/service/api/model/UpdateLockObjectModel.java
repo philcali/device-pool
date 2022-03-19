@@ -18,6 +18,14 @@ import java.time.Instant;
 @JsonDeserialize(as = UpdateLockObject.class)
 interface UpdateLockObjectModel {
     /**
+     * Optional. An arbitrary value associated with the lock.
+     *
+     * @return a {@link java.lang.String} value
+     */
+    @Nullable
+    String value();
+
+    /**
      * <p>holder.</p>
      *
      * @return a {@link java.lang.String} object
