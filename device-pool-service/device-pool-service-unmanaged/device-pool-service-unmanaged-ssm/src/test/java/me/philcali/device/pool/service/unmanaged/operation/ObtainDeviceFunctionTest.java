@@ -26,6 +26,7 @@ import me.philcali.device.pool.service.rpc.model.ObtainDeviceRequest;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
 import me.philcali.device.pool.service.unmanaged.Configuration;
 import me.philcali.device.pool.service.unmanaged.ProvisionStrategy;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,7 @@ import software.amazon.awssdk.services.ssm.paginators.DescribeInstanceInformatio
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -106,10 +108,15 @@ class ObtainDeviceFunctionTest {
                 .build();
     }
 
+    @AfterEach
+    void teardown() {
+        lockRepo.delete(poolRepo.resourceKey(request.accountKey(), "pool-id"), LockRepoDynamo.SINGLETON);
+    }
+
     @Test
     void GIVEN_function_is_created_WHEN_apply_is_called_but_locked_THEN_exception_is_thrown() {
         lockRepo.create(poolRepo.resourceKey(request.accountKey(), "pool-id"), CreateLockObject.builder()
-                .holder("some-other-provision-id")
+                .holder(UUID.randomUUID().toString())
                 .duration(Duration.ofSeconds(5))
                 .build());
         assertThrows(InvalidInputException.class, () -> function.apply(request));
@@ -119,7 +126,7 @@ class ObtainDeviceFunctionTest {
     void GIVEN_function_is_created_WHEN_apply_is_called_THEN_cycles_through_instances() {
         // If not locking, then don't adhere to lock
         lockRepo.create(poolRepo.resourceKey(request.accountKey(), "pool-id"), CreateLockObject.builder()
-                .holder("some-other-provision-id")
+                .holder(UUID.randomUUID().toString())
                 .duration(Duration.ofSeconds(5))
                 .build());
         function = new ObtainDeviceFunction(ssm, lockRepo, provisions, poolRepo, Configuration.builder().from(configuration).locking(false).build());
