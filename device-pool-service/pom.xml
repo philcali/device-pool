@@ -13,10 +13,10 @@
     <artifactId>device-pool-service</artifactId>
 
     <properties>
-        <lambda.logging.version>1.5.1</lambda.logging.version>
+        <lambda.logging.version>1.2.0</lambda.logging.version>
         <lambda.core.version>1.2.1</lambda.core.version>
         <maven.exec.version>3.0.0</maven.exec.version>
-        <dagger.version>2.41</dagger.version>
+        <dagger.version>2.40.5</dagger.version>
         <jersey.version>2.34</jersey.version>
         <jackson.version>2.13.1</jackson.version>
     </properties>
