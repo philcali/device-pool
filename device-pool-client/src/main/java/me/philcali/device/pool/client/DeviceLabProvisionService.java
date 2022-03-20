@@ -27,6 +27,7 @@ import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.api.model.ReservationObject;
+import me.philcali.device.pool.service.client.AwsV4SigningInterceptor;
 import me.philcali.device.pool.service.client.DeviceLabService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -91,6 +92,7 @@ public abstract class DeviceLabProvisionService implements ProvisionService, Res
                     .flatMap(entry -> {
                         entry.get("endpoint").ifPresent(endpoint -> {
                             deviceLabService(DeviceLabService.create((client, builder) -> {
+                                client.addInterceptor(AwsV4SigningInterceptor.create());
                                 builder.baseUrl(endpoint);
                             }));
                         });
