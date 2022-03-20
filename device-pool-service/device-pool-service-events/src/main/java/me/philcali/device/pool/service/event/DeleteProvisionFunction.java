@@ -38,7 +38,7 @@ public class DeleteProvisionFunction implements DevicePoolEventRouterFunction {
     @Override
     public boolean test(Record record) {
         return record.getEventName().equals(OperationType.REMOVE.name())
-                && primaryKeyFrom(record, StreamRecord::getOldImage).endsWith(ProvisionRepoDynamo.RESOURCE);
+                && primaryKey(record).endsWith(ProvisionRepoDynamo.RESOURCE);
     }
 
     @Override

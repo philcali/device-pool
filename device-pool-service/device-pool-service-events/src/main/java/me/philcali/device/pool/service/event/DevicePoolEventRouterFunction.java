@@ -20,15 +20,10 @@ import java.util.function.Predicate;
 public interface DevicePoolEventRouterFunction
         extends ListAllMixin, Predicate<Record>, BiConsumer<Map<String, AttributeValue>, Map<String, AttributeValue>> {
     String PK = "PK";
+    String SK = "SK";
 
     default String primaryKey(Record record) {
-        return primaryKeyFrom(record, StreamRecord::getNewImage);
-    }
-
-    default String primaryKeyFrom(
-            Record record,
-            Function<StreamRecord, Map<String, com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue>> getImage) {
-        return getImage.apply(record.getDynamodb()).get(PK).getS();
+        return record.getDynamodb().getKeys().get(PK).getS();
     }
 
     @Override

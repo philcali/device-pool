@@ -11,12 +11,12 @@ import dagger.Provides;
 import dagger.multibindings.IntoSet;
 import me.philcali.device.pool.service.event.CancelProvisionWorkflowFunction;
 import me.philcali.device.pool.service.event.CancelReservationFunction;
+import me.philcali.device.pool.service.event.ClearResourceLockFunction;
 import me.philcali.device.pool.service.event.DeleteDevicePoolFunction;
 import me.philcali.device.pool.service.event.DeleteProvisionFunction;
 import me.philcali.device.pool.service.event.DevicePoolEventRouterFunction;
 import me.philcali.device.pool.service.event.StartProvisionWorkflowFunction;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Module
@@ -53,6 +53,13 @@ class EventRouterModule {
     @Singleton
     @IntoSet
     DevicePoolEventRouterFunction providesDeleteProvisionFunction(DeleteProvisionFunction function) {
+        return function;
+    }
+
+    @Provides
+    @Singleton
+    @IntoSet
+    DevicePoolEventRouterFunction providesClearLockFunction(ClearResourceLockFunction function) {
         return function;
     }
 }
