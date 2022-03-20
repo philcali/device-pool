@@ -8,7 +8,6 @@ package me.philcali.device.pool.service.event;
 
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.OperationType;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.Record;
-import com.amazonaws.services.lambda.runtime.events.models.dynamodb.StreamRecord;
 import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.service.api.DeviceRepo;
 import me.philcali.device.pool.service.api.ProvisionRepo;
@@ -44,7 +43,7 @@ public class DeleteDevicePoolFunction implements DevicePoolEventRouterFunction {
     @Override
     public boolean test(Record record) {
         return record.getEventName().equals(OperationType.REMOVE.name())
-                && primaryKeyFrom(record, StreamRecord::getOldImage).endsWith(DevicePoolRepoDynamo.RESOURCE);
+                && primaryKey(record).endsWith(DevicePoolRepoDynamo.RESOURCE);
     }
 
     @Override
