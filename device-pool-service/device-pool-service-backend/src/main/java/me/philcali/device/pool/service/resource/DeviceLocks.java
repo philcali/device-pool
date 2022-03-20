@@ -20,7 +20,6 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -37,7 +36,6 @@ import javax.ws.rs.core.SecurityContext;
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
 public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject, UpdateLockObject> {
-    @Inject
     /**
      * <p>Constructor for DeviceLocks.</p>
      *
@@ -45,6 +43,7 @@ public class DeviceLocks extends RepositoryResource<LockObject, CreateLockObject
      * @param poolRepo a {@link me.philcali.device.pool.service.api.DevicePoolRepo} object
      * @param deviceRepo a {@link me.philcali.device.pool.service.api.DeviceRepo} object
      */
+    @Inject
     public DeviceLocks(
             final LockRepo lockRepo,
             final DevicePoolRepo poolRepo,

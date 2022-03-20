@@ -10,6 +10,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import me.philcali.device.pool.BaseDevicePool;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.CreateLockObject;
@@ -28,11 +32,19 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.Scanner;
 
 /**
  * <p>DeviceLabCLI class.</p>
@@ -50,10 +62,16 @@ public class DeviceLabCLI {
     @CommandLine.Option(
             names = "--endpoint",
             description = "Endpoint override",
-            required = true,
             scope = CommandLine.ScopeType.INHERIT
     )
     String endpoint;
+
+    @CommandLine.Option(
+            names = "--properties-file",
+            description = "Static properties file location",
+            scope = CommandLine.ScopeType.INHERIT
+    )
+    Path propertiesFile;
 
     @CommandLine.Option(
             names = {"-v", "--verbose"},
@@ -70,6 +88,8 @@ public class DeviceLabCLI {
     boolean version;
 
     final ObjectMapper mapper;
+
+    private Optional<DevicePoolConfig> loadedConfig;
 
     private DeviceLabCLI() {
         mapper = new ObjectMapper();
@@ -89,10 +109,35 @@ public class DeviceLabCLI {
         System.exit(new CommandLine(new DeviceLabCLI()).execute(args));
     }
 
+    private Path defaultConfigPath() {
+        return Path.of(System.getProperty("user.home")).resolve(".device-lab").resolve("config.properties");
+    }
+
+    protected Optional<DevicePoolConfig> loadConfig() {
+        if (Objects.isNull(loadedConfig)) {
+            DevicePoolConfig config = null;
+            Path configPath = Optional.ofNullable(propertiesFile).orElseGet(this::defaultConfigPath);
+            if (Files.exists(configPath)) {
+                try (InputStream inputStream = Files.newInputStream(configPath)) {
+                    config = DevicePoolConfigProperties.load(inputStream);
+                } catch (IOException ie) {
+                    throw new RuntimeException(ie);
+                }
+            }
+            loadedConfig = Optional.ofNullable(config);
+        }
+        return loadedConfig;
+    }
+
     protected DeviceLabService createService() {
+        final String serviceEndpoint = Optional.ofNullable(endpoint)
+                .orElseGet(() -> loadConfig()
+                        .flatMap(config -> config.namespace("provision.lab"))
+                        .flatMap(entry -> entry.get("endpoint"))
+                        .orElseThrow(() -> new IllegalStateException("Requires an endpoint or configured properties")));
         return DeviceLabService.create((client, builder) -> {
-           client.addInterceptor(AwsV4SigningInterceptor.create());
-           builder.baseUrl(endpoint);
+            client.addInterceptor(AwsV4SigningInterceptor.create());
+            builder.baseUrl(serviceEndpoint);
         });
     }
 
@@ -128,6 +173,42 @@ public class DeviceLabCLI {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    @CommandLine.Command(
+            name = "configure",
+            description = "Configure the CLI client locally"
+    )
+    public void configure() throws IOException {
+        Path configPath = defaultConfigPath();
+        Files.createDirectories(configPath.getParent());
+        Properties properties = new Properties();
+        // TODO: clean this up ... interact with DevicePoolConfig instead of Properties directly
+        // Default to base pool
+        properties.setProperty("device.pool.class", BaseDevicePool.class.getName());
+        if (Files.exists(configPath)) {
+            try (InputStream inputStream = Files.newInputStream(configPath)) {
+                properties.load(inputStream);
+            }
+        }
+        Arrays.asList("endpoint", "poolId", "platform", "port").forEach(entry -> {
+            String value = System.console().readLine("Enter the device lab %s [%s]: %n",
+                    entry, properties.getProperty("device.pool.provision.lab." + entry, ""));
+            if (entry.equals("port")) {
+                int numericPort = Integer.parseInt(properties.getProperty("provision.lab.port", "22"));
+                if (!value.trim().isEmpty()) {
+                    numericPort = Integer.parseInt(value);
+                }
+                value = Integer.toString(numericPort);
+            } else if (value.trim().isEmpty()) {
+                // If using existing, allow pass through
+                value = properties.getProperty("device.pool.provision.lab." + entry, value);
+            }
+            properties.setProperty("device.pool.provision.lab." + entry, value);
+        });
+        try (OutputStream outputStream = Files.newOutputStream(configPath)) {
+            properties.store(outputStream, "Auto-generated via configure");
         }
     }
 

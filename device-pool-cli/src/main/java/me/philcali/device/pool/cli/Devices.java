@@ -12,6 +12,7 @@ import me.philcali.device.pool.DevicePool;
 import me.philcali.device.pool.client.DeviceLabProvisionService;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.content.ContentTransferAgentFactory;
+import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.model.CommandInput;
 import me.philcali.device.pool.model.CommandOutput;
 import me.philcali.device.pool.model.CopyInput;
@@ -24,6 +25,7 @@ import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.QueryResults;
 import me.philcali.device.pool.service.client.DeviceLabService;
 import me.philcali.device.pool.ssh.ConnectionFactorySSH;
+import me.philcali.device.pool.ssm.ConnectionFactorySSM;
 import org.apache.sshd.client.SshClient;
 import picocli.CommandLine;
 
@@ -51,7 +53,6 @@ public class Devices {
 
     @CommandLine.Option(
             names = "--pool-id",
-            required = true,
             description = "name of the device pool",
             scope = CommandLine.ScopeType.INHERIT
     )
@@ -68,7 +69,6 @@ public class Devices {
             names = {"-passwd", "--password"},
             description = "password of the SSH user",
             interactive = true,
-            hidden = true,
             scope = CommandLine.ScopeType.INHERIT
     )
     String password;
@@ -79,7 +79,7 @@ public class Devices {
             description = "port of the SSH client connection",
             scope = CommandLine.ScopeType.INHERIT
     )
-    int port;
+    Integer port;
 
     @CommandLine.Option(
             names = {"-u", "--user"},
@@ -121,57 +121,78 @@ public class Devices {
     @CommandLine.Option(
             names = {"-p", "--platform"},
             description = "target platform of the device in form of 'os:arch', eg: 'linux:armv6'",
-            required = true,
             scope = CommandLine.ScopeType.INHERIT
     )
     String platform;
 
+    private String configuredPoolId() {
+        if (poolId != null) {
+            return poolId;
+        }
+        return cli.loadConfig()
+                .flatMap(config -> config.namespace("provision.lab"))
+                .flatMap(entry -> entry.get("poolId"))
+                .orElseThrow(() -> new IllegalStateException("Could not find a pool to use"));
+    }
+
     protected DevicePool createPool(DeviceLabService service) {
-        ConnectionFactory connections;
-        ContentTransferAgentFactory transfers = null;
-        Supplier<ConnectionFactorySSH> getter = () -> {
-            SshClient sshClient = SshClient.setUpDefaultClient();
-            if (Objects.nonNull(password)) {
-                sshClient.addPasswordIdentity(password);
+        // First attempt to load the entire pool from properties
+        return cli.loadConfig().flatMap(config -> {
+            try {
+                return Optional.of(DevicePool.create(config));
+            } catch (IllegalStateException | ProvisioningException e) {
+                return Optional.empty();
             }
-            return ConnectionFactorySSH.builder()
-                    .client(sshClient)
-                    .userName(Optional.ofNullable(userName).orElseGet(() -> System.getProperty("user.name")))
+        }).orElseGet(() -> {
+            // Unable to create a full DevicePool, resort to overriding things found in file
+            DeviceLabProvisionService.Builder provisionBuilder = DeviceLabProvisionService.builder()
+                    .deviceLabService(service);
+            cli.loadConfig().map(DeviceLabProvisionService.builder()::fromConfig).ifPresent(provisionBuilder::from);
+            Optional.ofNullable(poolId).ifPresent(provisionBuilder::poolId);
+            Optional.ofNullable(platform).map(PlatformOS::fromString).ifPresent(provisionBuilder::platform);
+            Optional.ofNullable(port).ifPresent(provisionBuilder::port);
+            ConnectionFactory connections;
+            ContentTransferAgentFactory transfers = null;
+            Supplier<ConnectionFactorySSH> getter = () -> {
+                SshClient sshClient = SshClient.setUpDefaultClient();
+                if (Objects.nonNull(password)) {
+                    sshClient.addPasswordIdentity(password);
+                }
+                return ConnectionFactorySSH.builder()
+                        .client(sshClient)
+                        .userName(Optional.ofNullable(userName).orElseGet(() -> System.getProperty("user.name")))
+                        .build();
+            };
+            if (useSSM) {
+                connections = ConnectionFactorySSM.create();
+            } else {
+                final ConnectionFactorySSH ssh = getter.get();
+                connections = ssh;
+                transfers = ssh;
+            }
+            if (Objects.nonNull(bucketName)) {
+                transfers = ContentTransferAgentFactoryS3.builder()
+                        .bucketName(bucketName)
+                        .build();
+            } else if (Objects.isNull(transfers)) {
+                transfers = getter.get();
+            }
+            return BaseDevicePool.builder()
+                    .provisionAndReservationService(provisionBuilder.build())
+                    .transfers(transfers)
+                    .connections(connections)
                     .build();
-        };
-        if (useSSM) {
-            connections = getter.get();
-        } else {
-            final ConnectionFactorySSH ssh = getter.get();
-            connections = ssh;
-            transfers = ssh;
-        }
-        if (Objects.nonNull(bucketName)) {
-            transfers = ContentTransferAgentFactoryS3.builder()
-                    .bucketName(bucketName)
-                    .build();
-        } else if (Objects.isNull(transfers)) {
-            transfers = getter.get();
-        }
-        return BaseDevicePool.builder()
-                .provisionAndReservationService(DeviceLabProvisionService.builder()
-                        .poolId(poolId)
-                        .deviceLabService(service)
-                        .platform(PlatformOS.fromString(platform))
-                        .port(port)
-                        .build())
-                .transfers(transfers)
-                .connections(connections)
-                .build();
+        });
     }
 
     protected void provisionOnFrom(DevicePool pool, DeviceLabService service, Consumer<Device> thunk) {
         ProvisionInput.Builder inputBuilder = ProvisionInput.builder().amount(amount);
+        String selectedPool = configuredPoolId();
         if (allDevices) {
             int total = 0;
             QueryResults<DeviceObject> results = null;
             do {
-                results = cli.execute(service.listDevices(poolId, QueryParams.builder()
+                results = cli.execute(service.listDevices(selectedPool, QueryParams.builder()
                         .limit(100)
                         .nextToken(Optional.ofNullable(results)
                                 .map(QueryResults::nextToken)
@@ -182,7 +203,7 @@ public class Devices {
             inputBuilder.amount(total);
         }
         pool.provisionSync(inputBuilder.build(), provisionTimeout, TimeUnit.SECONDS).forEach(thunk.andThen(device -> {
-            cli.executeAndPrint(service.releaseDeviceLock(poolId, device.id()));
+            cli.executeAndPrint(service.releaseDeviceLock(selectedPool, device.id()));
         }));
     }
 
