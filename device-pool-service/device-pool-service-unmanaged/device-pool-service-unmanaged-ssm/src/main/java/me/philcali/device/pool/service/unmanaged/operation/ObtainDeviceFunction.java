@@ -24,6 +24,7 @@ import me.philcali.device.pool.service.unmanaged.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest;
 import software.amazon.awssdk.services.ssm.model.InstanceInformation;
 import software.amazon.awssdk.services.ssm.model.PingStatus;
 
@@ -67,10 +68,11 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
         Optional<String> deviceId = previouslyObtainedDevice(provisionKey(request));
         Comparator<InstanceInformation> byInstanceId = Comparator.comparing(InstanceInformation::instanceId);
         AtomicReference<InstanceInformation> firstInstance = new AtomicReference<>();
-        Optional<InstanceInformation> firstAvailable = ssm.describeInstanceInformationPaginator(builder ->
-                        builder.filters(
+        Optional<InstanceInformation> firstAvailable = ssm.describeInstanceInformationPaginator(DescribeInstanceInformationRequest.builder()
+                        .filters(
                                 fb -> fb.key("tag:DevicePool").values(request.provision().poolId()),
-                                fb -> fb.key("PingStatus").values(PingStatus.ONLINE.toString())))
+                                fb -> fb.key("PingStatus").values(PingStatus.ONLINE.toString()))
+                        .build())
                 .instanceInformationList()
                 .stream()
                 // Only want online instances

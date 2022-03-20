@@ -46,7 +46,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -119,6 +118,7 @@ class ObtainDeviceFunctionTest {
                 .holder(UUID.randomUUID().toString())
                 .duration(Duration.ofSeconds(5))
                 .build());
+        assertEquals(ObtainDeviceRequest.class, function.inputType());
         assertThrows(InvalidInputException.class, () -> function.apply(request));
     }
 
@@ -143,7 +143,7 @@ class ObtainDeviceFunctionTest {
                         instance -> instance.instanceId("efg-456").ipAddress("192.168.1.1").lastPingDateTime(Instant.now())
                 )
                 .build();
-        doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(Consumer.class));
+        doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(DescribeInstanceInformationRequest.class));
         doReturn(response).when(ssm).describeInstanceInformation(eq(firstRequest));
         ObtainDeviceResponse obtainResponse = function.apply(request);
         assertEquals(Status.SUCCEEDED, obtainResponse.status());
@@ -179,7 +179,7 @@ class ObtainDeviceFunctionTest {
         DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(Collections.emptyList())
                 .build();
-        doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(Consumer.class));
+        doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(DescribeInstanceInformationRequest.class));
         doReturn(response).when(ssm).describeInstanceInformation(eq(firstRequest));
         assertThrows(IllegalStateException.class, () -> function.apply(request));
     }
