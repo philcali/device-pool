@@ -7,6 +7,7 @@
 package me.philcali.device.pool.service.rpc.lambda;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.rpc.DevicePoolClient;
@@ -71,7 +72,9 @@ public class DevicePoolClientLambda implements DevicePoolClient {
                     accountKey,
                     request.getClass().getSimpleName().replace("Request", ""));
             LOGGER.debug("Invoking {} with client context {}", context.endpoint().uri(), clientContext);
-            byte[] clientContextPayload = mapper.writeValueAsBytes(clientContext);
+            ObjectNode node = mapper.createObjectNode();
+            node.set("custom", mapper.createObjectNode().put("operationName", clientContext.operationName()));
+            byte[] clientContextPayload = mapper.writeValueAsBytes(node);
             InvokeResponse response = lambda.invoke(InvokeRequest.builder()
                     .functionName(context.endpoint().uri())
                     .invocationType(InvocationType.REQUEST_RESPONSE)

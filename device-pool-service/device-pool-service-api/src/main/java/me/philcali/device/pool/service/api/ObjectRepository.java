@@ -74,4 +74,15 @@ public interface ObjectRepository<T, C, U> {
      * @throws me.philcali.device.pool.service.api.exception.ServiceException if any.
      */
     void delete(CompositeKey account, String id) throws ServiceException;
+
+    /**
+     * Creates a unique resource key for a partial identifier. This is to
+     * convert partial identifiers without having to round-trip through
+     * the repository implementation.
+     *
+     * @param parentKey a {@link me.philcali.device.pool.service.api.model.CompositeKey} parent
+     * @param id the resource identifier
+     * @return a complete {@link me.philcali.device.pool.service.api.model.CompositeKey} for this resource
+     */
+    CompositeKey resourceKey(CompositeKey parentKey, String id);
 }

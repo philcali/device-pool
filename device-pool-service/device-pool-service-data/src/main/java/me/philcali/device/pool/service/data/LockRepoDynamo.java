@@ -33,17 +33,16 @@ import java.time.temporal.ChronoUnit;
 public class LockRepoDynamo
         extends AbstractObjectRepo<LockObject, CreateLockObject, UpdateLockObject>
         implements LockRepo {
-    private static final String SINGLETON = "singleton";
     /** Constant <code>RESOURCE="lock"</code> */
     public static final String RESOURCE = "lock";
 
-    @Inject
     /**
      * <p>Constructor for LockRepoDynamo.</p>
      *
      * @param table a {@link software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable} object
      * @param marshaller a {@link me.philcali.device.pool.service.data.token.TokenMarshaller} object
      */
+    @Inject
     public LockRepoDynamo(final DynamoDbTable<LockObject> table, final TokenMarshaller marshaller) {
         super(RESOURCE, table, marshaller);
     }
@@ -65,6 +64,7 @@ public class LockRepoDynamo
                         .createdAt(now)
                         .updatedAt(now)
                         .id(SINGLETON)
+                        .value(create.value())
                         .expiresIn(create.expiresIn())
                         .holder(create.holder())
                         .key(toPartitionKey(account))
@@ -92,6 +92,7 @@ public class LockRepoDynamo
                         .updatedAt(now)
                         .id(SINGLETON)
                         .holder(update.holder())
+                        .value(update.value())
                         .key(toPartitionKey(account))
                         .expiresIn(update.expiresIn())
                         .build())

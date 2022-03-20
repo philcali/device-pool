@@ -23,6 +23,9 @@ abstract class CreateLockObjectModel {
     abstract String holder();
 
     @Nullable
+    abstract String value();
+
+    @Nullable
     abstract Duration duration();
 
     @Nullable

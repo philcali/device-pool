@@ -6,6 +6,8 @@
 
 package me.philcali.device.pool.service.api;
 
+import me.philcali.device.pool.service.api.exception.ConflictException;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
 import me.philcali.device.pool.service.api.exception.NotFoundException;
 import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
@@ -33,5 +35,33 @@ public interface LockRepo extends ObjectRepository<LockObject, CreateLockObject,
      */
     default LockObject get(CompositeKey account) throws NotFoundException, ServiceException {
         return get(account, SINGLETON);
+    }
+
+    /**
+     * Extends a lock by attempting to first lock the resource, and then updating the expires time
+     * if the lock is held. Note that if the holder of the lock is not the caller, then an
+     * {@link me.philcali.device.pool.service.api.exception.NotFoundException} will be propagated.
+     *
+     * @param resourceKey the underlying unique identifier for the resource being locked
+     * @param put the request to either extend or lock the resource
+     * @return the created or modified {@link me.philcali.device.pool.service.api.model.LockObject}
+     * @throws me.philcali.device.pool.service.api.exception.NotFoundException if on managing the lock.
+     * @throws me.philcali.device.pool.service.api.exception.ServiceException problem with accessing the service.
+     */
+    default LockObject extend(CompositeKey resourceKey, CreateLockObject put)
+            throws InvalidInputException, ServiceException {
+        try {
+            return create(resourceKey, CreateLockObject.builder()
+                    .holder(put.holder())
+                    .value(put.value())
+                    .duration(put.duration())
+                    .build());
+        } catch (ConflictException e) {
+            return update(resourceKey, UpdateLockObject.builder()
+                    .holder(put.holder())
+                    .value(put.value())
+                    .expiresIn(put.expiresIn())
+                    .build());
+        }
     }
 }

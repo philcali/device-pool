@@ -210,6 +210,9 @@ public class TableSchemas {
                 LockObject::key, LockObject.Builder::key,
                 LockObject::id, LockObject.Builder::id)
                 .newItemBuilder(LockObject::builder, LockObject.Builder::build)
+                .addAttribute(String.class, a -> a.name("value")
+                        .getter(LockObject::value)
+                        .setter(LockObject.Builder::value))
                 .addAttribute(String.class, a -> a.name("holder")
                         .getter(LockObject::holder)
                         .setter(LockObject.Builder::holder))

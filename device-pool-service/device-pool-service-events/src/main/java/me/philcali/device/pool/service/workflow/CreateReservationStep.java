@@ -15,6 +15,7 @@ import me.philcali.device.pool.service.api.exception.ServiceException;
 import me.philcali.device.pool.service.api.model.CreateLockObject;
 import me.philcali.device.pool.service.api.model.CreateReservationObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
+import me.philcali.device.pool.service.api.model.LockObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.api.model.QueryParams;
 import me.philcali.device.pool.service.api.model.ReservationObject;
@@ -29,6 +30,7 @@ import javax.inject.Singleton;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -96,15 +98,16 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
                 LOGGER.info("Device {} is already reserved", device.id());
                 continue;
             }
+            LockObject lock = null;
             try {
                 String reservationId = UUID.randomUUID().toString();
                 if (input.poolLockOptions().enabled()) {
                     try {
-                        lockRepo.create(device.selfKey(), CreateLockObject.builder()
+                        lock = lockRepo.create(device.selfKey(), CreateLockObject.builder()
                                 .holder(reservationId)
                                 .duration(Duration.ofSeconds(input.poolLockOptions().duration()))
                                 .build());
-                        LOGGER.info("Obtained a lock on the device");
+                        LOGGER.info("Obtained a lock on the device: {}", lock.id());
                     } catch (ConflictException ce) {
                         LOGGER.info("Device {} is locked, skipping", device.id());
                         continue;
@@ -122,7 +125,9 @@ public class CreateReservationStep implements WorkflowStep<WorkflowState, Workfl
                 throw new WorkflowExecutionException(ce);
             } catch (ServiceException se) {
                 // Make sure we go ahead and release the lock
-                lockRepo.delete(device.selfKey(), "lock");
+                if (Objects.nonNull(lock)) {
+                    lockRepo.delete(lock.selfKey(), lock.id());
+                }
                 throw new RetryableException(se);
             }
         }

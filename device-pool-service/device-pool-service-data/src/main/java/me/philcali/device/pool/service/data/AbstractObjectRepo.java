@@ -194,4 +194,12 @@ abstract class AbstractObjectRepo<T, C, U> implements ObjectRepository<T, C, U> 
             throw new ServiceException(e);
         }
     }
+
+    @Override
+    public CompositeKey resourceKey(CompositeKey parentKey, String id) {
+        return CompositeKey.builder()
+                .from(toPartitionKey(parentKey))
+                .addResources(id)
+                .build();
+    }
 }
