@@ -14,6 +14,8 @@ import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.CreateLockObject;
 import me.philcali.device.pool.service.api.model.CreateProvisionObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpoint;
+import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.api.model.DevicePoolLockOptions;
 import me.philcali.device.pool.service.api.model.DevicePoolObject;
 import me.philcali.device.pool.service.api.model.DevicePoolType;
@@ -123,7 +125,11 @@ class DeviceLabServiceTest {
         Call<DevicePoolObject> createCall = service.createDevicePool(CreateDevicePoolObject.builder()
                 .name("IntegPool")
                 .description("This is a local device pool")
-                .type(DevicePoolType.MANAGED)
+                .type(DevicePoolType.UNMANAGED)
+                .endpoint(DevicePoolEndpoint.builder()
+                        .type(DevicePoolEndpointType.HTTP)
+                        .uri("http://example.com")
+                        .build())
                 .build());
         DevicePoolObject created = executeAndReturn(createCall);
 

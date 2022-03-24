@@ -10,6 +10,12 @@ import me.philcali.device.pool.lab.DeviceLab;
 import me.philcali.device.pool.lab.DeviceLabApiProps;
 import me.philcali.device.pool.lab.DeviceLabTableProps;
 import me.philcali.device.pool.lab.DeviceLabWorkflowProps;
+import me.philcali.device.pool.lab.DevicePoolLockProps;
+import me.philcali.device.pool.lab.DevicePoolProps;
+import me.philcali.device.pool.lab.DevicePoolType;
+import me.philcali.device.pool.lab.IDevicePoolIntegration;
+import me.philcali.device.pool.lab.SSMDevicePoolIntegration;
+import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.constructs.Construct;
@@ -46,8 +52,9 @@ public class DevicePoolExamplesInfraStack extends Stack {
         final String version = "1.0.2-SNAPSHOT";
         final String serviceModule = "device-pool-service-backend";
         final String workflowModule = "device-pool-service-events";
+        final String ssmIntegrationModule = "device-pool-service-unmanaged-ssm";
 
-        DeviceLab.Builder.create(this, "ExampleDeviceLab")
+        final DeviceLab deviceLab = DeviceLab.Builder.create(this, "ExampleDeviceLab")
                 .tableProps(DeviceLabTableProps.builder()
                         .billingMode(BillingMode.PROVISIONED)
                         .readCapacity(1)
@@ -67,5 +74,22 @@ public class DevicePoolExamplesInfraStack extends Stack {
                         + workflowModule + "/target/"
                         + workflowModule + "-" + version + ".jar"))
                 .build();
+
+        IDevicePoolIntegration integration = SSMDevicePoolIntegration.Builder.create(this)
+                .locking(true)
+                .code(Code.fromAsset("../../device-pool-service/device-pool-service-unmanaged/"
+                        + ssmIntegrationModule + "/target/"
+                        + ssmIntegrationModule + "-" + version + ".jar"))
+                .build();
+
+        deviceLab.addDevicePool(DevicePoolProps.builder()
+                .integration(integration)
+                .poolType(DevicePoolType.UNMANAGED)
+                .name("pi-cameras")
+                .lockOptions(DevicePoolLockProps.builder()
+                        .enabled(true)
+                        .duration(Duration.seconds(30))
+                        .build())
+                .build());
     }
 }

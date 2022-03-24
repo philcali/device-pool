@@ -127,7 +127,7 @@ public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowSt
 
                 }
                 // Update with status code and message
-                reservationRepo.update(reservationObject.key(), UpdateReservationObject.builder()
+                reservationRepo.update(input.provision().selfKey(), UpdateReservationObject.builder()
                         .id(reservationObject.id())
                         .status(response.status())
                         .message(response.message())

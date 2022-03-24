@@ -70,15 +70,14 @@ class ProvisionServiceSSMTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         DescribeInstanceInformationRequest firstRequest = DescribeInstanceInformationRequest.builder()
                 .filters(
-                        filter -> filter.key("tag:DevicePool").values("picameras"),
-                        filter -> filter.key("PingStatus").values(PingStatus.ONLINE.toString())
+                        filter -> filter.key("tag:DevicePool").values("picameras")
                 )
                 .build();
         DescribeInstanceInformationIterable iterable = new DescribeInstanceInformationIterable(ssm, firstRequest);
         DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
-                        instance -> instance.instanceId("abc-123").ipAddress("127.0.0.1"),
-                        instance -> instance.instanceId("efg-456").ipAddress("192.168.1.1")
+                        instance -> instance.instanceId("abc-123").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1"),
+                        instance -> instance.instanceId("efg-456").pingStatus(PingStatus.ONLINE).ipAddress("192.168.1.1")
                 )
                 .build();
         doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(Consumer.class));
@@ -124,15 +123,14 @@ class ProvisionServiceSSMTest {
                 .executorService(provisionService.executorService())
                 .build();
         DescribeInstanceInformationRequest firstRequest = DescribeInstanceInformationRequest.builder()
-                .filters(
-                        filter -> filter.key("PingStatus").values(PingStatus.ONLINE.toString())
-                )
+                .filters(Collections.emptyList())
                 .build();
 
         DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(IntStream.range(1, 50).mapToObj(index -> InstanceInformation.builder()
                         .ipAddress("127.0.0." + index)
                         .instanceId("host-" + index)
+                        .pingStatus(PingStatus.ONLINE)
                         .platformType(PlatformType.LINUX)
                         .build()).collect(Collectors.toList()))
                 .build();
@@ -171,7 +169,7 @@ class ProvisionServiceSSMTest {
     void GIVEN_provision_service_WHEN_exchanging_reservation_THEN_ssm_instance_is_used() {
         DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
-                        instance -> instance.instanceId("abc-123").platformType(PlatformType.LINUX).ipAddress("127.0.0.1")
+                        instance -> instance.instanceId("abc-123").pingStatus(PingStatus.ONLINE).platformType(PlatformType.LINUX).ipAddress("127.0.0.1")
                 )
                 .build();
         doReturn(response).when(ssm).describeInstanceInformation(eq(DescribeInstanceInformationRequest.builder()
