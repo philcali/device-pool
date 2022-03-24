@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @APIShadowModel
 @Value.Immutable
@@ -80,11 +81,12 @@ public abstract class ProvisionServiceSSM implements ProvisionService, Reservati
                     .key("tag:DevicePool")
                     .values(poolId())
                     .build());
+        } else {
+            filters.add(InstanceInformationStringFilter.builder()
+                    .key("PingStatus")
+                    .values(PingStatus.ONLINE.toString())
+                    .build());
         }
-        filters.add(InstanceInformationStringFilter.builder()
-                .key("PingStatus")
-                .values(PingStatus.ONLINE.toString())
-                .build());
         return Collections.unmodifiableList(filters);
     }
 
@@ -116,13 +118,13 @@ public abstract class ProvisionServiceSSM implements ProvisionService, Reservati
     }
     
     interface ProvisionStrategy {
-        Set<InstanceInformation> instances(int requestedAmount, DescribeInstanceInformationIterable iterable);
+        Set<InstanceInformation> instances(int requestedAmount, Stream<InstanceInformation> iterable);
     }
     
     public static final class FirstAvailableProvisionStrategy implements ProvisionStrategy {
         @Override
-        public Set<InstanceInformation> instances(int requestedAmount, DescribeInstanceInformationIterable iterable) {
-            return iterable.instanceInformationList().stream().limit(requestedAmount).collect(Collectors.toSet());
+        public Set<InstanceInformation> instances(int requestedAmount, Stream<InstanceInformation> iterable) {
+            return iterable.limit(requestedAmount).collect(Collectors.toSet());
         }
     }
 
@@ -141,10 +143,8 @@ public abstract class ProvisionServiceSSM implements ProvisionService, Reservati
         }
 
         @Override
-        public Set<InstanceInformation> instances(int requestedAmount, DescribeInstanceInformationIterable iterable) {
-            List<InstanceInformation> informationList = iterable.instanceInformationList().stream()
-                    .limit(poolSize)
-                    .collect(Collectors.toList());
+        public Set<InstanceInformation> instances(int requestedAmount, Stream<InstanceInformation> iterable) {
+            List<InstanceInformation> informationList = iterable.limit(poolSize).collect(Collectors.toList());
             final Set<InstanceInformation> rval = new HashSet<>();
             if (informationList.size() < requestedAmount) {
                 rval.addAll(informationList);
@@ -168,7 +168,9 @@ public abstract class ProvisionServiceSSM implements ProvisionService, Reservati
         public void run() {
             provisionalCache.computeIfPresent(input.id(), (id, output) -> {
                 final Set<InstanceInformation> information = provisionStrategy().instances(input.amount(), ssm()
-                        .describeInstanceInformationPaginator(builder -> builder.filters(filters())));
+                        .describeInstanceInformationPaginator(builder -> builder.filters(filters()))
+                        .instanceInformationList().stream()
+                        .filter(instance -> instance.pingStatus() == PingStatus.ONLINE));
                 return ProvisionOutput.builder().from(output)
                         .addAllReservations(information.stream()
                                 .map(instance -> Reservation.of(instance.instanceId(), Status.SUCCEEDED))

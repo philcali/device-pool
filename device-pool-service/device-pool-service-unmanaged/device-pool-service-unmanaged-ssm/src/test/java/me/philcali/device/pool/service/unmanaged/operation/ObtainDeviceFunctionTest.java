@@ -132,15 +132,14 @@ class ObtainDeviceFunctionTest {
         function = new ObtainDeviceFunction(ssm, lockRepo, provisions, poolRepo, Configuration.builder().from(configuration).locking(false).build());
         DescribeInstanceInformationRequest firstRequest = DescribeInstanceInformationRequest.builder()
                 .filters(
-                        filter -> filter.key("tag:DevicePool").values("picameras"),
-                        filter -> filter.key("PingStatus").values(PingStatus.ONLINE.toString())
+                        filter -> filter.key("tag:DevicePool").values("picameras")
                 )
                 .build();
         DescribeInstanceInformationIterable iterable = new DescribeInstanceInformationIterable(ssm, firstRequest);
         DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
-                        instance -> instance.instanceId("abc-123").ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
-                        instance -> instance.instanceId("efg-456").ipAddress("192.168.1.1").lastPingDateTime(Instant.now())
+                        instance -> instance.instanceId("abc-123").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
+                        instance -> instance.instanceId("efg-456").pingStatus(PingStatus.ONLINE).ipAddress("192.168.1.1").lastPingDateTime(Instant.now())
                 )
                 .build();
         doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(DescribeInstanceInformationRequest.class));
@@ -171,8 +170,7 @@ class ObtainDeviceFunctionTest {
     void GIVEN_function_is_created_WHEN_apply_is_called_but_no_instances_THEN_throws_exception() {
         DescribeInstanceInformationRequest firstRequest = DescribeInstanceInformationRequest.builder()
                 .filters(
-                        filter -> filter.key("tag:DevicePool").values("picameras"),
-                        filter -> filter.key("PingStatus").values(PingStatus.ONLINE.toString())
+                        filter -> filter.key("tag:DevicePool").values("picameras")
                 )
                 .build();
         DescribeInstanceInformationIterable iterable = new DescribeInstanceInformationIterable(ssm, firstRequest);

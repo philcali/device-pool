@@ -69,13 +69,12 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
         Comparator<InstanceInformation> byInstanceId = Comparator.comparing(InstanceInformation::instanceId);
         AtomicReference<InstanceInformation> firstInstance = new AtomicReference<>();
         Optional<InstanceInformation> firstAvailable = ssm.describeInstanceInformationPaginator(DescribeInstanceInformationRequest.builder()
-                        .filters(
-                                fb -> fb.key("tag:DevicePool").values(request.provision().poolId()),
-                                fb -> fb.key("PingStatus").values(PingStatus.ONLINE.toString()))
+                        .filters(fb -> fb.key("tag:DevicePool").values(request.provision().poolId()))
                         .build())
                 .instanceInformationList()
                 .stream()
                 // Only want online instances
+                .filter(instance -> instance.pingStatus().equals(PingStatus.ONLINE))
                 .peek(instance -> firstInstance.accumulateAndGet(instance,
                         (left, right) -> left == null || byInstanceId.compare(left, right) > 0 ? right : left))
                 .filter(instance -> deviceId.isEmpty() || deviceId.get().compareTo(instance.instanceId()) < 0)
