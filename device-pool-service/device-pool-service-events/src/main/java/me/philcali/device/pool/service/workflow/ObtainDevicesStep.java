@@ -137,7 +137,11 @@ public class ObtainDevicesStep implements WorkflowStep<WorkflowState, WorkflowSt
                     updated++;
                 }
             } catch (RemoteServiceException rse) {
-                throw new RetryableException(rse);
+                if (rse.isRetryable()) {
+                    throw new RetryableException(rse);
+                } else {
+                    throw new WorkflowExecutionException(rse);
+                }
             }
         }
         AtomicReference<Status> currentStatus = new AtomicReference<>(input.provision().status());

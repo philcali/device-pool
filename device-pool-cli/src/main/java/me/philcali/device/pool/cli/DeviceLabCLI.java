@@ -13,7 +13,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import me.philcali.device.pool.BaseDevicePool;
 import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
-import me.philcali.device.pool.model.PlatformOS;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.CreateLockObject;
@@ -36,7 +35,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -44,7 +42,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Scanner;
 
 /**
  * <p>DeviceLabCLI class.</p>
@@ -59,6 +56,8 @@ import java.util.Scanner;
         subcommands = {CommandLine.HelpCommand.class, Devices.class}
 )
 public class DeviceLabCLI {
+    static final String DEFAULT_LIMIT = "100";
+
     @CommandLine.Option(
             names = "--endpoint",
             description = "Endpoint override",
@@ -224,7 +223,7 @@ public class DeviceLabCLI {
     )
     public void listDevicePools(
             @CommandLine.Option(names = "--next-token") String nextToken,
-            @CommandLine.Option(names = "--limit") Integer limit
+            @CommandLine.Option(names = "--limit", defaultValue = DEFAULT_LIMIT) Integer limit
     ) {
        executeAndPrint(createService().listDevicePools(nextToken, limit));
     }
@@ -243,7 +242,7 @@ public class DeviceLabCLI {
     public void listDevices(
             @CommandLine.Option(names = "--pool-id", required = true) String poolId,
             @CommandLine.Option(names = "--next-token") String nextToken,
-            @CommandLine.Option(names = "--limit") Integer limit
+            @CommandLine.Option(names = "--limit", defaultValue = DEFAULT_LIMIT) Integer limit
     ) {
         executeAndPrint(createService().listDevices(poolId, nextToken, limit));
     }
@@ -262,7 +261,7 @@ public class DeviceLabCLI {
     public void listProvisions(
             @CommandLine.Option(names = "--pool-id", required = true) String poolId,
             @CommandLine.Option(names = "--next-token") String nextToken,
-            @CommandLine.Option(names = "--limit") Integer limit
+            @CommandLine.Option(names = "--limit", defaultValue = DEFAULT_LIMIT) Integer limit
     ) {
         executeAndPrint(createService().listProvisions(poolId, nextToken, limit));
     }
@@ -283,7 +282,7 @@ public class DeviceLabCLI {
             @CommandLine.Option(names = "--pool-id", required = true) String poolId,
             @CommandLine.Option(names = "--provision-id", required = true) String provisionId,
             @CommandLine.Option(names = "--next-token") String nextToken,
-            @CommandLine.Option(names = "--limit") Integer limit
+            @CommandLine.Option(names = "--limit", defaultValue = DEFAULT_LIMIT) Integer limit
     ) {
         executeAndPrint(createService().listReservations(poolId, provisionId, nextToken, limit));
     }
@@ -314,8 +313,8 @@ public class DeviceLabCLI {
             description = "Obtains a single device metadata"
     )
     public void getDevice(
-            @CommandLine.Option(names = "--pool-id") String poolId,
-            @CommandLine.Option(names = "--device-id") String deviceId
+            @CommandLine.Option(names = "--pool-id", required = true) String poolId,
+            @CommandLine.Option(names = "--device-id", required = true) String deviceId
     ) {
         executeAndPrint(createService().getDevice(poolId, deviceId));
     }
@@ -324,17 +323,17 @@ public class DeviceLabCLI {
      * <p>getProvision.</p>
      *
      * @param poolId a {@link java.lang.String} object
-     * @param reservationId a {@link java.lang.String} object
+     * @param provisionId a {@link java.lang.String} object
      */
     @CommandLine.Command(
             name = "get-provision",
             description = "Obtains a single provision request metadata"
     )
     public void getProvision(
-            String poolId,
-            String reservationId
+            @CommandLine.Option(names = "--pool-id", required = true) String poolId,
+            @CommandLine.Option(names = "--provision-id", required = true) String provisionId
     ) {
-        executeAndPrint(createService().getProvision(poolId, reservationId));
+        executeAndPrint(createService().getProvision(poolId, provisionId));
     }
 
     /**
@@ -444,7 +443,7 @@ public class DeviceLabCLI {
     public void createProvision(
             @CommandLine.Option(names = "--pool-id", required = true) String poolId,
             @CommandLine.Option(names = "--id", required = true) String id,
-            @CommandLine.Option(names = "--amount", description = "1") int amount,
+            @CommandLine.Option(names = "--amount", defaultValue = "1") int amount,
             @CommandLine.Option(names = "--expires-in") Instant expiresIn
     ) {
         executeAndPrint(createService().createProvision(poolId, CreateProvisionObject.builder()
@@ -539,8 +538,8 @@ public class DeviceLabCLI {
             description = "Cancel a single non-terminal provision request"
     )
     public void cancelProvision(
-            @CommandLine.Option(names = "--pool-id") String poolId,
-            @CommandLine.Option(names = "--provision-id") String provisionId
+            @CommandLine.Option(names = "--pool-id", required = true) String poolId,
+            @CommandLine.Option(names = "--provision-id", required = true) String provisionId
     ) {
         executeAndPrint(createService().cancelProvision(poolId, provisionId));
     }
@@ -556,8 +555,8 @@ public class DeviceLabCLI {
             description = "Deletes a single terminal provision request"
     )
     public void deleteProvision(
-            @CommandLine.Option(names = "--pool-id") String poolId,
-            @CommandLine.Option(names = "--provision-id") String provisionId
+            @CommandLine.Option(names = "--pool-id", required = true) String poolId,
+            @CommandLine.Option(names = "--provision-id", required = true) String provisionId
     ) {
         executeAndPrint(createService().deleteProvision(poolId, provisionId));
     }
