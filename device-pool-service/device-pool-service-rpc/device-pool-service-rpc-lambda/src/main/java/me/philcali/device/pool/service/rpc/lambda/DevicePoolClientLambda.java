@@ -7,7 +7,9 @@
 package me.philcali.device.pool.service.rpc.lambda;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import me.philcali.device.pool.service.api.exception.InvalidInputException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.DevicePoolEndpointType;
 import me.philcali.device.pool.service.rpc.DevicePoolClient;
@@ -42,13 +44,13 @@ public class DevicePoolClientLambda implements DevicePoolClient {
     private final LambdaClient lambda;
     private final ObjectMapper mapper;
 
-    @Inject
     /**
      * <p>Constructor for DevicePoolClientLambda.</p>
      *
      * @param lambda a {@link software.amazon.awssdk.services.lambda.LambdaClient} object
      * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object
      */
+    @Inject
     public DevicePoolClientLambda(
             final LambdaClient lambda,
             final ObjectMapper mapper) {
@@ -82,11 +84,23 @@ public class DevicePoolClientLambda implements DevicePoolClient {
                     .clientContext(Base64.getEncoder().encodeToString(clientContextPayload))
                     .payload(SdkBytes.fromUtf8String(mapper.writeValueAsString(request)))
                     .build());
-            LOGGER.info("Invoked {}: {}", context.endpoint().uri(), response.logResult());
+            LOGGER.info("Invoked {}, status {} : {}", context.endpoint().uri(), response.statusCode(),
+                    Base64.getDecoder().decode(response.logResult()));
             if (response.statusCode() > 200) {
                 throw new RemoteServiceException(response.functionError());
             }
-            return mapper.readValue(response.payload().asByteArray(), responseClass);
+            byte[] payload = response.payload().asByteArray();
+            try {
+                return mapper.readValue(payload, responseClass);
+            } catch (ValueInstantiationException e) {
+                ErrorMessage error = mapper.readValue(payload, ErrorMessage.class);
+                LOGGER.error("Lambda failure response {}: {} {}",
+                        error.errorMessage(),
+                        error.errorType(),
+                        String.join("\n", error.stackTrace()));
+                throw new RemoteServiceException(error.errorMessage(),
+                        InvalidInputException.class.getName().equals(error.errorType()));
+            }
         } catch (IOException e) {
             throw new RemoteServiceException(e);
         } catch (LambdaException e) {

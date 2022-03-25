@@ -31,7 +31,6 @@ import software.amazon.awssdk.services.ssm.model.PingStatus;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -90,6 +89,7 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
                 .publicAddress(instance.ipAddress())
                 .poolId(request.provision().poolId())
                 .updatedAt(instance.lastPingDateTime())
+                .expiresIn(request.provision().expiresIn())
                 .build());
     }
 

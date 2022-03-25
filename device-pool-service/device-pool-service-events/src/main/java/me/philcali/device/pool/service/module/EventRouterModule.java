@@ -12,6 +12,7 @@ import dagger.multibindings.IntoSet;
 import me.philcali.device.pool.service.event.CancelProvisionWorkflowFunction;
 import me.philcali.device.pool.service.event.CancelReservationFunction;
 import me.philcali.device.pool.service.event.ClearResourceLockFunction;
+import me.philcali.device.pool.service.event.CreateDevicePoolFunction;
 import me.philcali.device.pool.service.event.DeleteDevicePoolFunction;
 import me.philcali.device.pool.service.event.DeleteProvisionFunction;
 import me.philcali.device.pool.service.event.DevicePoolEventRouterFunction;
@@ -60,6 +61,13 @@ class EventRouterModule {
     @Singleton
     @IntoSet
     DevicePoolEventRouterFunction providesClearLockFunction(ClearResourceLockFunction function) {
+        return function;
+    }
+
+    @Provides
+    @Singleton
+    @IntoSet
+    DevicePoolEventRouterFunction providesCreateDevicePoolFunction(CreateDevicePoolFunction function) {
         return function;
     }
 }
