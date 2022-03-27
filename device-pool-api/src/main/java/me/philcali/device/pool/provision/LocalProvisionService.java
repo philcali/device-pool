@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,7 +56,11 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
     private final LocalProvisionReaper reapRunnable = new LocalProvisionReaper();
     private final Lock lock = new ReentrantLock();
 
+    @Nullable
     abstract Set<Host> hosts();
+
+    @Nullable
+    abstract HostProvider hostProvider();
 
     @Value.Default
     boolean expireProvisions() {
@@ -123,13 +128,40 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
 
     @Value.Check
     LocalProvisionService validate() {
-        if (hosts().isEmpty()) {
+        if (hosts() == null && hostProvider() == null) {
+            throw new IllegalStateException("set of hosts or hostProvider is required");
+        }
+        if (hosts() != null && hosts().isEmpty()) {
             throw new IllegalArgumentException("hosts must contain at least one entry");
         }
+        if (hosts() != null && hostProvider() == null) {
+            return builder().from(this)
+                    .hosts(null)
+                    .hostProvider(LocalHostProvider.create().reset(hosts()))
+                    .build();
+        }
+        if (hosts() != null && hostProvider() != null) {
+            return builder().from(this)
+                    .hosts(null)
+                    .hostProvider(new DelegatingHostProvider(hosts(), hostProvider()))
+                    .build();
+        }
+
         // Initialize the available hosts from the set of hosts
-        if (!hosts().stream().allMatch(availableHosts::offer)) {
+        if (!hostProvider().hosts().stream().allMatch(availableHosts::offer)) {
             throw new IllegalStateException("could not queue pending hosts");
         }
+        hostProvider().addListener((change, host) -> {
+            lock.lock();
+            if (change == HostProvider.HostChange.Remove && availableHosts.contains(host)) {
+                availableHosts.remove(host);
+                LOGGER.info("Removed {} from available hosts", host.deviceId());
+            } else if (change == HostProvider.HostChange.Add && !availableHosts.contains(host)) {
+                availableHosts.offer(host);
+                LOGGER.info("Added {} to available hosts", host.deviceId());
+            }
+            lock.unlock();
+        });
         // Start the background queue drain, to supply provisions
         executorService().execute(currentRunnable);
         // Start provision expiry
@@ -195,6 +227,9 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
                         continue;
                     }
                     for (int i = 1; i <= entry.input.amount(); i++) {
+                        if (availableHosts.isEmpty()) {
+                            hostProvider().requestGrowth();
+                        }
                         final Host host = availableHosts.take();
                         // Adding a host to a provision is atomic, complete with checks of existence
                         lock.lock();
@@ -253,14 +288,14 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
     /** {@inheritDoc} */
     @Override
     public Host exchange(Reservation reservation) throws ReservationException {
-        return hosts().stream()
+        return hostProvider().hosts().stream()
                 .filter(h -> h.deviceId().equals(reservation.deviceId()))
                 .findFirst()
                 .orElseThrow(() -> new ReservationException("Could not a host with id: " + reservation.deviceId()));
     }
 
     private boolean releaseHost(String deviceId) {
-        return hosts().stream()
+        return hostProvider().hosts().stream()
                 .filter(host -> host.deviceId().equals(deviceId))
                 .filter(host -> !availableHosts.contains(host))
                 .reduce(false,
