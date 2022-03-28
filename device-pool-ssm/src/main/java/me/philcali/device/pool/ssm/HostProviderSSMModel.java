@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest;
 import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationResponse;
 import software.amazon.awssdk.services.ssm.model.InstanceInformation;
 import software.amazon.awssdk.services.ssm.model.InstanceInformationStringFilter;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +44,7 @@ abstract class HostProviderSSMModel extends AbstractHostProvider implements Auto
     private static final int DEFAULT_CACHE_THRESHOLD = 100;
     private final Set<Host> hosts = new HashSet<>();
     private final AtomicReference<InstanceInformation> lastReadInstance = new AtomicReference<>();
+    private final AtomicReference<Integer> pageNumber = new AtomicReference<>();
     private final Lock expansionLock = new ReentrantLock();
 
     abstract SsmClient ssm();
@@ -56,7 +59,7 @@ abstract class HostProviderSSMModel extends AbstractHostProvider implements Auto
         return Executors.newSingleThreadExecutor(runnable -> {
             final Thread thread = new Thread(runnable);
             thread.setDaemon(true);
-            thread.setName("SSM-Provisioning");
+            thread.setName("SSM-HostCache");
             return thread;
         });
     }
@@ -100,13 +103,20 @@ abstract class HostProviderSSMModel extends AbstractHostProvider implements Auto
     private class SSMHostExpansionRunnable implements Runnable {
         @Override
         public void run() {
+            expansionLock.lock();
             try {
                 Comparator<InstanceInformation> byInstanceId = Comparator.comparing(InstanceInformation::instanceId);
                 boolean needsExpansion;
                 final Set<Host> current = new HashSet<>();
+                String nextToken = null;
+                int currentPage = 0;
                 do {
                     DescribeInstanceInformationResponse response = ssm()
-                            .describeInstanceInformation(builder -> builder.filters(filters()));
+                            .describeInstanceInformation(DescribeInstanceInformationRequest.builder()
+                                    .filters(filters())
+                                    .nextToken(nextToken)
+                                    .build());
+                    nextToken = response.nextToken();
                     response
                             .instanceInformationList()
                             .stream()
@@ -122,10 +132,12 @@ abstract class HostProviderSSMModel extends AbstractHostProvider implements Auto
                         // Meaning, the last read instance in this page is less than the one we read previously.
                         thereIsMore = byInstanceId.compare(lastRead, lastReadInstance.get()) <= 0;
                     }
-                    needsExpansion = Objects.nonNull(response.nextToken())
+                    needsExpansion = Objects.nonNull(nextToken)
                             && thereIsMore
-                            && hosts.size() >= cacheThreshold();
+                            && currentPage <= pageNumber.get();
+                    currentPage++;
                 } while (needsExpansion);
+                pageNumber.set(currentPage);
                 // Attempt to add any new ones found
                 current.forEach(host -> {
                     if (hosts.add(host)) {
@@ -133,11 +145,14 @@ abstract class HostProviderSSMModel extends AbstractHostProvider implements Auto
                     }
                 });
                 // Any left over, means it's no longer in the pool
-                hosts.stream().filter(host -> !current.contains(host)).forEach(removed -> {
-                    if (hosts.remove(removed)) {
+                Iterator<Host> hostIterator = hosts.iterator();
+                while (hostIterator.hasNext()) {
+                    Host removed = hostIterator.next();
+                    if (!current.contains(removed)) {
+                        hostIterator.remove();
                         trigger(HostChange.Remove, removed);
                     }
-                });
+                }
             } catch (Exception e) {
                 LOGGER.error("Failed to expand SSM host population {}", poolId(), e);
             } finally {
@@ -146,21 +161,15 @@ abstract class HostProviderSSMModel extends AbstractHostProvider implements Auto
         }
     }
 
-    @Value.Check
-    HostProviderSSMModel validate() {
-        requestGrowth();
-        return this;
-    }
-
     @Override
     public void requestGrowth() {
         super.requestGrowth();
-        expansionLock.lock();
         executorService().execute(new SSMHostExpansionRunnable());
     }
 
     @Override
     public void close() {
         executorService().shutdownNow();
+        ssm().close();
     }
 }
