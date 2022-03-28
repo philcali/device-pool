@@ -148,9 +148,7 @@ public abstract class LocalProvisionService implements ProvisionService, Reserva
         }
 
         // Initialize the available hosts from the set of hosts
-        if (!hostProvider().hosts().stream().allMatch(availableHosts::offer)) {
-            throw new IllegalStateException("could not queue pending hosts");
-        }
+        hostProvider().hosts().forEach(availableHosts::offer);
         hostProvider().addListener((change, host) -> {
             lock.lock();
             if (change == HostProvider.HostChange.Remove && availableHosts.contains(host)) {

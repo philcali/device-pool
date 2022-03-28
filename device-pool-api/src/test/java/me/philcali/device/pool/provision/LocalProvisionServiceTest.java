@@ -99,7 +99,7 @@ class LocalProvisionServiceTest {
         hostProvider.addHost(remaining.stream().findFirst().get());
         service.hostProvider().requestGrowth();
         hostProvider.removeListener((change, host) -> {
-            
+
         });
     }
 
