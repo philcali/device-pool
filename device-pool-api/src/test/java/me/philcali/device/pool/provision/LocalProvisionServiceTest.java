@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -79,6 +80,27 @@ class LocalProvisionServiceTest {
                 .transfers(transfers)
                 .provisionAndReservationService(service)
                 .build();
+    }
+
+    @Test
+    void GIVEN_local_service_is_delegating_WHEN_manipulation_happens_THEN_change_events_propagate() {
+        Set<Host> remaining = new HashSet<>(seededHosts);
+        Set<Host> halfHosts = seededHosts.stream().limit(10).collect(Collectors.toSet());
+        remaining.removeAll(halfHosts);
+        LocalHostProvider hostProvider = new LocalHostProvider(halfHosts);
+        service = LocalProvisionService.builder()
+                .addAllHosts(seededHosts)
+                .hostProvider(hostProvider)
+                .provisionTimeout(TimeUnit.SECONDS.toMillis(5))
+                .build();
+        assertEquals(seededHosts, service.hostProvider().hosts());
+        hostProvider.addHost(halfHosts.stream().findFirst().get());
+        assertEquals(halfHosts, hostProvider.hosts());
+        hostProvider.addHost(remaining.stream().findFirst().get());
+        service.hostProvider().requestGrowth();
+        hostProvider.removeListener((change, host) -> {
+            
+        });
     }
 
     @Test

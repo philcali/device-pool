@@ -84,6 +84,10 @@ class HostProviderSSMTest {
 
     @Test
     void GIVEN_host_provider_is_created_WHEN_requesting_paging_growth_THEN_SSM_is_paged() throws ExecutionException, InterruptedException, TimeoutException {
+        hostProvider = HostProviderSSM.builder()
+                .ssm(ssm)
+                .architecture("armv7")
+                .build();
         DescribeInstanceInformationResponse firstResponse = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
                         instance -> instance.pingStatus(PingStatus.ONLINE).instanceId("aaa-111").ipAddress("10.0.1.1").platformType(PlatformType.LINUX),
