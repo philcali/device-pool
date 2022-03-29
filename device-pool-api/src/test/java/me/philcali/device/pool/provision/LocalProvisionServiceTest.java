@@ -28,11 +28,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -56,18 +59,19 @@ class LocalProvisionServiceTest {
     private Connection connection;
     @Mock
     private ContentTransferAgent agent;
+    private Set<Host> seededHosts;
 
     @BeforeEach
     void setUp() {
-        List<Host> hosts = new ArrayList<>();
-        IntStream.range(0, 20).forEach(index -> hosts.add(Host.builder()
+        seededHosts = new HashSet<>();
+        IntStream.range(0, 20).forEach(index -> seededHosts.add(Host.builder()
                 .hostName("host-" + index)
                 .deviceId("instance-123-" + index)
                 .platform(PlatformOS.of("Linux", "armv8"))
                 .build()));
 
         service = LocalProvisionService.builder()
-                .addAllHosts(hosts)
+                .addAllHosts(seededHosts)
                 .provisionTimeout(TimeUnit.SECONDS.toMillis(5))
                 .build();
 
@@ -76,6 +80,74 @@ class LocalProvisionServiceTest {
                 .transfers(transfers)
                 .provisionAndReservationService(service)
                 .build();
+    }
+
+    @Test
+    void GIVEN_local_service_is_delegating_WHEN_manipulation_happens_THEN_change_events_propagate() {
+        Set<Host> remaining = new HashSet<>(seededHosts);
+        Set<Host> halfHosts = seededHosts.stream().limit(10).collect(Collectors.toSet());
+        remaining.removeAll(halfHosts);
+        LocalHostProvider hostProvider = new LocalHostProvider(halfHosts);
+        service = LocalProvisionService.builder()
+                .addAllHosts(seededHosts)
+                .hostProvider(hostProvider)
+                .provisionTimeout(TimeUnit.SECONDS.toMillis(5))
+                .build();
+        assertEquals(seededHosts, service.hostProvider().hosts());
+        hostProvider.addHost(halfHosts.stream().findFirst().get());
+        assertEquals(halfHosts, hostProvider.hosts());
+        hostProvider.addHost(remaining.stream().findFirst().get());
+        service.hostProvider().requestGrowth();
+        hostProvider.removeListener((change, host) -> {
+
+        });
+    }
+
+    @Test
+    void GIVEN_local_service_WHEN_provisioning_empty_THEN_exception_is_thrown() {
+        assertThrows(IllegalStateException.class, () -> LocalProvisionService.builder().build());
+    }
+
+    @Test
+    void GIVEN_local_service_is_created_WHEN_delegating_providers_THEN_provisioning_is_synced() {
+        LocalHostProvider hostProvider = new LocalHostProvider(seededHosts);
+        LocalProvisionService newService = LocalProvisionService.builder()
+                .from(service)
+                .hosts(seededHosts)
+                .hostProvider(hostProvider)
+                .build();
+        AtomicInteger added = new AtomicInteger();
+        AtomicInteger removed = new AtomicInteger();
+        newService.hostProvider().addListener((change, host) -> {
+            if (change == HostProvider.HostChange.Add) {
+                added.incrementAndGet();
+            } else if (change == HostProvider.HostChange.Remove) {
+                removed.incrementAndGet();
+            }
+        });
+        hostProvider.removeHost(Host.builder()
+                .hostName("host-0")
+                .deviceId("instance-123-0")
+                .platform(PlatformOS.of("Linux", "armv8"))
+                .build());
+        hostProvider.removeHost(Host.builder()
+                .hostName("host-0")
+                .deviceId("instance-123-0")
+                .platform(PlatformOS.of("Linux", "armv8"))
+                .build());
+        hostProvider.addHost(Host.builder()
+                .hostName("host-99")
+                .deviceId("instance-123-99")
+                .platform(PlatformOS.of("Linux", "armv8"))
+                .build());
+        hostProvider.addHost(Host.builder()
+                .hostName("host-99")
+                .deviceId("instance-123-99")
+                .platform(PlatformOS.of("Linux", "armv8"))
+                .build());
+        assertEquals(hostProvider.hosts(), newService.hostProvider().hosts());
+        assertEquals(1, added.get());
+        assertEquals(1, removed.get());
     }
 
     @Test
@@ -144,7 +216,7 @@ class LocalProvisionServiceTest {
 
         ExecutorService newOne = Executors.newCachedThreadPool();
         LocalProvisionService anotherOne = LocalProvisionService.builder()
-                .addAllHosts(service.hosts())
+                .addAllHosts(service.hostProvider().hosts())
                 .expireProvisions(false)
                 .executorService(newOne)
                 .build();
@@ -175,7 +247,7 @@ class LocalProvisionServiceTest {
         );
 
         assertTrue(newService.expireProvisions());
-        assertEquals(expoectedHosts, newService.hosts());
+        assertEquals(expoectedHosts, newService.hostProvider().hosts());
     }
 
     @Test
@@ -186,7 +258,7 @@ class LocalProvisionServiceTest {
 
         assertTrue(newService.expireProvisions());
         assertEquals(TimeUnit.HOURS.toMillis(1), newService.provisionTimeout());
-        assertEquals(1, newService.hosts().size());
+        assertEquals(1, newService.hostProvider().hosts().size());
     }
 
     @Test
