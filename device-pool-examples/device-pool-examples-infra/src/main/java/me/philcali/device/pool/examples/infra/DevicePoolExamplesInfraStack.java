@@ -49,7 +49,7 @@ public class DevicePoolExamplesInfraStack extends Stack {
     public DevicePoolExamplesInfraStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 
-        final String version = "1.0.2-SNAPSHOT";
+        final String version = "1.1.1-SNAPSHOT";
         final String serviceModule = "device-pool-service-backend";
         final String workflowModule = "device-pool-service-events";
         final String ssmIntegrationModule = "device-pool-service-unmanaged-ssm";
