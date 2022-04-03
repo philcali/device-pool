@@ -147,7 +147,6 @@ public class Devices {
             // Unable to create a full DevicePool, resort to overriding things found in file
             DeviceLabProvisionService.Builder provisionBuilder = DeviceLabProvisionService.builder()
                     .deviceLabService(service);
-            cli.loadConfig().map(DeviceLabProvisionService.builder()::fromConfig).ifPresent(provisionBuilder::from);
             Optional.ofNullable(poolId).ifPresent(provisionBuilder::poolId);
             Optional.ofNullable(platform).map(PlatformOS::fromString).ifPresent(provisionBuilder::platform);
             Optional.ofNullable(port).ifPresent(provisionBuilder::port);
