@@ -51,7 +51,7 @@ import java.util.Properties;
  */
 @CommandLine.Command(
         name = "device-lab",
-        version = "1.1.1-SNAPSHOT",
+        version = "1.1.1",
         description = "Device Lab CLI for the control plane",
         subcommands = {CommandLine.HelpCommand.class, Devices.class}
 )
