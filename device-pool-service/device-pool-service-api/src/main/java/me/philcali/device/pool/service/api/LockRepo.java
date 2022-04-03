@@ -54,6 +54,7 @@ public interface LockRepo extends ObjectRepository<LockObject, CreateLockObject,
             return create(resourceKey, CreateLockObject.builder()
                     .holder(put.holder())
                     .value(put.value())
+                    .expiresIn(put.expiresIn())
                     .duration(put.duration())
                     .build());
         } catch (ConflictException e) {

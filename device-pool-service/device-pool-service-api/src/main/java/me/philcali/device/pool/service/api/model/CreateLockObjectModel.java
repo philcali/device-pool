@@ -33,11 +33,11 @@ abstract class CreateLockObjectModel {
 
     @Value.Check
     CreateLockObjectModel validate() {
-        if (Objects.isNull(duration()) && Objects.isNull(expiresIn())) {
-            throw new IllegalStateException("CreateLockObject needs either a duration or expiresIn");
-        }
         if (Objects.nonNull(expiresIn())) {
             return this;
+        }
+        if (Objects.isNull(duration()) && Objects.isNull(expiresIn())) {
+            throw new IllegalStateException("CreateLockObject needs either a duration or expiresIn");
         }
         return CreateLockObject.builder()
                 .from(this)

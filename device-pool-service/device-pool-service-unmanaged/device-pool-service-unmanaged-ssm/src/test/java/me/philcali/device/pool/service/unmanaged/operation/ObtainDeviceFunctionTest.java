@@ -39,12 +39,15 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest;
 import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationResponse;
+import software.amazon.awssdk.services.ssm.model.InstanceInformation;
 import software.amazon.awssdk.services.ssm.model.PingStatus;
 import software.amazon.awssdk.services.ssm.paginators.DescribeInstanceInformationIterable;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @ExtendWith({
         MockitoExtension.class,
@@ -131,37 +135,61 @@ class ObtainDeviceFunctionTest {
                 .build());
         function = new ObtainDeviceFunction(ssm, lockRepo, provisions, poolRepo, Configuration.builder().from(configuration).locking(false).build());
         DescribeInstanceInformationRequest firstRequest = DescribeInstanceInformationRequest.builder()
+                .maxResults(5)
                 .filters(
-                        filter -> filter.key("tag:DevicePool").values("picameras")
+                        filter -> filter.key("tag:DevicePool").values("pool-id")
                 )
                 .build();
-        DescribeInstanceInformationIterable iterable = new DescribeInstanceInformationIterable(ssm, firstRequest);
-        DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
+        DescribeInstanceInformationRequest secondRequest = DescribeInstanceInformationRequest.builder()
+                .maxResults(5)
+                .nextToken("nextToken")
+                .filters(
+                        filter -> filter.key("tag:DevicePool").values("pool-id")
+                )
+                .build();
+        DescribeInstanceInformationResponse firstResponse = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
-                        instance -> instance.instanceId("abc-123").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
-                        instance -> instance.instanceId("efg-456").pingStatus(PingStatus.ONLINE).ipAddress("192.168.1.1").lastPingDateTime(Instant.now())
+                        instance -> instance.instanceId("device-1").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
+                        instance -> instance.instanceId("device-2").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
+                        instance -> instance.instanceId("device-3").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
+                        instance -> instance.instanceId("device-4").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
+                        instance -> instance.instanceId("device-5").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now())
+                )
+                .nextToken("nextToken")
+                .build();
+        DescribeInstanceInformationResponse secondResponse = DescribeInstanceInformationResponse.builder()
+                .instanceInformationList(
+                        instance -> instance.instanceId("device-6").pingStatus(PingStatus.ONLINE).ipAddress("192.168.1.1").lastPingDateTime(Instant.now())
                 )
                 .build();
-        doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(DescribeInstanceInformationRequest.class));
-        doReturn(response).when(ssm).describeInstanceInformation(eq(firstRequest));
-        ObtainDeviceResponse obtainResponse = function.apply(request);
-        assertEquals(Status.SUCCEEDED, obtainResponse.status());
+        when(ssm.describeInstanceInformation(any(DescribeInstanceInformationRequest.class))).then(answer -> {
+            DescribeInstanceInformationRequest request = answer.getArgument(0);
+            if (request.equals(firstRequest)) {
+                return firstResponse;
+            } else {
+                return secondResponse;
+            }
+        });
+        List<InstanceInformation> allInstances = new ArrayList<>();
+        allInstances.addAll(firstResponse.instanceInformationList());
+        allInstances.addAll(secondResponse.instanceInformationList());
+        for (int i = 1; i <= allInstances.size(); i++) {
+            ObtainDeviceResponse obtainResponse = function.apply(request);
+            assertEquals(Status.SUCCEEDED, obtainResponse.status());
+            DeviceObject expectedDevice = DeviceObject.builder()
+                    .id("device-" + i)
+                    .updatedAt(allInstances.get(i - 1).lastPingDateTime())
+                    .poolId("pool-id")
+                    .publicAddress(allInstances.get(i - 1).ipAddress())
+                    .build();
+            assertEquals(expectedDevice, obtainResponse.device());
+        }
         DeviceObject expectedDevice = DeviceObject.builder()
-                .id("abc-123")
-                .updatedAt(response.instanceInformationList().get(0).lastPingDateTime())
+                .id("device-1")
+                .updatedAt(allInstances.get(0).lastPingDateTime())
                 .poolId("pool-id")
-                .publicAddress(response.instanceInformationList().get(0).ipAddress())
+                .publicAddress(allInstances.get(0).ipAddress())
                 .build();
-        assertEquals(expectedDevice, obtainResponse.device());
-        // Get the next one
-        ObtainDeviceResponse nextResponse = function.apply(request);
-        DeviceObject expectedSecondDevice = DeviceObject.builder()
-                .id("efg-456")
-                .updatedAt(response.instanceInformationList().get(1).lastPingDateTime())
-                .poolId("pool-id")
-                .publicAddress(response.instanceInformationList().get(1).ipAddress())
-                .build();
-        assertEquals(expectedSecondDevice, nextResponse.device());
         // Cycles to first
         assertEquals(expectedDevice, function.apply(request).device());
     }
@@ -169,15 +197,14 @@ class ObtainDeviceFunctionTest {
     @Test
     void GIVEN_function_is_created_WHEN_apply_is_called_but_no_instances_THEN_throws_exception() {
         DescribeInstanceInformationRequest firstRequest = DescribeInstanceInformationRequest.builder()
+                .maxResults(5)
                 .filters(
-                        filter -> filter.key("tag:DevicePool").values("picameras")
+                        filter -> filter.key("tag:DevicePool").values("pool-id")
                 )
                 .build();
-        DescribeInstanceInformationIterable iterable = new DescribeInstanceInformationIterable(ssm, firstRequest);
         DescribeInstanceInformationResponse response = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(Collections.emptyList())
                 .build();
-        doReturn(iterable).when(ssm).describeInstanceInformationPaginator(any(DescribeInstanceInformationRequest.class));
         doReturn(response).when(ssm).describeInstanceInformation(eq(firstRequest));
         assertThrows(IllegalStateException.class, () -> function.apply(request));
     }

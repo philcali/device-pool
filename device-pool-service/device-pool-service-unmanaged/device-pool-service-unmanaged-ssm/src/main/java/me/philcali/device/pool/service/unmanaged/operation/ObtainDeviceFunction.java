@@ -21,19 +21,21 @@ import me.philcali.device.pool.service.data.ProvisionRepoDynamo;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceRequest;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
 import me.philcali.device.pool.service.unmanaged.Configuration;
+import me.philcali.device.pool.service.unmanaged.PaginationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest;
+import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationResponse;
 import software.amazon.awssdk.services.ssm.model.InstanceInformation;
 import software.amazon.awssdk.services.ssm.model.PingStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Duration;
-import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Singleton
 public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceRequest, ObtainDeviceResponse> {
@@ -64,26 +66,43 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
     }
 
     public Optional<DeviceObject> cycleToNext(ObtainDeviceRequest request) {
-        Optional<String> deviceId = previouslyObtainedDevice(provisionKey(request));
-        Comparator<InstanceInformation> byInstanceId = Comparator.comparing(InstanceInformation::instanceId);
-        AtomicReference<InstanceInformation> firstInstance = new AtomicReference<>();
-        Optional<InstanceInformation> firstAvailable = ssm.describeInstanceInformationPaginator(DescribeInstanceInformationRequest.builder()
-                        .filters(fb -> fb.key("tag:DevicePool").values(request.provision().poolId()))
-                        .build())
-                .instanceInformationList()
-                .stream()
-                // Only want online instances
-                .filter(instance -> instance.pingStatus().equals(PingStatus.ONLINE))
-                .peek(instance -> firstInstance.accumulateAndGet(instance,
-                        (left, right) -> left == null || byInstanceId.compare(left, right) > 0 ? right : left))
-                .filter(instance -> deviceId.isEmpty() || deviceId.get().compareTo(instance.instanceId()) < 0)
-                .findFirst();
-        // The first available instance, may not be present for a couple of reasons
-        // 1. There are no instances... in this case the first instance will be null
-        // 2. There are no instances "greater" than the last one... here we cycle to first
-        Optional<InstanceInformation> usableInstance = firstAvailable.isPresent() ?
-                firstAvailable :
-                Optional.ofNullable(firstInstance.get());
+        CompositeKey provisionKey = provisionKey(request);
+        Optional<PaginationToken> startingToken = previousStartingToken(provisionKey);
+        DescribeInstanceInformationRequest.Builder builder = DescribeInstanceInformationRequest.builder()
+                .maxResults(PaginationToken.MAX_ITEMS)
+                .filters(fb -> fb.key("tag:DevicePool").values(request.provision().poolId()));
+        startingToken.map(PaginationToken::nextToken).ifPresent(builder::nextToken);
+        DescribeInstanceInformationResponse response = ssm.describeInstanceInformation(builder.build());
+        List<InstanceInformation> instances = response.instanceInformationList();
+        PaginationToken currentToken = startingToken.orElseGet(PaginationToken::create);
+        InstanceInformation firstInstance = null;
+        if (!instances.isEmpty()) {
+            try {
+                firstInstance = instances.get(currentToken.index());
+                currentToken = currentToken.nextPage(response.nextToken());
+                if (Objects.isNull(response.nextToken())) {
+                    // Trigger out of bounds to cycle to first
+                    instances.get(currentToken.index());
+                }
+                LockObject updatedLock = lockRepo.extend(provisionKey, CreateLockObject.builder()
+                        .duration(Duration.ofHours(1))
+                        .holder(request.provision().poolId())
+                        .value(currentToken.toString())
+                        .build());
+                LOGGER.info("Updated provision lock with {} for {}", updatedLock.value(), request.provision().id());
+            } catch (IndexOutOfBoundsException e) {
+                // We need to rotate. Flush cache for first item
+                // TODO: add delete item support
+                lockRepo.extend(provisionKey, CreateLockObject.builder()
+                        .duration(Duration.ofHours(1))
+                        .holder(request.provision().poolId())
+                        .value(PaginationToken.create().toString())
+                        .build());
+                LOGGER.info("Expired paging value for {}", request.provision().id());
+            }
+        }
+        Optional<InstanceInformation> usableInstance = Optional.ofNullable(firstInstance)
+                .filter(instance -> instance.pingStatus().equals(PingStatus.ONLINE));
         return usableInstance.map(instance -> DeviceObject.builder()
                 .id(instance.instanceId())
                 .publicAddress(instance.ipAddress())
@@ -112,22 +131,17 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
         }
     }
 
-    private Optional<String> previouslyObtainedDevice(CompositeKey provisionKey) {
+    private Optional<PaginationToken> previousStartingToken(CompositeKey provisionKey) {
         try {
-            return Optional.ofNullable(lockRepo.get(provisionKey).value());
+            return Optional.ofNullable(lockRepo.get(provisionKey).value())
+                    .map(PaginationToken::fromString);
         } catch (NotFoundException nfe) {
-            LOGGER.info("No previously obtained device for provision {}", provisionKey);
+            LOGGER.info("No previously obtained starting token for provision {}", provisionKey);
             return Optional.empty();
         }
     }
 
-    private ObtainDeviceResponse lockAndTransform(ObtainDeviceRequest request, DeviceObject device) {
-        LockObject updatedLock = lockRepo.extend(provisionKey(request), CreateLockObject.builder()
-                .value(device.id())
-                .holder(device.poolId())
-                .duration(Duration.ofHours(1))
-                .build());
-        LOGGER.info("Updated provision lock with {} for {}", updatedLock.value(), request.provision().id());
+    private ObtainDeviceResponse transformResult(ObtainDeviceRequest request, DeviceObject device) {
         return ObtainDeviceResponse.builder()
                 .device(device)
                 .status(Status.SUCCEEDED)
@@ -141,7 +155,7 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
         switch (configuration.provisionStrategy()) {
             case CYCLIC:
                 return cycleToNext(request)
-                        .map(device -> lockAndTransform(request, device))
+                        .map(device -> transformResult(request, device))
                         .orElseThrow(() -> new IllegalStateException("Could not find an applicable device"));
             default:
                 throw new IllegalArgumentException("Provision strategy of "
