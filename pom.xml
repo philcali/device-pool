@@ -20,6 +20,7 @@
         <module>device-pool-client</module>
         <module>device-pool-examples</module>
         <module>device-pool-cli</module>
+        <module>device-pool-iot</module>
     </modules>
 
     <properties>
@@ -41,7 +42,8 @@
         <junit.version>5.8.2</junit.version>
         <mockito.version>4.3.1</mockito.version>
         <sshd.version>2.8.0</sshd.version>
-        <log4j.version>2.17.0</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
+        <jackson.version>2.13.1</jackson.version>
         <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
         <jacoco.version>0.8.7</jacoco.version>
         <enforcer.version>3.0.0-M2</enforcer.version>
