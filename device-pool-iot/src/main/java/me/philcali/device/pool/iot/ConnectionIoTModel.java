@@ -74,24 +74,22 @@ abstract class ConnectionIoTModel implements Connection, Consumer<MqttMessage> {
             final CompletableFuture<JsonNode> result = new CompletableFuture<>();
             executions.putIfAbsent(commandId.toString(), result);
             JsonNode response = result.get(input.timeout().toSeconds(), TimeUnit.SECONDS);
-            try {
-                final CommandOutput.Builder builder = CommandOutput.builder()
-                        .exitCode(response.get(FIELD_EXIT_CODE).asInt())
-                        .originalInput(input);
-                if (response.has(FIELD_STDOUT)) {
-                    builder.stdout(response.get(FIELD_STDOUT).binaryValue());
-                }
-                if (response.has(FIELD_STDERR)) {
-                    builder.stderr(response.get(FIELD_STDERR).binaryValue());
-                }
-                return builder.build();
-            } catch (IOException ie) {
-                throw new ConnectionException(response.get(FIELD_EXIT_CODE).asInt(), ie.getMessage(), input);
+            final CommandOutput.Builder builder = CommandOutput.builder()
+                    .exitCode(response.get(FIELD_EXIT_CODE).asInt())
+                    .originalInput(input);
+            if (response.has(FIELD_STDOUT)) {
+                builder.stdout(response.get(FIELD_STDOUT).binaryValue());
             }
+            if (response.has(FIELD_STDERR)) {
+                builder.stderr(response.get(FIELD_STDERR).binaryValue());
+            }
+            return builder.build();
         } catch (InterruptedException | TimeoutException e) {
             throw new ConnectionException("Command timed out");
-        } catch (ExecutionException | JsonProcessingException e) {
+        } catch (IOException e) {
             throw new ConnectionException(e);
+        } catch (ExecutionException e) {
+            throw new ConnectionException(e.getCause());
         } finally {
             // Pop any extraneous executions
             executions.remove(commandId.toString());

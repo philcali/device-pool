@@ -14,17 +14,21 @@ import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.exceptions.ConnectionException;
 import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.immutables.value.Value;
 import software.amazon.awssdk.crt.mqtt.MqttClientConnection;
 import software.amazon.awssdk.crt.mqtt.QualityOfService;
 import software.amazon.awssdk.iot.AwsIotMqttConnectionBuilder;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @APIShadowModel
 @Value.Immutable
 public abstract class ConnectionFactoryIoT implements ConnectionFactory {
+    private static final Logger LOGGER = LogManager.getLogger(ConnectionFactoryIoT.class);
     static final String TOPIC_PATTERN = "command/%s/execute";
     static final String RESULT = "/result";
 
@@ -76,19 +80,28 @@ public abstract class ConnectionFactoryIoT implements ConnectionFactory {
 
     @Override
     public Connection connect(Host host) throws ConnectionException {
-        String topic = String.format(TOPIC_PATTERN, host.deviceId());
-        ConnectionIoT newConnection = ConnectionIoT.builder()
-                .connection(connection())
-                .qualityOfService(qualityOfService())
-                .topic(topic)
-                .mapper(mapper())
-                .build();
-        connection().subscribe(topic + RESULT, qualityOfService(), newConnection);
-        return newConnection;
+        final String topic = String.format(TOPIC_PATTERN, host.deviceId());
+        try {
+            ConnectionIoT newConnection = ConnectionIoT.builder()
+                    .connection(connection())
+                    .qualityOfService(qualityOfService())
+                    .topic(topic)
+                    .mapper(mapper())
+                    .build();
+            CompletableFuture<Integer> subscribe = connection().subscribe(topic + RESULT,
+                    qualityOfService(), newConnection);
+            int result = subscribe.get();
+            LOGGER.debug("Successfully subscribed to {}: {}", topic, result);
+            return newConnection;
+        } catch (ExecutionException | InterruptedException ee) {
+            LOGGER.error("Failed to subscribe to {}", topic, ee);
+            throw new ConnectionException(ee);
+        }
     }
 
     @Override
     public void close() throws Exception {
         connection().disconnect().get();
+        connection().close();
     }
 }
