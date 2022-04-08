@@ -18,7 +18,6 @@
         <maven.exec.version>3.0.0</maven.exec.version>
         <dagger.version>2.40.5</dagger.version>
         <jersey.version>2.34</jersey.version>
-        <jackson.version>2.13.1</jackson.version>
     </properties>
 
     <modules>
