@@ -32,6 +32,10 @@
             <version>${device.sdk.version}</version>
         </dependency>
         <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>iot</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>device-pool-api</artifactId>
             <version>${project.parent.version}</version>

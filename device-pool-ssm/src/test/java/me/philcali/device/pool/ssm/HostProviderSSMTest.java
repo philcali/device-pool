@@ -64,6 +64,7 @@ class HostProviderSSMTest {
                 .build();
         DescribeInstanceInformationRequest initialRequest = DescribeInstanceInformationRequest.builder()
                 .filters(hostProvider.filters())
+                .maxResults(100)
                 .build();
         doReturn(response).when(ssm).describeInstanceInformation(eq(initialRequest));
         AtomicInteger count = new AtomicInteger();
@@ -110,6 +111,7 @@ class HostProviderSSMTest {
                 .build();
         DescribeInstanceInformationRequest initialRequest = DescribeInstanceInformationRequest.builder()
                 .filters(hostProvider.filters())
+                .maxResults(100)
                 .build();
         AtomicInteger callCount = new AtomicInteger();
         when(ssm.describeInstanceInformation(eq(initialRequest))).then(answer -> {
@@ -121,6 +123,7 @@ class HostProviderSSMTest {
         });
         doReturn(thirdResponse).when(ssm).describeInstanceInformation(eq(DescribeInstanceInformationRequest.builder()
                 .filters(hostProvider.filters())
+                .maxResults(100)
                 .nextToken("abc-123")
                 .build()));
         final Set<Host> reactiveSet = new HashSet<>();
