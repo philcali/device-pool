@@ -6,6 +6,7 @@
 
 package me.philcali.device.pool.iot;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.exceptions.ConnectionException;
@@ -39,12 +40,18 @@ public abstract class ConnectionFactoryShadow implements ConnectionFactory {
     @Nullable
     abstract String shadowName();
 
+    @Value.Default
+    ObjectMapper mapper() {
+        return new ObjectMapper();
+    }
+
     @Override
     public Connection connect(final Host host) throws ConnectionException {
         return ConnectionShadow.builder()
                 .dataPlaneClient(dataPlaneClient())
                 .shadowName(shadowName())
                 .host(host)
+                .mapper(mapper())
                 .build();
     }
 

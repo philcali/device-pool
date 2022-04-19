@@ -37,13 +37,13 @@ import java.util.function.Consumer;
 @Value.Immutable
 abstract class ConnectionIoTModel implements Connection, Consumer<MqttMessage> {
     private static final Logger LOGGER = LogManager.getLogger(ConnectionIoT.class);
-    private static final String FIELD_ID = "id";
-    private static final String FIELD_LINE = "line";
-    private static final String FIELD_ARGS = "args";
-    private static final String FIELD_INPUT = "input";
-    private static final String FIELD_EXIT_CODE = "exitCode";
-    private static final String FIELD_STDOUT = "stdout";
-    private static final String FIELD_STDERR = "stderr";
+    static final String FIELD_ID = "id";
+    static final String FIELD_LINE = "line";
+    static final String FIELD_ARGS = "args";
+    static final String FIELD_INPUT = "input";
+    static final String FIELD_EXIT_CODE = "exitCode";
+    static final String FIELD_STDOUT = "stdout";
+    static final String FIELD_STDERR = "stderr";
     private final Map<String, CompletableFuture<JsonNode>> executions = new ConcurrentHashMap<>();
 
     abstract MqttClientConnection connection();
