@@ -14,6 +14,7 @@ import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import org.immutables.value.Value;
 import software.amazon.awssdk.services.iot.IotClient;
+import software.amazon.awssdk.services.iot.model.DescribeEndpointRequest;
 import software.amazon.awssdk.services.iotdataplane.IotDataPlaneClient;
 
 import javax.annotation.Nullable;
@@ -25,7 +26,10 @@ public abstract class ConnectionFactoryShadow implements ConnectionFactory {
     private static final String DEFAULT_ENDPOINT_TYPE = "iot:Data-ATS";
 
     public static String describeDataEndpoint(IotClient client) {
-        return client.describeEndpoint(b -> b.endpointType(DEFAULT_ENDPOINT_TYPE)).endpointAddress();
+        return client.describeEndpoint(DescribeEndpointRequest.builder()
+                .endpointType(DEFAULT_ENDPOINT_TYPE)
+                .build())
+                .endpointAddress();
     }
 
     @Value.Default
@@ -35,6 +39,14 @@ public abstract class ConnectionFactoryShadow implements ConnectionFactory {
                     .endpointOverride(URI.create(describeDataEndpoint(client)))
                     .build();
         }
+    }
+
+    public static final class Builder extends ImmutableConnectionFactoryShadow.Builder {
+
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Nullable
