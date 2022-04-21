@@ -6,9 +6,12 @@
 
 package me.philcali.device.pool.service.health;
 
+import me.philcali.device.pool.service.api.DevicePoolRepo;
+import me.philcali.device.pool.service.api.model.CompositeKey;
+import me.philcali.device.pool.service.api.model.QueryParams;
+import me.philcali.device.pool.service.data.DevicePoolRepoDynamo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,20 +19,22 @@ import javax.inject.Singleton;
 @Singleton
 public class ColdStartTrigger implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ColdStartTrigger.class);
-    private final DynamoDbClient client;
+    private final DevicePoolRepo pools;
 
     @Inject
-    public ColdStartTrigger(DynamoDbClient client) {
-        this.client = client;
+    public ColdStartTrigger(DevicePoolRepoDynamo pools) {
+        this.pools = pools;
     }
 
     @Override
     public void run() {
         try {
-            client.listTables();
+            pools.list(CompositeKey.of("012345678912"), QueryParams.builder()
+                    .limit(1)
+                    .build());
             LOGGER.info("Done");
         } catch (Exception e) {
-            LOGGER.warn("Failed to list tables, but that's ok {}", e.getMessage());
+            LOGGER.warn("Failed to list pools, but that's ok {}", e.getMessage());
         }
     }
 }
