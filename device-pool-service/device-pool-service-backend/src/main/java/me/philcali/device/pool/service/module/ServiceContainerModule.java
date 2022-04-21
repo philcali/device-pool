@@ -11,6 +11,7 @@ import dagger.Module;
 import dagger.Provides;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 import javax.inject.Singleton;
 import java.util.Optional;
@@ -33,11 +34,16 @@ class ServiceContainerModule {
     @Singleton
     static ResourceConfig application(ApplicationBinder binder) {
         return new ResourceConfig()
+                .property(ServerProperties.WADL_FEATURE_DISABLE, true)
+                .property(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true)
+                .property(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, true)
+                .property(ServerProperties.METAINF_SERVICES_LOOKUP_DISABLE, true)
+                .property(ServerProperties.MOXY_JSON_FEATURE_DISABLE, true)
+                .property(ServerProperties.BV_FEATURE_DISABLE, true)
                 .packages(
                         "me.philcali.device.pool.service.resource",
                         "me.philcali.device.pool.service.exception",
                         "me.philcali.device.pool.service.context")
-                .property("jersey.config.server.wadl.disableWadl", true)
                 .register(JacksonFeature.class)
                 .register(binder);
     }
