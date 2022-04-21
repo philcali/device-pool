@@ -6,6 +6,7 @@
 
 package me.philcali.device.pool.service;
 
+import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import me.philcali.device.pool.service.module.DaggerDevicePoolsComponent;
@@ -22,27 +23,18 @@ import java.io.OutputStream;
  * @version $Id: $Id
  */
 public class DevicePools implements RequestStreamHandler {
-    private final DevicePoolsComponent component;
+    private static final DevicePoolsComponent component;
+    private static final JerseyLambdaContainerHandler handler;
 
-    /**
-     * <p>Constructor for DevicePools.</p>
-     *
-     * @param component a {@link me.philcali.device.pool.service.module.DevicePoolsComponent} object
-     */
-    public DevicePools(DevicePoolsComponent component) {
-        this.component = component;
-    }
-
-    /**
-     * <p>Constructor for DevicePools.</p>
-     */
-    public DevicePools() {
-        this(DaggerDevicePoolsComponent.create());
+    static {
+        component = DaggerDevicePoolsComponent.create();
+        handler = component.handler();
+        component.coldStartTrigger().run();
     }
 
     /** {@inheritDoc} */
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        component.handler().proxyStream(inputStream, outputStream, context);
+        handler.proxyStream(inputStream, outputStream, context);
     }
 }

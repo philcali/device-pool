@@ -8,6 +8,7 @@ package me.philcali.device.pool.service.module;
 
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import dagger.Component;
+import me.philcali.device.pool.service.health.ColdStartTrigger;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.inject.Singleton;
@@ -25,6 +26,8 @@ import javax.inject.Singleton;
 })
 @Singleton
 public interface DevicePoolsComponent {
+    ColdStartTrigger coldStartTrigger();
+
     /**
      * <p>handler.</p>
      *
