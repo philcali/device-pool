@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>device-pool-service-unmanaged-ssm</module>
+        <module>device-pool-service-unmanaged-iot</module>
     </modules>
 
 </project>
