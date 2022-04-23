@@ -23,21 +23,20 @@ import java.util.function.Function;
 class OperationModule {
     @Provides
     @Singleton
-    static Configuration providesConfiguration() {
+    Configuration providesConfiguration() {
         return Configuration.create();
     }
 
     @Provides
     @Singleton
-    LockingConfiguration providesLocking(Configuration configuration) {
+    LockingConfiguration providesLockingConfiguration(Configuration configuration) {
         return configuration;
     }
 
     @Provides
-    @Singleton
     @IntoMap
     @StringKey("ObtainDevice")
-    static Function providesObtainDeviceFunction(
+    Function providesObtainDeviceFunction(
             LockingOperationFunction<ObtainDeviceRequest> locking,
             ObtainDeviceFunction function) {
         return locking.andThen(function);

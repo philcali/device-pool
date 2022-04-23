@@ -16,10 +16,10 @@ import org.immutables.value.Value;
 @ApiModel
 @Value.Immutable
 @JsonDeserialize(as = CancelReservationRequest.class)
-abstract class CancelReservationRequestModel {
-    abstract CompositeKey accountKey();
+abstract class CancelReservationRequestModel implements AccountRequest {
+    public abstract CompositeKey accountKey();
 
-    abstract ProvisionObject provision();
+    public abstract ProvisionObject provision();
 
     abstract ReservationObject reservation();
 }

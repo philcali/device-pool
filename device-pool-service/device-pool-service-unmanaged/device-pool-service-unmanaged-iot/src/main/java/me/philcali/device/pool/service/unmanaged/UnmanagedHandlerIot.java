@@ -9,7 +9,7 @@ package me.philcali.device.pool.service.unmanaged;
 import me.philcali.device.pool.service.unmanaged.module.DaggerUnmanagedComponent;
 import me.philcali.device.pool.service.unmanaged.module.UnmanagedComponent;
 
-public class ObtainDevicesSSM extends AbstractUnmanagedHandler {
+public class UnmanagedHandlerIot extends AbstractUnmanagedHandler {
     private static final UnmanagedComponent COMPONENT = DaggerUnmanagedComponent.create();
 
     @Override

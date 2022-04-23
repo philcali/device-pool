@@ -18,10 +18,10 @@ import javax.annotation.Nullable;
 @ApiModel
 @Value.Immutable
 @JsonDeserialize(as = ObtainDeviceRequest.class)
-abstract class ObtainDeviceRequestModel {
-    abstract CompositeKey accountKey();
+abstract class ObtainDeviceRequestModel implements AccountRequest {
+    public abstract CompositeKey accountKey();
 
-    abstract ProvisionObject provision();
+    public abstract ProvisionObject provision();
 
     @Nullable
     abstract ReservationObject reservation();

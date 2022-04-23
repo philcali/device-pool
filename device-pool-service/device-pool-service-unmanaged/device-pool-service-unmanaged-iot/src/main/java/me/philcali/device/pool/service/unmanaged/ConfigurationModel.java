@@ -6,6 +6,7 @@
 
 package me.philcali.device.pool.service.unmanaged;
 
+
 import me.philcali.device.pool.model.ApiModel;
 import me.philcali.device.pool.service.unmanaged.model.LockingConfiguration;
 import org.immutables.value.Value;
@@ -14,9 +15,9 @@ import java.time.Duration;
 
 @ApiModel
 @Value.Immutable
-public abstract class ConfigurationModel implements LockingConfiguration {
-    private static final String ENV_PROVISION_STRATEGY = "PROVISION_STRATEGY";
-    private static final String ENV_LOCKING = "LOCKING";
+abstract class  ConfigurationModel implements LockingConfiguration {
+    private static final String ENV_ENABLE_RECURSION = "ENABLE_RECURSION";
+    private static final String ENV_ENABLE_LOCKING = "ENABLE_LOCKING";
     private static final String ENV_LOCKING_DURATION = "LOCKING_DURATION";
 
     public static Configuration create() {
@@ -24,13 +25,13 @@ public abstract class ConfigurationModel implements LockingConfiguration {
     }
 
     @Value.Default
-    ProvisionStrategy provisionStrategy() {
-        return ProvisionStrategy.valueOf(System.getenv(ENV_PROVISION_STRATEGY));
+    boolean recursive() {
+        return Boolean.parseBoolean(System.getenv(ENV_ENABLE_RECURSION));
     }
 
     @Value.Default
     public boolean locking() {
-        return Boolean.parseBoolean(System.getenv(ENV_LOCKING));
+        return Boolean.parseBoolean(System.getenv(ENV_ENABLE_LOCKING));
     }
 
     @Value.Default

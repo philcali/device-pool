@@ -17,8 +17,6 @@ import me.philcali.device.pool.service.api.model.DeviceObject;
 import me.philcali.device.pool.service.api.model.ProvisionObject;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceRequest;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
-import me.philcali.device.pool.service.unmanaged.module.UnmanagedComponent;
-import me.philcali.device.pool.service.unmanaged.operation.OperationFunction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +31,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,13 +41,12 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 class OperationHandlerTest {
     private OperationHandler handler;
-    private Map<String, OperationFunction> functions;
+    private Map<String, Function> functions;
 
     @Mock
-    OperationFunction obtainDevice;
+    Function obtainDevice;
 
-    @Mock
-    UnmanagedComponent component;
+    AbstractUnmanagedHandler component;
 
     @Mock
     Context context;
@@ -70,8 +68,6 @@ class OperationHandlerTest {
         mapper.registerModule(new JavaTimeModule());
         handler = new OperationHandler(mapper, functions);
 
-        doReturn(ObtainDeviceRequest.class).when(obtainDevice).inputType();
-
         originalRequest = ObtainDeviceRequest.builder()
                 .accountKey(CompositeKey.of("012345678912"))
                 .provision(ProvisionObject.of(Instant.now(), UUID.randomUUID().toString(), Status.PROVISIONING))
@@ -79,6 +75,13 @@ class OperationHandlerTest {
 
         byte[] outputBytes = mapper.writeValueAsBytes(originalRequest);
         inputStream = new ByteArrayInputStream(outputBytes);
+
+        component = new AbstractUnmanagedHandler() {
+            @Override
+            protected OperationHandler handler() {
+                return handler;
+            }
+        };
     }
 
     @Test
@@ -86,9 +89,8 @@ class OperationHandlerTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         assertThrows(IllegalArgumentException.class,
                 () -> handler.accept("CancelReservation", inputStream, outputStream));
-
-        ObtainDevicesSSM ssm = new ObtainDevicesSSM(component);
-        doReturn(handler).when(component).handler();
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.accept("UnknownOperation", inputStream, outputStream));
 
         ObtainDeviceResponse expectedResponse = ObtainDeviceResponse.builder()
                 .accountKey(originalRequest.accountKey())
@@ -103,7 +105,7 @@ class OperationHandlerTest {
         doReturn(expectedResponse).when(obtainDevice).apply(eq(originalRequest));
         doReturn(clientContext).when(context).getClientContext();
         doReturn(Map.of("operationName", "ObtainDevice")).when(clientContext).getCustom();
-        ssm.handleRequest(inputStream, outputStream, context);
+        component.handleRequest(inputStream, outputStream, context);
         assertEquals(expectedResponse, mapper.readValue(outputStream.toByteArray(), ObtainDeviceResponse.class));
     }
 }

@@ -6,7 +6,9 @@
 
 package me.philcali.device.pool.service.unmanaged.operation;
 
+import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.Status;
+import me.philcali.device.pool.provision.ExpandingHostProvider;
 import me.philcali.device.pool.service.api.DevicePoolRepo;
 import me.philcali.device.pool.service.api.LockRepo;
 import me.philcali.device.pool.service.api.ProvisionRepo;
@@ -22,23 +24,21 @@ import me.philcali.device.pool.service.rpc.model.ObtainDeviceRequest;
 import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
 import me.philcali.device.pool.service.unmanaged.Configuration;
 import me.philcali.device.pool.service.unmanaged.PaginationToken;
+import me.philcali.device.pool.ssm.HostExpansionSSM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest;
-import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationResponse;
-import software.amazon.awssdk.services.ssm.model.InstanceInformation;
-import software.amazon.awssdk.services.ssm.model.PingStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Duration;
-import java.util.List;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Singleton
-public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceRequest, ObtainDeviceResponse> {
+public class ObtainDeviceFunction implements Function<ObtainDeviceRequest, ObtainDeviceResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObtainDeviceFunction.class);
     private final SsmClient ssm;
     private final LockRepo lockRepo;
@@ -55,80 +55,60 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
             final Configuration configuration) {
         this.lockRepo = lockRepo;
         this.ssm = ssm;
-        this.provisions = provisions;
         this.poolRepo = poolRepo;
+        this.provisions = provisions;
         this.configuration = configuration;
     }
 
-    @Override
-    public Class<ObtainDeviceRequest> inputType() {
-        return ObtainDeviceRequest.class;
+    private ExpandingHostProvider.ExpansionFunction createHostFunction(String poolId) {
+        return HostExpansionSSM.builder()
+                .ssm(ssm)
+                .poolId(poolId)
+                .architecture("Unknown")
+                .build();
     }
 
     public Optional<DeviceObject> cycleToNext(ObtainDeviceRequest request) {
         CompositeKey provisionKey = provisionKey(request);
         Optional<PaginationToken> startingToken = previousStartingToken(provisionKey);
-        DescribeInstanceInformationRequest.Builder builder = DescribeInstanceInformationRequest.builder()
-                .maxResults(PaginationToken.MAX_ITEMS)
-                .filters(fb -> fb.key("tag:DevicePool").values(request.provision().poolId()));
-        startingToken.map(PaginationToken::nextToken).ifPresent(builder::nextToken);
-        DescribeInstanceInformationResponse response = ssm.describeInstanceInformation(builder.build());
-        List<InstanceInformation> instances = response.instanceInformationList();
+        ExpandingHostProvider.ExpansionFunction hosts = createHostFunction(request.provision().poolId());
         PaginationToken currentToken = startingToken.orElseGet(PaginationToken::create);
-        InstanceInformation firstInstance = null;
-        if (!instances.isEmpty()) {
+        ExpandingHostProvider.NextSetHosts nextPage = hosts.apply(currentToken.nextToken(), PaginationToken.MAX_ITEMS);
+        Host firstInstance = null;
+        if (!nextPage.hosts().isEmpty()) {
             try {
-                firstInstance = instances.get(currentToken.index());
-                currentToken = currentToken.nextPage(response.nextToken());
-                if (Objects.isNull(response.nextToken())) {
+                firstInstance = nextPage.hosts().get(currentToken.index());
+                currentToken = currentToken.nextPage(nextPage.nextToken());
+                if (Objects.isNull(nextPage.nextToken())) {
                     // Trigger out of bounds to cycle to first
-                    instances.get(currentToken.index());
+                    nextPage.hosts().get(currentToken.index());
                 }
-                LockObject updatedLock = lockRepo.extend(provisionKey, CreateLockObject.builder()
-                        .duration(Duration.ofHours(1))
-                        .holder(request.provision().poolId())
-                        .value(currentToken.toString())
-                        .build());
-                LOGGER.info("Updated provision lock with {} for {}", updatedLock.value(), request.provision().id());
             } catch (IndexOutOfBoundsException e) {
                 // We need to rotate. Flush cache for first item
                 // TODO: add delete item support
-                lockRepo.extend(provisionKey, CreateLockObject.builder()
-                        .duration(Duration.ofHours(1))
-                        .holder(request.provision().poolId())
-                        .value(PaginationToken.create().toString())
-                        .build());
+                currentToken = PaginationToken.create();
                 LOGGER.info("Expired paging value for {}", request.provision().id());
             }
         }
-        Optional<InstanceInformation> usableInstance = Optional.ofNullable(firstInstance)
-                .filter(instance -> instance.pingStatus().equals(PingStatus.ONLINE));
-        return usableInstance.map(instance -> DeviceObject.builder()
-                .id(instance.instanceId())
-                .publicAddress(instance.ipAddress())
+        LockObject updatedLock = lockRepo.extend(provisionKey, CreateLockObject.builder()
+                .duration(Duration.ofHours(1))
+                .holder(request.provision().poolId())
+                .value(currentToken.toString())
+                .build());
+        LOGGER.info("Updated provision lock with {} for {}, expires in {}",
+                updatedLock.value(), request.provision().id(), updatedLock.expiresIn());
+        return Optional.ofNullable(firstInstance).map(instance -> DeviceObject.builder()
+                .id(instance.deviceId())
+                .publicAddress(instance.hostName())
                 .poolId(request.provision().poolId())
-                .updatedAt(instance.lastPingDateTime())
+                .updatedAt(Instant.now())
                 .expiresIn(request.provision().expiresIn())
                 .build());
     }
 
     private CompositeKey provisionKey(ObtainDeviceRequest request) {
-        return provisions.resourceKey(request.accountKey(), request.provision().id());
-    }
-
-    private void acquirePoolLockOrFail(final ObtainDeviceRequest request) {
-        if (configuration.locking()) {
-            CompositeKey poolKey = poolRepo.resourceKey(request.accountKey(), request.provision().poolId());
-            // Before obtaining any device from SSM, we'll check if there's an active lock on the pool
-            // We want to avoid conflicting device acquisition between provision requests
-            LockObject lockObject = lockRepo.extend(poolKey, CreateLockObject.builder()
-                    .duration(configuration.lockingDuration())
-                    .holder(provisionKey(request).toString())
-                    .build());
-            LOGGER.info("Obtained a lock for provision {}, expires in {}",
-                    request.provision().id(),
-                    lockObject.expiresIn());
-        }
+        CompositeKey poolKey = poolRepo.resourceKey(request.accountKey(), request.provision().poolId());
+        return provisions.resourceKey(poolKey, request.provision().id());
     }
 
     private Optional<PaginationToken> previousStartingToken(CompositeKey provisionKey) {
@@ -151,7 +131,6 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
 
     @Override
     public ObtainDeviceResponse apply(final ObtainDeviceRequest request) {
-        acquirePoolLockOrFail(request);
         switch (configuration.provisionStrategy()) {
             case CYCLIC:
                 return cycleToNext(request)

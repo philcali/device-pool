@@ -8,17 +8,15 @@ package me.philcali.device.pool.service.unmanaged.module;
 
 import dagger.Module;
 import dagger.Provides;
-import me.philcali.device.pool.provision.ExpandingHostProvider;
-import me.philcali.device.pool.ssm.HostExpansionSSM;
-import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.iot.IotClient;
 
 import javax.inject.Singleton;
 
 @Module
-class SSMModule {
+class IotModule {
     @Provides
     @Singleton
-    static SsmClient providesSSMClient() {
-        return SsmClient.create();
+    static IotClient providesIotClient() {
+        return IotClient.create();
     }
 }
