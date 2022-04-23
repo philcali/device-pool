@@ -8,14 +8,14 @@ package me.philcali.device.pool.service.unmanaged;
 
 
 import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.service.unmanaged.model.LockingConfiguration;
 import org.immutables.value.Value;
 
 import java.time.Duration;
 
 @ApiModel
 @Value.Immutable
-abstract class  ConfigurationModel {
-    private static final String ENV_THING_GROUP_NAME = "THING_GROUP_NAME";
+abstract class  ConfigurationModel implements LockingConfiguration {
     private static final String ENV_ENABLE_RECURSION = "ENABLE_RECURSION";
     private static final String ENV_ENABLE_LOCKING = "ENABLE_LOCKING";
     private static final String ENV_LOCKING_DURATION = "LOCKING_DURATION";
@@ -25,22 +25,17 @@ abstract class  ConfigurationModel {
     }
 
     @Value.Default
-    String thingGroup() {
-        return System.getenv(ENV_THING_GROUP_NAME);
-    }
-
-    @Value.Default
     boolean recursive() {
         return Boolean.parseBoolean(System.getenv(ENV_ENABLE_RECURSION));
     }
 
     @Value.Default
-    boolean locking() {
+    public boolean locking() {
         return Boolean.parseBoolean(System.getenv(ENV_ENABLE_LOCKING));
     }
 
     @Value.Default
-    Duration lockingDuration() {
+    public Duration lockingDuration() {
         return Duration.ofSeconds(Long.parseLong(System.getenv(ENV_LOCKING_DURATION)));
     }
 }

@@ -6,6 +6,8 @@
 
 package me.philcali.device.pool.service.unmanaged.operation;
 
+import me.philcali.device.pool.iot.HostExpansionIoT;
+import me.philcali.device.pool.model.Status;
 import me.philcali.device.pool.provision.ExpandingHostProvider;
 import me.philcali.device.pool.service.api.DevicePoolRepo;
 import me.philcali.device.pool.service.api.LockRepo;
@@ -23,52 +25,38 @@ import me.philcali.device.pool.service.rpc.model.ObtainDeviceResponse;
 import me.philcali.device.pool.service.unmanaged.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.services.iot.IotClient;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Singleton
-public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceRequest, ObtainDeviceResponse> {
+public class ObtainDeviceFunction implements Function<ObtainDeviceRequest, ObtainDeviceResponse> {
     private static final int MAX_LEASES = 1;
     private static final Logger LOGGER = LogManager.getLogger(ObtainDeviceFunction.class);
-    private final Configuration configuration;
     private final LockRepo lockRepo;
     private final ProvisionRepo provisionRepo;
     private final DevicePoolRepo devicePoolRepo;
+    private final IotClient iot;
+    private final Configuration configuration;
 
-    private final ExpandingHostProvider.ExpansionFunction hosts;
 
     @Inject
     public ObtainDeviceFunction(
-            ExpandingHostProvider.ExpansionFunction hosts,
+            IotClient iot,
             Configuration configuration,
             LockRepoDynamo lockRepo,
             ProvisionRepoDynamo provisionRepo,
             DevicePoolRepoDynamo devicePoolRepo) {
-        this.hosts = hosts;
+        this.iot = iot;
         this.configuration = configuration;
         this.lockRepo = lockRepo;
         this.provisionRepo = provisionRepo;
         this.devicePoolRepo = devicePoolRepo;
-    }
-
-    private void acquireLockOrFail(ObtainDeviceRequest request) {
-        if (configuration.locking()) {
-            CompositeKey poolKey = devicePoolRepo.resourceKey(request.accountKey(), request.provision().poolId());
-
-            LockObject lockObject = lockRepo.extend(poolKey, CreateLockObject.builder()
-                    .duration(configuration.lockingDuration())
-                    .holder(provisionRepo.resourceKey(poolKey, request.provision().id()).toString())
-                    .value(configuration.thingGroup())
-                    .build());
-            LOGGER.info("Successfully locked pool {} for {}, expires {}",
-                    request.provision().poolId(),
-                    request.provision().id(),
-                    lockObject.expiresIn());
-        }
     }
 
     private String previousToken(CompositeKey provisionKey) {
@@ -78,25 +66,34 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
                     .filter(v -> !v.isEmpty())
                     .orElse(null);
         } catch (NotFoundException nfe) {
-            LOGGER.info("No lock found, rotating");
+            LOGGER.info("No lock found for {}, rotating", provisionKey);
         }
         return nextToken;
     }
 
+    private ExpandingHostProvider.ExpansionFunction createHostExpansion(String poolId) {
+        return HostExpansionIoT.builder()
+                .iot(iot)
+                .thingGroup(poolId)
+                .recursive(configuration.recursive())
+                .build();
+    }
+
     @Override
     public ObtainDeviceResponse apply(ObtainDeviceRequest request) {
-        acquireLockOrFail(request);
         CompositeKey poolKey = devicePoolRepo.resourceKey(request.accountKey(), request.provision().poolId());
         CompositeKey provisionKey = provisionRepo.resourceKey(poolKey, request.provision().id());
-        ExpandingHostProvider.NextSetHosts nextSet = hosts.apply(previousToken(provisionKey), MAX_LEASES);
+        ExpandingHostProvider.NextSetHosts nextSet = createHostExpansion(request.provision().poolId())
+                .apply(previousToken(provisionKey), MAX_LEASES);
         LockObject lock = lockRepo.extend(provisionKey, CreateLockObject.builder()
                 .holder(request.provision().poolId())
                 .duration(Duration.ofHours(1))
                 .value(Optional.ofNullable(nextSet.nextToken()).orElse(""))
                 .build());
-        LOGGER.info("Extended held lock for {} for {}, expires at {}",
+        LOGGER.info("Extended held lock for {} for {}, expires in {}",
                 provisionKey, request.provision().poolId(), lock.expiresIn());
         return nextSet.hosts().stream().findFirst().map(device -> ObtainDeviceResponse.builder()
+                .status(Status.SUCCEEDED)
                 .device(DeviceObject.builder()
                         .id(device.deviceId())
                         .publicAddress(device.hostName())
@@ -106,11 +103,6 @@ public class ObtainDeviceFunction implements OperationFunction<ObtainDeviceReque
                         .build())
                 .accountKey(request.accountKey())
                 .build())
-                .orElseThrow(() -> new IllegalStateException("Could not find an appropriate IoT device"));
-    }
-
-    @Override
-    public Class<ObtainDeviceRequest> inputType() {
-        return ObtainDeviceRequest.class;
+                .orElseThrow(() -> new IllegalStateException("Could not find an appropriate AWS IoT thing"));
     }
 }

@@ -8,6 +8,8 @@ package me.philcali.device.pool.service.unmanaged.module;
 
 import dagger.Module;
 import dagger.Provides;
+import me.philcali.device.pool.provision.ExpandingHostProvider;
+import me.philcali.device.pool.ssm.HostExpansionSSM;
 import software.amazon.awssdk.services.ssm.SsmClient;
 
 import javax.inject.Singleton;

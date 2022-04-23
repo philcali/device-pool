@@ -8,20 +8,19 @@ package me.philcali.device.pool.service.unmanaged;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import me.philcali.device.pool.service.unmanaged.module.DaggerUnmanagedComponent;
-import me.philcali.device.pool.service.unmanaged.module.UnmanagedComponent;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class ObtainDevicesIoT implements RequestStreamHandler {
+public abstract class AbstractUnmanagedHandler implements RequestStreamHandler {
     private static final String OPERATION_NAME = "operationName";
-    private static final UnmanagedComponent COMPONENT = DaggerUnmanagedComponent.create();
+
+    protected abstract OperationHandler handler();
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         String operationName = context.getClientContext().getCustom().get(OPERATION_NAME);
-        COMPONENT.handler().accept(operationName, inputStream, outputStream);
+        handler().accept(operationName, inputStream, outputStream);
     }
 }

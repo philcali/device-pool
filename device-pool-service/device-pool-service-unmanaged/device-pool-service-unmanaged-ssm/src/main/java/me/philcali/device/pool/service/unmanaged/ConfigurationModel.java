@@ -7,13 +7,14 @@
 package me.philcali.device.pool.service.unmanaged;
 
 import me.philcali.device.pool.model.ApiModel;
+import me.philcali.device.pool.service.unmanaged.model.LockingConfiguration;
 import org.immutables.value.Value;
 
 import java.time.Duration;
 
 @ApiModel
 @Value.Immutable
-public abstract class ConfigurationModel {
+public abstract class ConfigurationModel implements LockingConfiguration {
     private static final String ENV_PROVISION_STRATEGY = "PROVISION_STRATEGY";
     private static final String ENV_LOCKING = "LOCKING";
     private static final String ENV_LOCKING_DURATION = "LOCKING_DURATION";
@@ -28,12 +29,12 @@ public abstract class ConfigurationModel {
     }
 
     @Value.Default
-    boolean locking() {
+    public boolean locking() {
         return Boolean.parseBoolean(System.getenv(ENV_LOCKING));
     }
 
     @Value.Default
-    Duration lockingDuration() {
+    public Duration lockingDuration() {
         return Duration.ofSeconds(Long.parseLong(System.getenv(ENV_LOCKING_DURATION)));
     }
 }

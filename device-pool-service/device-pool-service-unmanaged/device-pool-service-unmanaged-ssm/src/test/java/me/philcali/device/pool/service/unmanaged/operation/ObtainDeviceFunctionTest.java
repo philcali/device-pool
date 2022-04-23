@@ -9,7 +9,6 @@ package me.philcali.device.pool.service.unmanaged.operation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.philcali.device.pool.ddb.DynamoDBExtension;
 import me.philcali.device.pool.model.Status;
-import me.philcali.device.pool.service.api.exception.InvalidInputException;
 import me.philcali.device.pool.service.api.model.CompositeKey;
 import me.philcali.device.pool.service.api.model.CreateLockObject;
 import me.philcali.device.pool.service.api.model.DeviceObject;
@@ -41,7 +40,7 @@ import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequ
 import software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationResponse;
 import software.amazon.awssdk.services.ssm.model.InstanceInformation;
 import software.amazon.awssdk.services.ssm.model.PingStatus;
-import software.amazon.awssdk.services.ssm.paginators.DescribeInstanceInformationIterable;
+import software.amazon.awssdk.services.ssm.model.PlatformType;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -117,16 +116,6 @@ class ObtainDeviceFunctionTest {
     }
 
     @Test
-    void GIVEN_function_is_created_WHEN_apply_is_called_but_locked_THEN_exception_is_thrown() {
-        lockRepo.create(poolRepo.resourceKey(request.accountKey(), "pool-id"), CreateLockObject.builder()
-                .holder(UUID.randomUUID().toString())
-                .duration(Duration.ofSeconds(5))
-                .build());
-        assertEquals(ObtainDeviceRequest.class, function.inputType());
-        assertThrows(InvalidInputException.class, () -> function.apply(request));
-    }
-
-    @Test
     void GIVEN_function_is_created_WHEN_apply_is_called_THEN_cycles_through_instances() {
         // If not locking, then don't adhere to lock
         lockRepo.create(poolRepo.resourceKey(request.accountKey(), "pool-id"), CreateLockObject.builder()
@@ -149,17 +138,17 @@ class ObtainDeviceFunctionTest {
                 .build();
         DescribeInstanceInformationResponse firstResponse = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
-                        instance -> instance.instanceId("device-1").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
-                        instance -> instance.instanceId("device-2").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
-                        instance -> instance.instanceId("device-3").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
-                        instance -> instance.instanceId("device-4").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now()),
-                        instance -> instance.instanceId("device-5").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").lastPingDateTime(Instant.now())
+                        instance -> instance.instanceId("device-1").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").platformType(PlatformType.LINUX),
+                        instance -> instance.instanceId("device-2").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").platformType(PlatformType.LINUX),
+                        instance -> instance.instanceId("device-3").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").platformType(PlatformType.LINUX),
+                        instance -> instance.instanceId("device-4").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").platformType(PlatformType.LINUX),
+                        instance -> instance.instanceId("device-5").pingStatus(PingStatus.ONLINE).ipAddress("127.0.0.1").platformType(PlatformType.LINUX)
                 )
                 .nextToken("nextToken")
                 .build();
         DescribeInstanceInformationResponse secondResponse = DescribeInstanceInformationResponse.builder()
                 .instanceInformationList(
-                        instance -> instance.instanceId("device-6").pingStatus(PingStatus.ONLINE).ipAddress("192.168.1.1").lastPingDateTime(Instant.now())
+                        instance -> instance.instanceId("device-6").pingStatus(PingStatus.ONLINE).ipAddress("192.168.1.1").platformType(PlatformType.LINUX)
                 )
                 .build();
         when(ssm.describeInstanceInformation(any(DescribeInstanceInformationRequest.class))).then(answer -> {
@@ -176,22 +165,15 @@ class ObtainDeviceFunctionTest {
         for (int i = 1; i <= allInstances.size(); i++) {
             ObtainDeviceResponse obtainResponse = function.apply(request);
             assertEquals(Status.SUCCEEDED, obtainResponse.status());
-            DeviceObject expectedDevice = DeviceObject.builder()
-                    .id("device-" + i)
-                    .updatedAt(allInstances.get(i - 1).lastPingDateTime())
-                    .poolId("pool-id")
-                    .publicAddress(allInstances.get(i - 1).ipAddress())
-                    .build();
-            assertEquals(expectedDevice, obtainResponse.device());
+            assertEquals("device-" + i, obtainResponse.device().id());
+            assertEquals("pool-id", obtainResponse.device().poolId());
+            assertEquals(allInstances.get(i - 1).ipAddress(), obtainResponse.device().publicAddress());
         }
-        DeviceObject expectedDevice = DeviceObject.builder()
-                .id("device-1")
-                .updatedAt(allInstances.get(0).lastPingDateTime())
-                .poolId("pool-id")
-                .publicAddress(allInstances.get(0).ipAddress())
-                .build();
         // Cycles to first
-        assertEquals(expectedDevice, function.apply(request).device());
+        DeviceObject firstDevice = function.apply(request).device();
+        assertEquals("device-1", firstDevice.id());
+        assertEquals("pool-id", firstDevice.poolId());
+        assertEquals(allInstances.get(0).ipAddress(), firstDevice.publicAddress());
     }
 
     @Test

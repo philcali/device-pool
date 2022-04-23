@@ -8,9 +8,6 @@ package me.philcali.device.pool.service.unmanaged.module;
 
 import dagger.Module;
 import dagger.Provides;
-import me.philcali.device.pool.iot.HostExpansionIoT;
-import me.philcali.device.pool.provision.ExpandingHostProvider;
-import me.philcali.device.pool.service.unmanaged.Configuration;
 import software.amazon.awssdk.services.iot.IotClient;
 
 import javax.inject.Singleton;
@@ -19,17 +16,7 @@ import javax.inject.Singleton;
 class IotModule {
     @Provides
     @Singleton
-    static ExpandingHostProvider.ExpansionFunction providesHostExpansion(Configuration configuration, IotClient iot) {
-        return HostExpansionIoT.builder()
-                .iot(iot)
-                .recursive(configuration.recursive())
-                .thingGroup(configuration.thingGroup())
-                .build();
-    }
-
-    @Provides
-    @Singleton
-    static IotClient providesIotCLient() {
+    static IotClient providesIotClient() {
         return IotClient.create();
     }
 }

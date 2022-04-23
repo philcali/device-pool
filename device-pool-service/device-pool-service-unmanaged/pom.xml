@@ -14,6 +14,7 @@
     <modules>
         <module>device-pool-service-unmanaged-ssm</module>
         <module>device-pool-service-unmanaged-iot</module>
+        <module>device-pool-service-unmanaged-api</module>
     </modules>
 
 </project>
