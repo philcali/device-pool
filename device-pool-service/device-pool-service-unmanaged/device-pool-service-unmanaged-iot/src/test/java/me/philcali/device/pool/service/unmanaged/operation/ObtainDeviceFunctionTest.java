@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2022 Philip Cali
+ * Released under Apache-2.0 License
+ *     (https://www.apache.org/licenses/LICENSE-2.0)
+ */
+
 package me.philcali.device.pool.service.unmanaged.operation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,7 +87,7 @@ class ObtainDeviceFunctionTest {
         doReturn(response).when(client).listThingsInThingGroup(eq(ListThingsInThingGroupRequest.builder()
                 .maxResults(1)
                 .recursive(true)
-                .thingGroupName("poolId")
+                .thingGroupName("poolId2")
                 .build()));
         ObtainDeviceRequest request = ObtainDeviceRequest.builder()
                 .accountKey(CompositeKey.of("012345678912"))
@@ -89,8 +95,8 @@ class ObtainDeviceFunctionTest {
                         .status(Status.PROVISIONING)
                         .createdAt(Instant.now())
                         .updatedAt(Instant.now())
-                        .id("provisionId")
-                        .poolId("poolId")
+                        .id("provisionId2")
+                        .poolId("poolId2")
                         .build())
                 .build();
         assertThrows(IllegalStateException.class, () -> function.apply(request));
