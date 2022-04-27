@@ -21,7 +21,11 @@ cdk deploy
 [2]: https://docs.aws.amazon.com/cdk/v2/guide/home.html
 
 Once the deployment ends, it'll output the control plane base URL which you will need to
-exercise the [device-pool-examples][3] or [device-pool-cli][4]
+exercise the [device-pool-examples][3] or [device-pool-cli][4]. Some `DevicePool` as infrastructure
+are demonstrated in the example:
+
+- `SSMDevicePoolIntegration`: creates an UNMANAGED device pool that is connected to SSM
+- `IotDevicePoolIntegration`: creates an UNMANAGED device pool that is connected to IoT
 
 [3]: ../README.md
 [4]: ../../device-pool-cli/README.md

@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cdk.version>2.17.0</cdk.version>
         <constructs.version>10.0.92</constructs.version>
-        <philcali.cdk.version>0.1.4</philcali.cdk.version>
+        <philcali.cdk.version>0.2.0</philcali.cdk.version>
     </properties>
 
     <build>
@@ -91,6 +91,13 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>device-pool-service-unmanaged-ssm</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-service-unmanaged-iot</artifactId>
             <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
