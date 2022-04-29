@@ -100,6 +100,7 @@ use any of the following modules as necessary.
 - `device-pool-ec2`: provisioning on EC2 using autoscaling as the provisioning force.
 - `device-pool-s3`: content transfer over S3 (files to and from).
 - `device-pool-ssm`: execute commands over SSM `RunDocument`s.
+- `device-pool-iot`: execute commands over MQTT and AWS IoT Device Shadow.
 - `device-pool-ssh`: execute commands over SSH and SCP files transfer.
 - `device-pool-ddb`: provides a distributed lock to be used for locking devices or pools.
 - `device-pool-client`: provides an abstraction over a customized `DeviceLab` control plane.

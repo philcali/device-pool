@@ -14,6 +14,7 @@ import me.philcali.device.pool.lab.DevicePoolLockProps;
 import me.philcali.device.pool.lab.DevicePoolProps;
 import me.philcali.device.pool.lab.DevicePoolType;
 import me.philcali.device.pool.lab.IDevicePoolIntegration;
+import me.philcali.device.pool.lab.IotDevicePoolIntegration;
 import me.philcali.device.pool.lab.SSMDevicePoolIntegration;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
@@ -53,6 +54,7 @@ public class DevicePoolExamplesInfraStack extends Stack {
         final String serviceModule = "device-pool-service-backend";
         final String workflowModule = "device-pool-service-events";
         final String ssmIntegrationModule = "device-pool-service-unmanaged-ssm";
+        final String iotIntegrationModule = "device-pool-service-unmanaged-iot";
 
         final DeviceLab deviceLab = DeviceLab.Builder.create(this, "ExampleDeviceLab")
                 .tableProps(DeviceLabTableProps.builder()
@@ -82,6 +84,13 @@ public class DevicePoolExamplesInfraStack extends Stack {
                         + ssmIntegrationModule + "-" + version + ".jar"))
                 .build();
 
+        IDevicePoolIntegration iotIntegration = IotDevicePoolIntegration.Builder.create(this)
+                .locking(true)
+                .code(Code.fromAsset("../../device-pool-service/device-pool-service-unmanaged/"
+                        + iotIntegrationModule + "/target/"
+                        + iotIntegrationModule + "-" + version + ".jar"))
+                .build();
+
         deviceLab.addDevicePool(DevicePoolProps.builder()
                 .integration(integration)
                 .poolType(DevicePoolType.UNMANAGED)
@@ -90,6 +99,12 @@ public class DevicePoolExamplesInfraStack extends Stack {
                         .enabled(true)
                         .duration(Duration.seconds(30))
                         .build())
+                .build());
+
+        deviceLab.addDevicePool(DevicePoolProps.builder()
+                .integration(iotIntegration)
+                .poolType(DevicePoolType.UNMANAGED)
+                .name("PiCameras")
                 .build());
     }
 }
