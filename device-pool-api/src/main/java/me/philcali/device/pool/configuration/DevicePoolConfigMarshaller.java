@@ -19,32 +19,28 @@ import java.util.Set;
 public interface DevicePoolConfigMarshaller {
     Set<String> contentTypes();
 
-    void marshall(OutputStream output, DevicePoolConfig config) throws DevicePoolConfigMarshallException;
+    void marshall(OutputStream output, DevicePoolConfig config) throws IOException;
 
-    DevicePoolConfig unmarshall(InputStream stream) throws DevicePoolConfigMarshallException;
+    DevicePoolConfig unmarshall(InputStream stream) throws IOException;
 
-    default byte[] marshall(DevicePoolConfig config) throws DevicePoolConfigMarshallException {
+    default byte[] marshall(DevicePoolConfig config) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             marshall(outputStream, config);
             return outputStream.toByteArray();
-        } catch (IOException ie) {
-            throw new DevicePoolConfigMarshallException(ie);
         }
     }
 
-    default String marshallToUTF8String(DevicePoolConfig config) throws DevicePoolConfigMarshallException {
+    default String marshallToUTF8String(DevicePoolConfig config) throws IOException {
         return new String(marshall(config), StandardCharsets.UTF_8);
     }
 
-    default DevicePoolConfig unmarshall(byte[] bytes) throws DevicePoolConfigMarshallException {
+    default DevicePoolConfig unmarshall(byte[] bytes) throws IOException {
         try (InputStream input = new ByteArrayInputStream(bytes)) {
             return unmarshall(input);
-        } catch (IOException ie) {
-            throw new DevicePoolConfigMarshallException(ie);
         }
     }
 
-    default DevicePoolConfig unmarshall(String value) throws DevicePoolConfigMarshallException {
+    default DevicePoolConfig unmarshall(String value) throws IOException {
         return unmarshall(value.getBytes(StandardCharsets.UTF_8));
     }
 }

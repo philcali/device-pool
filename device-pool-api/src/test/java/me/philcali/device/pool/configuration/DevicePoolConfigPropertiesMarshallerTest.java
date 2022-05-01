@@ -10,6 +10,7 @@ import me.philcali.device.pool.BaseDevicePool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ class DevicePoolConfigPropertiesMarshallerTest {
     }
 
     @Test
-    void GIVEN_marshaller_WHEN_marshalling_to_string_THEN_unmarshall_from_string_is_possible() {
+    void GIVEN_marshaller_WHEN_marshalling_to_string_THEN_unmarshall_from_string_is_possible() throws IOException {
         String propertiesContents = marshaller.marshallToUTF8String(testConfig);
         String expectedContent = "device.pool.provision.lab.endpoint=example.com\n"
                 + "device.pool.provision.lab.port=22\n"

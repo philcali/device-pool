@@ -79,14 +79,7 @@ abstract class DevicePoolConfigPropertiesModel implements DevicePoolConfig {
 
     @Deprecated(forRemoval = true, since = "1.2.0")
     public static DevicePoolConfigProperties load(InputStream stream) throws IOException {
-        Objects.requireNonNull(stream, "Failed to load properties; stream provided is null");
-        try (InputStreamReader inputStreamReader = new InputStreamReader(stream, StandardCharsets.UTF_8);
-             Reader bufferedReader = new BufferedReader(inputStreamReader)) {
-
-            Properties properties = new Properties();
-            properties.load(bufferedReader);
-            return new DevicePoolConfigPropertiesMarshaller().internalLoad(properties);
-        }
+        return new DevicePoolConfigPropertiesMarshaller().unmarshall(stream);
     }
 
     @Deprecated(forRemoval = true, since = "1.2.0")

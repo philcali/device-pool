@@ -50,7 +50,7 @@ public class DevicePoolConfigFile {
                 .orElseThrow(() -> new IllegalArgumentException("No appropriate marshaller for " + hint));
     }
 
-    private DevicePoolConfig internalLoad(String hint, InputStream inputStream) {
+    private DevicePoolConfig internalLoad(String hint, InputStream inputStream) throws IOException {
         DevicePoolConfigMarshaller service = locateDesiredMarshaller(hint);
         return service.unmarshall(inputStream);
     }
