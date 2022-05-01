@@ -10,9 +10,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import me.philcali.device.pool.BaseDevicePool;
+import me.philcali.device.pool.configuration.BaseDevicePoolConfig;
+import me.philcali.device.pool.configuration.BaseDevicePoolConfigEntry;
 import me.philcali.device.pool.configuration.DevicePoolConfig;
-import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.configuration.DevicePoolConfigFile;
 import me.philcali.device.pool.service.api.model.CreateDeviceObject;
 import me.philcali.device.pool.service.api.model.CreateDevicePoolObject;
 import me.philcali.device.pool.service.api.model.CreateLockObject;
@@ -31,8 +32,6 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -41,7 +40,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 
 /**
  * <p>DeviceLabCLI class.</p>
@@ -117,11 +115,8 @@ public class DeviceLabCLI {
             DevicePoolConfig config = null;
             Path configPath = Optional.ofNullable(propertiesFile).orElseGet(this::defaultConfigPath);
             if (Files.exists(configPath)) {
-                try (InputStream inputStream = Files.newInputStream(configPath)) {
-                    config = DevicePoolConfigProperties.load(inputStream);
-                } catch (IOException ie) {
-                    throw new RuntimeException(ie);
-                }
+                DevicePoolConfigFile configFile = DevicePoolConfigFile.create();
+                config = configFile.load(configPath);
             }
             loadedConfig = Optional.ofNullable(config);
         }
@@ -182,33 +177,38 @@ public class DeviceLabCLI {
     public void configure() throws IOException {
         Path configPath = defaultConfigPath();
         Files.createDirectories(configPath.getParent());
-        Properties properties = new Properties();
-        // TODO: clean this up ... interact with DevicePoolConfig instead of Properties directly
-        // Default to base pool
-        properties.setProperty("device.pool.class", BaseDevicePool.class.getName());
+        DevicePoolConfigFile configFile = DevicePoolConfigFile.create();
+        DevicePoolConfig existingConfig;
         if (Files.exists(configPath)) {
-            try (InputStream inputStream = Files.newInputStream(configPath)) {
-                properties.load(inputStream);
-            }
+            existingConfig = configFile.load(configPath);
+        } else {
+            existingConfig = BaseDevicePoolConfig.builder().build();
         }
+        DevicePoolConfig.DevicePoolConfigEntry existingLabConfig = existingConfig.namespace("provision.lab")
+                .orElseGet(() -> BaseDevicePoolConfigEntry.of("lab"));
+        BaseDevicePoolConfigEntry.Builder labConfigBuilder = BaseDevicePoolConfigEntry.builder().key("lab");
         Arrays.asList("endpoint", "poolId", "platform", "port").forEach(entry -> {
             String value = System.console().readLine("Enter the device lab %s [%s]: %n",
-                    entry, properties.getProperty("device.pool.provision.lab." + entry, ""));
+                    entry, existingConfig.get(entry).orElse(""));
             if (entry.equals("port")) {
-                int numericPort = Integer.parseInt(properties.getProperty("provision.lab.port", "22"));
+                int numericPort = Integer.parseInt(existingLabConfig.get("port").orElse("22"));
                 if (!value.trim().isEmpty()) {
                     numericPort = Integer.parseInt(value);
                 }
                 value = Integer.toString(numericPort);
             } else if (value.trim().isEmpty()) {
                 // If using existing, allow pass through
-                value = properties.getProperty("device.pool.provision.lab." + entry, value);
+                value = existingLabConfig.get(entry).orElse(value);
             }
-            properties.setProperty("device.pool.provision.lab." + entry, value);
+            labConfigBuilder.addEntry(BaseDevicePoolConfigEntry.builder().key(entry).value(value).build());
         });
-        try (OutputStream outputStream = Files.newOutputStream(configPath)) {
-            properties.store(outputStream, "Auto-generated via configure");
-        }
+        configFile.store(configPath, BaseDevicePoolConfig.builder()
+                .poolClassName(existingConfig.poolClassName())
+                .addEntry(BaseDevicePoolConfigEntry.builder()
+                        .key("provision")
+                        .addEntry(labConfigBuilder.build())
+                        .build())
+                .build());
     }
 
     /**

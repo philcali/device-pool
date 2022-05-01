@@ -7,9 +7,12 @@
 package me.philcali.device.pool;
 
 import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigFile;
 import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
+import me.philcali.device.pool.configuration.DevicePoolConfigPropertiesMarshaller;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.content.ContentTransferAgentFactory;
+import me.philcali.device.pool.exceptions.DevicePoolConfigMarshallException;
 import me.philcali.device.pool.exceptions.ProvisioningException;
 import me.philcali.device.pool.local.LocalDevicePool;
 import me.philcali.device.pool.model.ProvisionInput;
@@ -145,16 +148,17 @@ public interface DevicePool extends AutoCloseable {
      * @param inputStream
      * @return
      */
+    @Deprecated(forRemoval = true, since = "1.2.0")
     static DevicePool create(InputStream inputStream) {
         try {
-            return create(DevicePoolConfigProperties.load(inputStream));
+            return create(new DevicePoolConfigPropertiesMarshaller().unmarshall(inputStream));
         } catch (NullPointerException | IOException ie) {
             throw new ProvisioningException(ie);
         }
     }
 
     static DevicePool create(ClassLoader loader) {
-        return create(loader.getResourceAsStream("devices/pool.properties"));
+        return create(DevicePoolConfigFile.create(loader).loadDefault(loader));
     }
 
     static DevicePool create() {
