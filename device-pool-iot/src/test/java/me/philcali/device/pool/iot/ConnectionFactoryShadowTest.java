@@ -6,6 +6,8 @@
 
 package me.philcali.device.pool.iot;
 
+import me.philcali.device.pool.configuration.DevicePoolConfig;
+import me.philcali.device.pool.configuration.DevicePoolConfigProperties;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.model.Host;
 import me.philcali.device.pool.model.PlatformOS;
@@ -19,7 +21,11 @@ import software.amazon.awssdk.services.iot.model.DescribeEndpointRequest;
 import software.amazon.awssdk.services.iot.model.DescribeEndpointResponse;
 import software.amazon.awssdk.services.iotdataplane.IotDataPlaneClient;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,5 +75,21 @@ class ConnectionFactoryShadowTest {
                 .port(22)
                 .build());
         assertInstanceOf(ConnectionShadow.class, connection);
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_used_THEN_factory_is_created() throws IOException {
+        DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
+        assertNotNull(ConnectionFactoryShadow.builder().fromConfig(config));
+    }
+
+    @Test
+    void GIVEN_no_factory_WHEN_config_is_default_THEN_default_is_used() throws IOException {
+        Properties properties = new Properties();
+        properties.load(getClass().getClassLoader().getResourceAsStream("devices/pool.properties"));
+        properties.clear();
+        DevicePoolConfig config = DevicePoolConfigProperties.load(properties);
+        ConnectionFactoryShadow shadow = ConnectionFactoryShadow.builder().from(factory).fromConfig(config);
+        assertEquals(factory, shadow);
     }
 }

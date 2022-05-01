@@ -7,12 +7,16 @@
 package me.philcali.device.pool.iot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.exceptions.ConnectionException;
 import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import org.immutables.value.Value;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 import software.amazon.awssdk.services.iot.IotClient;
 import software.amazon.awssdk.services.iot.model.DescribeEndpointRequest;
 import software.amazon.awssdk.services.iotdataplane.IotDataPlaneClient;
@@ -41,8 +45,23 @@ public abstract class ConnectionFactoryShadow implements ConnectionFactory {
         }
     }
 
-    public static final class Builder extends ImmutableConnectionFactoryShadow.Builder {
-
+    public static final class Builder
+            extends ImmutableConnectionFactoryShadow.Builder
+            implements ConfigBuilder<ConnectionFactoryShadow> {
+        @Override
+        public ConnectionFactoryShadow fromConfig(DevicePoolConfig config) {
+            return config.namespace("connection.shadow")
+                    .map(entry -> dataPlaneClient(entry.get("endpoint")
+                            .map(endpoint -> IotDataPlaneClient.builder()
+                                    .endpointOverride(URI.create(endpoint))
+                                    .region(entry.get("region")
+                                            .map(Region::of)
+                                            .orElseGet(DefaultAwsRegionProviderChain.builder().build()::getRegion))
+                                    .build())
+                            .orElseGet(IotDataPlaneClient::create))
+                            .build())
+                    .orElseGet(this::build);
+        }
     }
 
     public static Builder builder() {
