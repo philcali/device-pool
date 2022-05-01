@@ -15,6 +15,8 @@ import me.philcali.device.pool.exceptions.ConnectionException;
 import me.philcali.device.pool.model.APIShadowModel;
 import me.philcali.device.pool.model.Host;
 import org.immutables.value.Value;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 import software.amazon.awssdk.services.iot.IotClient;
 import software.amazon.awssdk.services.iot.model.DescribeEndpointRequest;
 import software.amazon.awssdk.services.iotdataplane.IotDataPlaneClient;
@@ -52,6 +54,9 @@ public abstract class ConnectionFactoryShadow implements ConnectionFactory {
                     .map(entry -> dataPlaneClient(entry.get("endpoint")
                             .map(endpoint -> IotDataPlaneClient.builder()
                                     .endpointOverride(URI.create(endpoint))
+                                    .region(entry.get("region")
+                                            .map(Region::of)
+                                            .orElseGet(DefaultAwsRegionProviderChain.builder().build()::getRegion))
                                     .build())
                             .orElseGet(IotDataPlaneClient::create))
                             .build())
