@@ -7,6 +7,8 @@
 package me.philcali.device.pool.iot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.philcali.device.pool.configuration.ConfigBuilder;
+import me.philcali.device.pool.configuration.DevicePoolConfig;
 import me.philcali.device.pool.connection.Connection;
 import me.philcali.device.pool.connection.ConnectionFactory;
 import me.philcali.device.pool.exceptions.ConnectionException;
@@ -41,8 +43,20 @@ public abstract class ConnectionFactoryShadow implements ConnectionFactory {
         }
     }
 
-    public static final class Builder extends ImmutableConnectionFactoryShadow.Builder {
-
+    public static final class Builder
+            extends ImmutableConnectionFactoryShadow.Builder
+            implements ConfigBuilder<ConnectionFactoryShadow> {
+        @Override
+        public ConnectionFactoryShadow fromConfig(DevicePoolConfig config) {
+            return config.namespace("connection.shadow")
+                    .map(entry -> dataPlaneClient(entry.get("endpoint")
+                            .map(endpoint -> IotDataPlaneClient.builder()
+                                    .endpointOverride(URI.create(endpoint))
+                                    .build())
+                            .orElseGet(IotDataPlaneClient::create))
+                            .build())
+                    .orElseGet(this::build);
+        }
     }
 
     public static Builder builder() {
