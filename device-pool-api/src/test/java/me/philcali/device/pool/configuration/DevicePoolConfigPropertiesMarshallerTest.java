@@ -7,6 +7,7 @@
 package me.philcali.device.pool.configuration;
 
 import me.philcali.device.pool.BaseDevicePool;
+import me.philcali.device.pool.local.LocalDevicePool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,5 +50,11 @@ class DevicePoolConfigPropertiesMarshallerTest {
         DevicePoolConfig propertiesConfig = marshaller.unmarshall(propertiesContents);
         assertEquals(testConfig.poolClassName(), propertiesConfig.poolClassName());
         assertEquals(testConfig.namespace("provision.lab").get().properties().keySet(), propertiesConfig.namespace("provision.lab").get().properties().keySet());
+    }
+
+    @Test
+    void GIVEN_marshaller_WHEN_properties_pool_THEN_defaults_are_provided() {
+        DevicePoolConfig config = DevicePoolConfigProperties.builder().build();
+        assertEquals(LocalDevicePool.class.getName(), config.poolClassName());
     }
 }

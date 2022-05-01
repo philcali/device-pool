@@ -152,7 +152,7 @@ public interface DevicePool extends AutoCloseable {
     static DevicePool create(InputStream inputStream) {
         try {
             return create(new DevicePoolConfigPropertiesMarshaller().unmarshall(inputStream));
-        } catch (NullPointerException | DevicePoolConfigMarshallException ie) {
+        } catch (NullPointerException | IOException ie) {
             throw new ProvisioningException(ie);
         }
     }
