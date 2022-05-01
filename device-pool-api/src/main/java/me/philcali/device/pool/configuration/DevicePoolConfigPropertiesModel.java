@@ -73,6 +73,10 @@ abstract class DevicePoolConfigPropertiesModel implements DevicePoolConfig {
         }
     }
 
+    public static DevicePoolConfigProperties load(Properties properties) {
+        return new DevicePoolConfigPropertiesMarshaller().internalLoad(properties);
+    }
+
     @Deprecated(forRemoval = true, since = "1.2.0")
     public static DevicePoolConfigProperties load(InputStream stream) throws IOException {
         Objects.requireNonNull(stream, "Failed to load properties; stream provided is null");
