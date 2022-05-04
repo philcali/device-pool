@@ -22,7 +22,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
         name = "lab",
         description = "Interact with the device-lab control plane",
-        subcommands = {Init.class, Provision.class, Destroy.class}
+        subcommands = {Init.class, Provision.class, Destroy.class, CommandLine.HelpCommand.class}
 )
 public class Lab {
     @CommandLine.Option(

@@ -69,6 +69,12 @@
             <artifactId>device-pool-client</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!-- Needed for IoT interactions -->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>device-pool-iot</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/net.i2p.crypto/eddsa -->
         <dependency>
             <groupId>net.i2p.crypto</groupId>

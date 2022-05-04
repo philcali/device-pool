@@ -25,7 +25,8 @@ import java.util.concurrent.TimeUnit;
  */
 @CommandLine.Command(
         name = "exec",
-        description = "Runs an arbitrary command on the devices"
+        description = "Runs an arbitrary command on the devices",
+        subcommands = {CommandLine.HelpCommand.class}
 )
 public class Execute implements Runnable {
     @CommandLine.ParentCommand

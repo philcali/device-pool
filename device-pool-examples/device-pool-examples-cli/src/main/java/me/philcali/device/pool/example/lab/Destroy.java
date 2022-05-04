@@ -22,7 +22,8 @@ import java.util.Objects;
  */
 @CommandLine.Command(
         name = "destroy",
-        description = "Destroys a device pool through the control plane"
+        description = "Destroys a device pool through the control plane",
+        subcommands = {CommandLine.HelpCommand.class}
 )
 public class Destroy implements Runnable {
     @CommandLine.ParentCommand

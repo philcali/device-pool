@@ -42,6 +42,7 @@ abstract class ConnectionIoTModel implements Connection, Consumer<MqttMessage> {
     static final String FIELD_ARGS = "args";
     static final String FIELD_INPUT = "input";
     static final String FIELD_EXIT_CODE = "exitCode";
+    static final String FIELD_TIMEOUT = "timeout";
     static final String FIELD_STDOUT = "stdout";
     static final String FIELD_STDERR = "stderr";
     private final Map<String, CompletableFuture<JsonNode>> executions = new ConcurrentHashMap<>();

@@ -16,12 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.iot.Timestamp;
+import software.amazon.awssdk.iot.iotshadow.model.GetShadowResponse;
 import software.amazon.awssdk.services.iot.IotClient;
 import software.amazon.awssdk.services.iot.model.DescribeEndpointRequest;
 import software.amazon.awssdk.services.iot.model.DescribeEndpointResponse;
 import software.amazon.awssdk.services.iotdataplane.IotDataPlaneClient;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -81,6 +84,15 @@ class ConnectionFactoryShadowTest {
     void GIVEN_no_factory_WHEN_config_is_used_THEN_factory_is_created() throws IOException {
         DevicePoolConfig config = DevicePoolConfigProperties.load(getClass().getClassLoader());
         assertNotNull(ConnectionFactoryShadow.builder().fromConfig(config));
+    }
+
+    @Test
+    void GIVEN_factory_is_created_WHEN_marshalling_input_THEN_timestamp_marshaller_is_used() throws IOException {
+        GetShadowResponse response = new GetShadowResponse();
+        response.timestamp = new Timestamp(new Date());
+
+        assertEquals(response.timestamp.getTime() / 1000,
+                factory.mapper().readValue(factory.mapper().writeValueAsBytes(response), GetShadowResponse.class).timestamp.getTime() / 1000);
     }
 
     @Test

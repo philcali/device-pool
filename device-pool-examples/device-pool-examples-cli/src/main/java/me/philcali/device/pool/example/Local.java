@@ -31,7 +31,7 @@ import java.util.Objects;
 @CommandLine.Command(
         name = "local",
         description = "An example app that uses a local static pool to provision",
-        subcommands = { Execute.class, Copy.class }
+        subcommands = { Execute.class, Copy.class, CommandLine.HelpCommand.class }
 )
 public class Local {
     @CommandLine.Option(
