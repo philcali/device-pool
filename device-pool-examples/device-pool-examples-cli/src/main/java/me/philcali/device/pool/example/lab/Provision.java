@@ -28,7 +28,8 @@ import java.util.concurrent.TimeUnit;
  */
 @CommandLine.Command(
         name = "provision",
-        description = "Creates a provision on a pool and demonstrates acquisition"
+        description = "Creates a provision on a pool and demonstrates acquisition",
+        subcommands = {CommandLine.HelpCommand.class}
 )
 public class Provision implements Runnable {
     @CommandLine.ParentCommand

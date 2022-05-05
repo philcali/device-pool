@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
  */
 @CommandLine.Command(
         name = "cp",
-        description = "Copies files to and from devices"
+        description = "Copies files to and from devices",
+        subcommands = {CommandLine.HelpCommand.class}
 )
 public class Copy implements Runnable {
     @CommandLine.Option(

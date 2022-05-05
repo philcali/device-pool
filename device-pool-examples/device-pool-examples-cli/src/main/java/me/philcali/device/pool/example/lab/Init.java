@@ -29,7 +29,8 @@ import java.util.Objects;
  */
 @CommandLine.Command(
         name = "init",
-        description = "Sets up a managed device pool with devices"
+        description = "Sets up a managed device pool with devices",
+        subcommands = {CommandLine.HelpCommand.class}
 )
 public class Init implements Runnable {
     @CommandLine.ParentCommand

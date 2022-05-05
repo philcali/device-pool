@@ -18,16 +18,9 @@ import picocli.CommandLine;
         name = "device-pool-examples",
         version = "1.1.2-SNAPSHOT",
         description = "Local app containing examples to show case device pools.",
-        subcommands = { Ec2.class, Lab.class, Local.class }
+        subcommands = { Ec2.class, Lab.class, Local.class, Iot.class, CommandLine.HelpCommand.class }
 )
 public class ExampleApp {
-    @CommandLine.Option(
-            names = {"-h", "--help"},
-            description = "Displays help usage information",
-            scope = CommandLine.ScopeType.INHERIT,
-            usageHelp = true
-    )
-    private boolean help;
 
     /**
      * <p>main.</p>

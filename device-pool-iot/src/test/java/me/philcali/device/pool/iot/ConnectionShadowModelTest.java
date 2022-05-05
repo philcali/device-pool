@@ -90,6 +90,7 @@ class ConnectionShadowModelTest {
                 response.state.reported = new HashMap<>() {{
                     put(ConnectionIoT.FIELD_ID, currentId.get());
                 }};
+                response.state.desired = new HashMap<>(response.state.reported);
                 builder.payload(SdkBytes.fromByteArray(connection.mapper().writeValueAsBytes(response)));
             } else {
                 GetShadowResponse response = new GetShadowResponse();
@@ -103,6 +104,7 @@ class ConnectionShadowModelTest {
                         put(ConnectionIoT.FIELD_STDERR, Base64.getEncoder().encodeToString("command 'echo' is not found".getBytes(StandardCharsets.UTF_8)));
                     }});
                 }};
+                response.state.desired = new HashMap<>(response.state.reported);
                 builder.payload(SdkBytes.fromByteArray(connection.mapper().writeValueAsBytes(response)));
             }
             return builder.build();
@@ -149,6 +151,7 @@ class ConnectionShadowModelTest {
                 response.state.reported = new HashMap<>() {{
                     put(ConnectionIoT.FIELD_ID, currentId.get());
                 }};
+                response.state.desired = new HashMap<>(response.state.reported);
                 builder.payload(SdkBytes.fromByteArray(connection.mapper().writeValueAsBytes(response)));
             } else {
                 GetShadowResponse response = new GetShadowResponse();
@@ -160,6 +163,7 @@ class ConnectionShadowModelTest {
                         put(ConnectionIoT.FIELD_EXIT_CODE, 0);
                     }});
                 }};
+                response.state.desired = new HashMap<>(response.state.reported);
                 builder.payload(SdkBytes.fromByteArray(connection.mapper().writeValueAsBytes(response)));
             }
             return builder.build();

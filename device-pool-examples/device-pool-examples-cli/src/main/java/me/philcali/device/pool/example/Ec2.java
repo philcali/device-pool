@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
  */
 @CommandLine.Command(
         name = "ec2",
-        description = "Demonstrates autoscaling and ec2 device pools"
+        description = "Demonstrates autoscaling and ec2 device pools",
+        subcommands = {CommandLine.HelpCommand.class}
 )
 public class Ec2 implements Runnable {
     @CommandLine.Option(

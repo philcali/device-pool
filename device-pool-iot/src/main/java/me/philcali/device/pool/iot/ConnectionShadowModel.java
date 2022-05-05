@@ -31,6 +31,7 @@ import software.amazon.awssdk.services.iotdataplane.model.UpdateThingShadowRespo
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,7 +75,7 @@ abstract class ConnectionShadowModel implements Connection {
         return Optional.ofNullable(parsedPayload);
     }
 
-    private UpdateShadowRequest convertInputToUpdate(UUID currentId, int version, CommandInput input) {
+    private UpdateShadowRequest convertInputToUpdate(UUID currentId, Integer version, CommandInput input) {
         Map<String,Object> commandInput = new HashMap<>() {{
             put(ConnectionIoT.FIELD_LINE, input.line());
         }};
@@ -84,7 +85,9 @@ abstract class ConnectionShadowModel implements Connection {
             String encodedBytes = Base64.getEncoder().encodeToString(bytes);
             commandInput.put(ConnectionIoT.FIELD_INPUT, encodedBytes);
         });
+        commandInput.put(ConnectionIoT.FIELD_TIMEOUT, input.timeout().toSeconds());
         UpdateShadowRequest updatePayload = new UpdateShadowRequest();
+        updatePayload.clientToken = currentId.toString();
         updatePayload.version = version;
         updatePayload.state = new ShadowState();
         updatePayload.thingName = host().deviceId();
@@ -97,10 +100,11 @@ abstract class ConnectionShadowModel implements Connection {
 
     public UpdateShadowResponse updateThingShadow(UpdateShadowRequest request) {
         try {
+            String json = mapper().writeValueAsString(request);
             UpdateThingShadowRequest updateShadow = UpdateThingShadowRequest.builder()
                     .shadowName(shadowName())
                     .thingName(host().deviceId())
-                    .payload(SdkBytes.fromByteArray(mapper().writeValueAsBytes(request)))
+                    .payload(SdkBytes.fromByteArray(json.getBytes(StandardCharsets.UTF_8)))
                     .build();
             UpdateThingShadowResponse updatedShadowResponse = dataPlaneClient().updateThingShadow(updateShadow);
             return mapper().readValue(updatedShadowResponse.payload().asInputStream(), UpdateShadowResponse.class);
@@ -112,19 +116,17 @@ abstract class ConnectionShadowModel implements Connection {
     @Override
     public CommandOutput execute(CommandInput input) throws ConnectionException {
         UUID currentId = UUID.randomUUID();
-        int version = getThingShadow().map(payload -> payload.version).orElse(1);
+        Integer version = getThingShadow().map(payload -> payload.version).orElse(null);
         UpdateShadowResponse response = updateThingShadow(convertInputToUpdate(currentId, version, input));
         CompletableFuture<CommandOutput> futureResult = CompletableFuture.supplyAsync(() -> {
             for (;;) {
-                GetShadowResponse currentShadow = getThingShadow()
-                        .filter(doc -> currentId.toString().equals(doc.state.reported.get(ConnectionIoT.FIELD_ID)))
-                        .filter(doc -> Objects.equals(doc.version, response.version)
-                                || Objects.equals(doc.version, response.version + 1))
+                GetShadowResponse current = getThingShadow()
+                        .filter(doc -> currentId.toString().equals(doc.state.desired.get(ConnectionIoT.FIELD_ID)))
                         .orElseThrow(() -> new ConnectionException(1, "Command is no longer valid", input));
                 LOGGER.debug("Found shadow document {} for {}/{} at {}",
-                        currentId, host().deviceId(), shadowName(), currentShadow.version);
-                if (currentShadow.state.reported.containsKey("output")) {
-                    Map<String, Object> output = (Map<String, Object>) currentShadow.state.reported.get("output");
+                        currentId, host().deviceId(), shadowName(), current.version);
+                if (Objects.nonNull(current.state.reported) && current.state.reported.containsKey("output")) {
+                    Map<String, Object> output = (Map<String, Object>) current.state.reported.get("output");
                     LOGGER.debug("Found shadow output document {} for {}/{}: {}",
                             currentId, host().deviceId(), shadowName(), output);
                     CommandOutput.Builder builder = CommandOutput.builder()

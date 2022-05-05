@@ -51,6 +51,25 @@ Demonstrates autoscaling and ec2 device pools
                                'unix:armv7'
 ```
 
+## AWS IoT Command Execution
+```shell
+Usage: device-pool-examples iot [--platform=<platformOS>]
+                                --thing-name=<thingName> [--timeout=<timeout>]
+                                [ARGS...] [COMMAND]
+Interact with devices that are connected to the AWS IoT data plane
+      [ARGS...]
+      --platform=<platformOS>
+                            Platform of the data Thing in the form of, eg: 'os:
+                              arch'
+      --thing-name=<thingName>
+                            The Thing name for the device to control
+      --timeout=<timeout>   The timeout of the command in seconds
+Commands:
+  mqtt    Issues command execution over the MQTT data plane connection
+  shadow  Execute commands using the Thing shadow document
+  help    Displays help information about the specified command
+```
+
 ## Provision with control plane
 
 ```shell
