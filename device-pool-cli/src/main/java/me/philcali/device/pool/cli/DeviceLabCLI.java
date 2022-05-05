@@ -49,7 +49,7 @@ import java.util.Optional;
  */
 @CommandLine.Command(
         name = "device-lab",
-        version = "1.1.2-SNAPSHOT",
+        version = "1.2.0",
         description = "Device Lab CLI for the control plane",
         subcommands = {CommandLine.HelpCommand.class, Devices.class}
 )
