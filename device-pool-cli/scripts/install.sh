@@ -10,7 +10,7 @@ ARTIFACTS_DIR="$HOME/bin/artifacts"
 DEVICE_LAB_BIN="$HOME/bin/$EXEC_NAME"
 MAVEN_REPO="https://artifacts.philcali.me/maven"
 # Fix for release
-ARTIFACT_VERSION="1.1.1"
+ARTIFACT_VERSION="1.2.0"
 ARTIFACTS_URL="$MAVEN_REPO/release/me/philcali/device-pool-cli/$ARTIFACT_VERSION/device-pool-cli-$ARTIFACT_VERSION.jar"
 
 if [ ! -f $ARTIFACTS_DIR ]; then
