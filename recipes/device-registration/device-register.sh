@@ -86,9 +86,10 @@ DEVICE_ID=${DEVICE_ID:-$DEFAULT_DEVICE_ID}
 PUBLIC_ADDRESS=${PUBLIC_ADDRESS:-$DEFAULT_PUBLIC_ADDRESS}
 EXPIRES_IN=${EXPIRES_IN:-DEFAULT_EXPIRES_IN}
 
+TEMP_DIR=$(mktemp -d)
 previous_device=$(awscurl --service execute-api -X GET -H "Accept: application/json" $ENDPOINT/pools/$POOL_ID/devices/$DEVICE_ID 2>/dev/null)
 if [ $(echo $?) -eq 0 ]; then
-  cat > request.json << EOL
+  cat > $TEMP_DIR/request.json << EOL
 {
   "publicAddress": "$PUBLIC_ADDRESS",
   "expiresIn": "$EXPIRES_IN"
@@ -97,7 +98,7 @@ EOL
   __inject_device_properties
   awscurl --service execute-api -X PUT -H "Accept: application/json" -H "Content-Type: application/json" $ENDPOINT/pools/$POOL_ID/devices/$DEVICE_ID -d @request.json
 else
-  cat > request.json << EOL
+  cat > $TEMP_DIR/request.json << EOL
 {
   "id": "$DEVICE_ID",
   "publicAddress": "$PUBLIC_ADDRESS",
@@ -107,5 +108,5 @@ EOL
   __inject_device_properties
   awscurl --service execute-api -X POST -H "Accept: application/json" -H "Content-Type: application/json" $ENDPOINT/pools/$POOL_ID/devices -d @request.json
 fi
-rm request.json
-echo Updated $DEVICE_ID
+rm -rf $TEMP_DIR
+echo "Updated $DEVICE_ID will expires in $EXPIRES_IN"

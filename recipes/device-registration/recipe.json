@@ -1,0 +1,43 @@
+{
+  "pre_install": {
+    "commands": [
+      "touch /usr/share/device-register/config.env"
+    ]
+  },
+  "install": {
+    "parameters": [
+      {
+        "name": "POOL_ID",
+        "flags": [ "required" ],
+        "description": "device pool ID for this registration"
+      },
+      {
+        "name": "ENDPOINT",
+        "flags": [ "required" ],
+        "description": "device pool endpoint for this registration"
+      }
+    ],
+    "output": {
+      "file": "/usr/share/device-register/config.env"
+    },
+    "files": [
+      {
+        "name": "device-health.service",
+        "destination": "/etc/systemd/system/device-health.service"
+      },
+      {
+        "name": "device-health.timer",
+        "destination": "/etc/systemd/system/device-health.timer"
+      },
+      {
+        "name": "device-register.sh",
+        "destination": "/sbin/device-register.sh"
+      }
+    ]
+  },
+  "post_install": {
+    "commands": [
+      "cat /etc/pinthesky/pinthesky.env 2>/dev/null >> /usr/share/device-register/config.env"
+    ]
+  }
+}
