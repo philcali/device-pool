@@ -1,0 +1,10 @@
+[Unit]
+Description=Simple health check timer that doubles as registration
+Requires=device-health.service
+
+[Timer]
+Unit=device-health.service
+OnCalendar=*-*-* *:00:00
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Initiates a single health check and registration
+Wants=device-health.timer
+
+[Service]
+Type=oneshot
+EnvironmentFile=/usr/share/device-register/config.env
+ExecStart=/sbin/device-register.sh
+
+[Install]
+WantedBy=multi-user.target
