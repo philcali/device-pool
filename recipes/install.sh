@@ -1,10 +1,17 @@
 #!/bin/bash
+#
+# Copyright (c) 2022 Philip Cali
+# Released under Apache-2.0 License
+#     (https://www.apache.org/licenses/LICENSE-2.0)
+#
+
 
 ASSUME_ROOT=""
 HOST_MACHINE=""
 DRY_RUN=""
 COMMAND_PREFIX=""
-RECIPE_LOCATION="https://api.github.com/repos/philcali/device-pool/git/trees/install_targets"
+# TODO: target tag instead
+RECIPE_LOCATION="https://api.github.com/repos/philcali/device-pool/git/trees/main"
 CACHED_RECIPE_CONTENT=""
 CACHED_ALL_RECIPES=""
 

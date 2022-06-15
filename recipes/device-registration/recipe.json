@@ -39,7 +39,8 @@
   },
   "post_install": {
     "commands": [
-      "cat /etc/pinthesky/pinthesky.env 2>/dev/null >> /usr/share/device-register/config.env"
+      "cat /etc/pinthesky/pinthesky.env 2>/dev/null >> /usr/share/device-register/config.env",
+      "systemctl start device-health.service"
     ]
   }
 }
