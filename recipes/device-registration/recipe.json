@@ -1,6 +1,7 @@
 {
   "pre_install": {
     "commands": [
+      "mkdir -p /usr/share/device-register",
       "touch /usr/share/device-register/config.env"
     ]
   },
@@ -31,7 +32,8 @@
       },
       {
         "name": "device-register.sh",
-        "destination": "/sbin/device-register.sh"
+        "destination": "/sbin/device-register.sh",
+        "chmod": "+x"
       }
     ]
   },
