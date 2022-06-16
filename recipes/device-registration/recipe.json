@@ -1,0 +1,47 @@
+{
+  "prompt": "The device-registration recipe will install a device-health systemd service to update the registered device in a lab living at ENDPOINT in a pool living at POOL_ID.",
+  "pre_install": {
+    "commands": [
+      "mkdir -p /usr/share/device-register",
+      "touch /usr/share/device-register/config.env"
+    ]
+  },
+  "install": {
+    "parameters": [
+      {
+        "name": "POOL_ID",
+        "flags": [ "required" ],
+        "description": "device pool ID for this registration"
+      },
+      {
+        "name": "ENDPOINT",
+        "flags": [ "required" ],
+        "description": "device pool endpoint for this registration"
+      }
+    ],
+    "output": {
+      "file": "/usr/share/device-register/config.env"
+    },
+    "files": [
+      {
+        "name": "device-health.service",
+        "destination": "/etc/systemd/system/device-health.service"
+      },
+      {
+        "name": "device-health.timer",
+        "destination": "/etc/systemd/system/device-health.timer"
+      },
+      {
+        "name": "device-register.sh",
+        "destination": "/sbin/device-register.sh",
+        "chmod": "+x"
+      }
+    ]
+  },
+  "post_install": {
+    "commands": [
+      "cat /etc/pinthesky/pinthesky.env 2>/dev/null >> /usr/share/device-register/config.env",
+      "systemctl start device-health.service"
+    ]
+  }
+}
