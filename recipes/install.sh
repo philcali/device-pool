@@ -18,6 +18,7 @@ CACHED_ALL_RECIPES=""
 function usage() {
   echo "Usage: $(basename $0) [OPTIONS]"
   echo " -d         performs a dry run; does not install"
+  echo " -w         starts the inline configuration wizard"
   echo " -l         list recipes"
   echo " -t RECIPE  install recipe by name"
   echo " -r         assumes root with sudo"
@@ -69,14 +70,18 @@ function install_recipe() {
   local files=$(curl -s "$content")
   local recipe=$(download_blob "$files" "recipe.json")
   # TODO: Local testing
-  # local recipe=$(cat "recipes/$1/recipe.json")
+  # local recipe=$(cat "recipes/$recipe_name/recipe.json")
 
+  # TODO: this sucks, find a better way later
   local old_ifs=$IFS
   IFS=$'\n'
-  for command in $(echo "$recipe" | jq '.pre_install.commands[]'); do
+  for command in $(echo "$recipe" | jq '.pre_install.commands[]' | tr -d '"'); do
+    IFS=$old_ifs
     $COMMAND_PREFIX $command
   done
 
+  old_ifs=$IFS
+  IFS=$'\n'
   local output=$(echo "$recipe" | jq '.install.output.file' | tr -d '"')
   for parameter_json in $(echo "$recipe" | jq -c '.install.parameters[] | select(.flags | contains(["required"]))'); do
     local param_name=$(echo "$parameter_json" | jq '.name' | tr -d '"')
@@ -86,31 +91,37 @@ function install_recipe() {
       read -p "Set the $param_name parameter (context: $param_description): " param_value
     done
     if [ ! -z "$output" ]; then
-      $COMMAND_PREFIX "echo $param_name=$param_value >> $output"
+      IFS=$old_ifs
+      $COMMAND_PREFIX -- "sh -c 'echo $param_name=$param_value >> $output'"
     fi
   done
 
+  old_ifs=$IFS
+  IFS=$'\n'
   for file_json in $(echo "$recipe" | jq -c '.install.files[]'); do
+    IFS=$old_ifs
     local file_name=$(echo "$file_json" | jq '.name' | tr -d '"')
     local file_dest=$(echo "$file_json" | jq '.destination' | tr -d '"')
     local mod=$(echo "$file_json" | jq '.chmod' | tr -d '"')
     download_blob "$files" "$file_name" > $file_name
     # TODO: Local testing
-    # cat "recipes/$1/$file_name" > $file_name
+    # cat "recipes/$recipe_name/$file_name" > $file_name
     if [ ! -z "$HOST_MACHINE" ] && [ -z "$DRY_RUN" ]; then
       scp $file_name $HOST_MACHINE:~/
     fi
     $COMMAND_PREFIX mv $file_name $file_dest
-    if [ ! -z "$mod" ]; then
+    if [ ! -z "$mod" ] && [ "$mod" != "null" ]; then
       $COMMAND_PREFIX chmod $mod $file_dest
     fi
     rm -f $file_name
   done
 
+  old_ifs=$IFS
+  IFS=$'\n'
   for command in $(echo "$recipe" | jq '.post_install.commands[]' | tr -d '"'); do
+    IFS=$old_ifs
     $COMMAND_PREFIX $command
   done
-
   IFS=$old_ifs
 }
 
@@ -144,12 +155,30 @@ function find_recipe() {
   echo $FOUND_TARGET
 }
 
+function connection_wizard() {
+  local result=""
+  local configure_remote
+  read -p "Do you want to configure a remote machine? [y/n] " configure_remote
+  if [ "$configure_remote" = "y" ]; then
+    while [ -z "$result" ]; do
+      read -p "Enter the ssh address of the machine (ie: pi@hostname): " HOST_MACHINE
+      result=$(ssh -o ConnectTimeout=3 $HOST_MACHINE echo hello 2>/dev/null)
+      if [ $(echo $?) -ne 0 ]; then
+        result=""
+        echo "Could not connect to $HOST_MACHINE, please try again."
+      fi
+    done
+  fi
+  read -p "Can we assume root to run the install? [y/n] " ASSUME_ROOT
+}
+
 # Go ahead and reduce subsequent calls to GH
 populate_target_cache
 
-while getopts "dhlt:m:r" flag; do
+while getopts "dwhlt:m:r" flag; do
   case "${flag}" in
     l) list_targets;;
+    w) connection_wizard;;
     d) DRY_RUN="y";;
     r) ASSUME_ROOT="y";;
     m) HOST_MACHINE=${OPTARG};;
@@ -163,5 +192,6 @@ if [ -z "$INSTALL_TARGET" ]; then
   usage;
 fi
 
-install_recipe "$(find_recipe "$INSTALL_TARGET")"
+configure_connection
+install_recipe "$INSTALL_TARGET"
 echo "Successfully installed $INSTALL_TARGET"

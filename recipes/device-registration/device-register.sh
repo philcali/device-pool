@@ -33,8 +33,8 @@ function __validate() {
 }
 
 function __default_public_address() {
-  local device_for_default_gateway=$(ip route | grep default | sed -E 's|.+ dev ([^\s]+) p.+|\1|g')
-  echo $(ip route | grep -v default | grep $device_for_default_gateway | sed -E 's|.+ link src ([^\s]+) m.+|\1|')
+  local device_for_default_gateway=$(ip route | grep default | haed -1 | sed -E 's|.+ dev (\w+) p.+|\1|g')
+  echo $(ip route | grep -v default | grep $device_for_default_gateway | tail -1 | sed -E 's|.+ link src (.+) m.+|\1|')
 }
 
 function __default_device_id() {
@@ -80,9 +80,9 @@ if [ ! -z "$CREDENTIALS_ENDPOINT" ]; then
     echo "Failed to acquire credentials, please examine the error and try again: $credentials"
     exit 1
   fi
-  AWS_ACCESS_KEY_ID=$(echo "$credentials" | jq '.credentials.accessKeyId')
-  AWS_SECRET_ACCESS_KEY=$(echo "$credentials" | jq '.credentials.secretAccessKey')
-  AWS_SECURITY_TOKEN=$(echo "$credentials" | jq '.credentials.sessionToken')
+  export AWS_ACCESS_KEY_ID=$(echo "$credentials" | jq '.credentials.accessKeyId' | tr -d '"')
+  export AWS_SECRET_ACCESS_KEY=$(echo "$credentials" | jq '.credentials.secretAccessKey' | tr -d '"')
+  export AWS_SECURITY_TOKEN=$(echo "$credentials" | jq '.credentials.sessionToken' | tr -d '"')
 fi
 
 DEFAULT_DEVICE_ID=$(__default_device_id)
@@ -90,7 +90,7 @@ DEFAULT_PUBLIC_ADDRESS=$(__default_public_address)
 DEFAULT_EXPIRES_IN=$(date -u -d '+2 hour' '+%FT%TZ')
 DEVICE_ID=${DEVICE_ID:-$DEFAULT_DEVICE_ID}
 PUBLIC_ADDRESS=${PUBLIC_ADDRESS:-$DEFAULT_PUBLIC_ADDRESS}
-EXPIRES_IN=${EXPIRES_IN:-DEFAULT_EXPIRES_IN}
+EXPIRES_IN=${EXPIRES_IN:-$DEFAULT_EXPIRES_IN}
 
 TEMP_DIR=$(mktemp -d)
 previous_device=$(awscurl --service execute-api -X GET -H "Accept: application/json" $ENDPOINT/pools/$POOL_ID/devices/$DEVICE_ID 2>/dev/null)
@@ -102,7 +102,7 @@ if [ $(echo $?) -eq 0 ]; then
 }
 EOL
   __inject_device_properties
-  awscurl --service execute-api -X PUT -H "Accept: application/json" -H "Content-Type: application/json" $ENDPOINT/pools/$POOL_ID/devices/$DEVICE_ID -d @request.json
+  awscurl --service execute-api -X PUT -H "Accept: application/json" -H "Content-Type: application/json" $ENDPOINT/pools/$POOL_ID/devices/$DEVICE_ID -d @$TEMP_DIR/request.json
 else
   cat > $TEMP_DIR/request.json << EOL
 {
@@ -112,7 +112,7 @@ else
 }
 EOL
   __inject_device_properties
-  awscurl --service execute-api -X POST -H "Accept: application/json" -H "Content-Type: application/json" $ENDPOINT/pools/$POOL_ID/devices -d @request.json
+  awscurl --service execute-api -X POST -H "Accept: application/json" -H "Content-Type: application/json" $ENDPOINT/pools/$POOL_ID/devices -d @$TEMP_DIR/request.json
 fi
 rm -rf $TEMP_DIR
 echo "Updated $DEVICE_ID will expires in $EXPIRES_IN"

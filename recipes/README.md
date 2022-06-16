@@ -15,3 +15,6 @@ own infrastructure with relative ease, and start playing around.
 This recipe is used device that belong to `MANAGED` pools. In place of having
 membership be dynamic, you can use agent information to update devices.
 
+```shell
+bash <(curl -L https://raw.githubusercontent.com/philcali/device-pool/main/recipes/install.sh) -t device-registration -w
+```
