@@ -133,5 +133,9 @@ Interested in spinning up some cheap infrastructure or
 see more ways to provision and communicate to devices? Head
 over to [the examples](device-pool-examples).
 
+## Recipes
+
+Check out [the recipes](recipes/README.md) for all kinds of integration snippets.
+
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fphilcali%2Fdevice-pool?ref=badge_large)
