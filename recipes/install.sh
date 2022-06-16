@@ -193,5 +193,5 @@ if [ -z "$INSTALL_TARGET" ]; then
 fi
 
 configure_connection
-install_recipe "$INSTALL_TARGET"
+install_recipe "$(find_recipe "$INSTALL_TARGET")"
 echo "Successfully installed $INSTALL_TARGET"
