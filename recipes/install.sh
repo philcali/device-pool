@@ -70,7 +70,14 @@ function install_recipe() {
   local files=$(curl -s "$content")
   local recipe=$(download_blob "$files" "recipe.json")
   # TODO: Local testing
-  # local recipe=$(cat "recipes/$recipe_name/recipe.json")
+  #local recipe=$(cat "recipes/$recipe_name/recipe.json")
+
+  echo "$recipe" | jq '.prompt' | tr -d '"'
+  read -p "Do you wish to continue? [y/n] " answer
+  if [ "$answer" != "y" ]; then
+    echo "Aborting $recipe_name installation."
+    exit 0
+  fi
 
   # TODO: this sucks, find a better way later
   local old_ifs=$IFS

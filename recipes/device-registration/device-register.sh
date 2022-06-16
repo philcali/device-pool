@@ -33,7 +33,7 @@ function __validate() {
 }
 
 function __default_public_address() {
-  local device_for_default_gateway=$(ip route | grep default | haed -1 | sed -E 's|.+ dev (\w+) p.+|\1|g')
+  local device_for_default_gateway=$(ip route | grep default | haed -1 | sed -E 's|.+ dev (\w+) p.+|\1|')
   echo $(ip route | grep -v default | grep $device_for_default_gateway | tail -1 | sed -E 's|.+ link src (.+) m.+|\1|')
 }
 

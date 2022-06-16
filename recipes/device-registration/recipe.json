@@ -1,4 +1,5 @@
 {
+  "prompt": "The device-registration recipe will install a device-health systemd service to update the registered device in a lab living at ENDPOINT in a pool living at POOL_ID.",
   "pre_install": {
     "commands": [
       "mkdir -p /usr/share/device-register",
