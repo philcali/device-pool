@@ -1,0 +1,21 @@
+{
+  "prompt": "The device-lab recipe will get you started on some base infra for you to build on.",
+  "pre_install": {
+    "commands": [
+      "npm install -g aws-cdk"
+    ]
+  },
+  "install": {
+    "parameters": [
+      {
+        "name": "LANGUAGE",
+        "flags": [ "required" ],
+        "description": "the programming language to generate: python, java, typescript"
+      }
+    ]
+  },
+  "post_install": {
+    "commands": [
+    ]
+  }
+}

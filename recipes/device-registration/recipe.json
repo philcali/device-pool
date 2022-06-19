@@ -2,6 +2,8 @@
   "prompt": "The device-registration recipe will install a device-health systemd service to update the registered device in a lab living at ENDPOINT in a pool living at POOL_ID.",
   "pre_install": {
     "commands": [
+      "apt-get install -y jq python3-pip",
+      "python3 -m pip install awscurl",
       "mkdir -p /usr/share/device-register",
       "touch /usr/share/device-register/config.env"
     ]

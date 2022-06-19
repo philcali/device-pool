@@ -97,7 +97,7 @@ function install_recipe() {
     while [ -z "$param_value" ]; do
       read -p "Set the $param_name parameter (context: $param_description): " param_value
     done
-    if [ ! -z "$output" ]; then
+    if [ ! -z "$output" ] && [ "$output" != "null" ]; then
       IFS=$old_ifs
       $COMMAND_PREFIX -- "sh -c 'echo $param_name=$param_value >> $output'"
     fi
